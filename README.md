@@ -47,10 +47,10 @@ grep -B1 -A2 "TGA....TCACTCCTACGGG.GGC.GCAG" "$1" | grep -v "^--$" > "$2"_R1.fas
 grep "^@M04398" "$2"_R1.fastq > "$2"_header1.txt
 awk '{print$1}' "$2"_header1.txt > "$2"_header2.txt
 
-#for line in $(cat "$2"_header1.txt)
-#do
-#       echo $line | grep "^@" >> "$2"_header2.txt
-#done
+for line in $(cat "$2"_header1.txt)
+do
+       echo $line | grep "^@" >> "$2"_header2.txt
+done
 
 for header in $(cat "$2"_header2.txt)
 do
