@@ -59,6 +59,13 @@ done
 
 ```
 
+*Now read files are ready for subsequent analysis using mothur*
+
+Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
+Modification include
+- custom 16S reference region, start and end location determination
+
+
 
 
 
