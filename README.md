@@ -15,6 +15,8 @@ for file in *; do echo $file; cd $file; cp * ../../fastq_gunzip/; cd ..; done
 
 >Lundberg, D.S., Yourstone, S., Mieczkowski, P., Jones, C.D. and Dangl, J.L., 2013. Practical innovations for high-throughput amplicon sequencing. Nature methods, 10(10), pp.999-1002.
 
-Barcode1------>F-Bc1_2,4,6 seqeunce is *TGA....TCACTCCTACGGG.GGC.GCAG*
+Barcode1------
+>F-Bc1_2,4,6 seqeunce is *TGA....TCACTCCTACGGG.GGC.GCAG*
 
-Barcode2------>F-Bc2_1,3,5 sequence is *ACT....TCACTCCTACGGG.GGC.GCAG*
+Barcode2------
+>F-Bc2_1,3,5 sequence is *ACT....TCACTCCTACGGG.GGC.GCAG*
