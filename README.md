@@ -9,7 +9,7 @@ cd /lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/soybean
 for file in *; do echo $file; cd $file; cp * ../../fastq_gunzip/; cd ..; done
 
 ```
-### demultiplex each of the 96 fastq file based on TGA and ACT barcode
+### demultiplex 
 
 **Library prep protocol refer to** 
 
@@ -61,8 +61,11 @@ done
 
 *Now read files are ready for subsequent analysis using mothur*
 
+## Mothur sequence processing ##
+
 Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
-Modification include
+
+### Modification include ###
 - custom 16S reference region, start and end location determination
 
 
