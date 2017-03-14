@@ -67,6 +67,23 @@ Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
 ### Modification include ###
 - custom 16S reference region, start and end location determination
+  Start location is 6428 end location is 23444
+
+After make.contigs:
+ Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       267     267     0       3       1
+2.5%-tile:      1       403     403     0       4       80657
+25%-tile:       1       409     409     0       4       806565
+Median:         1       429     429     1       5       1613130
+75%-tile:       1       429     429     4       6       2419694
+97.5%-tile:     1       430     430     16      8       3145602
+Maximum:        1       569     569     268     300     3226258
+Mean:   1       422.28  422.28  2.95994 5.10718
+number of Seqs:      **3226258**
+
+
+- screen.seqs(maxlength=430,maxambig=1)
+
 
 
 
