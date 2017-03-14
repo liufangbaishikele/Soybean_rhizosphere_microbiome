@@ -82,7 +82,7 @@ Mean:   1       422.28  422.28  2.95994 5.10718
 number of Seqs:      **3226258**
 
 
-- screen.seqs(maxlength=430,maxambig=1)
+- screen.seqs(maxlength=430,maxambig=3) #of seqs 2316894 filtered
 
 
 
