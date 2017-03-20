@@ -15,19 +15,19 @@ gunzip *
 ## Demultiplex 
 
 
-**Library prep protocol refer to** 
+###Library prep protocol refer to### 
 
 >Lundberg, D.S., Yourstone, S., Mieczkowski, P., Jones, C.D. and Dangl, J.L., 2013. Practical innovations for high-throughput amplicon sequencing. Nature methods, 10(10), pp.999-1002.
 
-**Barcode1**
+###Barcode1###
 >F-Bc1_Fs2,4,6 seqeunce is *TGA....TCACTCCTACGGG.GGC.GCAG*
 
-**Barcode2**
+###Barcode2###
 >F-Bc2_Fs1,3,5 sequence is *ACT....TCACTCCTACGGG.GGC.GCAG*
 
-**demultiplex script**
+###demultiplex script and jobs###
 
-**1) Read1 demultiplex**
+**1) Read1 demultiplex scripts**
 
 
 1) Read1 barcoded with ACT
@@ -46,7 +46,7 @@ grep "^@M04398" "$2"_R1.fastq > "$2"_header1.txt
 awk '{print$1}' "$2"_header1.txt > "$2"_header2.txt
 
 ```
-**demultiplex job file**
+Read1 demultiplex job file
 
 ```
 #$ -N demultiplex
