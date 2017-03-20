@@ -2,7 +2,7 @@
   First run data
   
 
-## Sequence decompress
+##                                                    Sequence decompress
 
 ```
 cd /lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/soybean_strigolactone_16S_03_02_2017
@@ -12,7 +12,7 @@ gunzip *
 
 ```
 
-## Demultiplex 
+##                                                       Demultiplex 
 
 
 ### Library prep protocol refer to ### 
@@ -91,7 +91,8 @@ dos2unix filename
 **2) Read2 demultiplex**
 
 Using unpublished lab code - *extract_seq_list_from_fasta_file.py*
-job file
+
+Job file
 
 ```
 #$ -N Read2_extract
@@ -123,15 +124,41 @@ python  extract_seq_list_from_fasta_file.py     ForCV6_7_header2.txt    SAMPLE95
 python  extract_seq_list_from_fasta_file.py     ForCV6_8_header2.txt    SAMPLE96_S96_L001_R2_001.fastq               
 
 ```
-output are named like this *SAMPLE1_S1_L001_R2_001.fastq.filtered*
+output are named like this 
+
+*SAMPLE1_S1_L001_R2_001.fastq.filtered*
 
 So, file name were then renamed from corresponding filter file to Read2 file
+
 e.g., *mv SAMPLE1_S1_L001_R2_001.fastq.filtered   AgCV1_01_R2.fastq*
 
 At the end, all of the demultiplexed read1 and corresponding read2 file were checked to make sure they have same number of lines after extraction
 
-** Read file arrangement **
-All of the Reads from Cultivar project are  
+## Trimming primer, frameshift and molecule tag sequence using adapt2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##                                            Read file arrangement 
+
+All of the Reads from Cultivar project are saved in
+``/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq``
+
+While reads from strigolactone project are saved in 
+``/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_strigolactone_demultiplex.fastq``
 
 *Now read files are ready for subsequent analysis using mothur*
 
