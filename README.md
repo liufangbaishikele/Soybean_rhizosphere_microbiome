@@ -15,17 +15,17 @@ gunzip *
 ## Demultiplex 
 
 
-###Library prep protocol refer to### 
+### Library prep protocol refer to ### 
 
 >Lundberg, D.S., Yourstone, S., Mieczkowski, P., Jones, C.D. and Dangl, J.L., 2013. Practical innovations for high-throughput amplicon sequencing. Nature methods, 10(10), pp.999-1002.
 
-###Barcode1###
+### Barcode1 ###
 >F-Bc1_Fs2,4,6 seqeunce is *TGA....TCACTCCTACGGG.GGC.GCAG*
 
-###Barcode2###
+### Barcode2 ###
 >F-Bc2_Fs1,3,5 sequence is *ACT....TCACTCCTACGGG.GGC.GCAG*
 
-###demultiplex script and jobs###
+### demultiplex script and jobs ###
 
 **1) Read1 demultiplex scripts**
 
@@ -72,7 +72,7 @@ sh  demultiplex_update.sh  SAMPLE95_S95_L001_R1_001.fastq  For_B_12     ForCV6_0
 sh  demultiplex_update.sh  SAMPLE96_S96_L001_R1_001.fastq  Blank        ForCV6_08
     
 ```
-Here are some tricky stuff I got because dos and unix character different
+Here are some tricky stuffs I got because dos and unix character different
 Every file named by the fifth column of job file, got output got extra character, e.g., AgCV1_01.fastq becae AgCV1_01?.fastq
 But those file names could not be recognized by bash command, mv does not work. So, here came with the solution:
 
