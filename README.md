@@ -1,13 +1,13 @@
 # Soybean rhizosphere microbiome-soil type and cultivar impracts
-Preliminary analysis for 16S seq data from Ag&amp;Forest cultivar project 
-
+  First run data
 
 ### sequence decompress
 
 ```
 cd /lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/soybean_strigolactone_16S_03_02_2017
 for file in *; do echo $file; cd $file; cp * ../../fastq_gunzip/; cd ..; done
-
+cd /lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip
+gunzip *
 ```
 ### demultiplex 
 
@@ -23,41 +23,26 @@ for file in *; do echo $file; cd $file; cp * ../../fastq_gunzip/; cd ..; done
 
 **demultiplex script**
 
-"$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with ACT, "$4" read2.fastq
+**Read1 demultiplex**
 
+
+1) Read1 barcoded with ACT
 ```
-
+# "$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with ACT, "$4" read2.fastq
 grep -B1 -A2 "ACT....TCACTCCTACGGG.GGC.GCAG" "$1" | grep -v "^--$" > "$3"_R1.fastq
 grep "^@M04398" "$3"_R1.fastq > "$3"_header1.txt
 awk '{print$1}' "$3"_header1.txt > "$3"_header2.txt
+```
+2) Read1 barcoded with TGA
 
-for line in $(cat "$3"_header1.txt)
-do
-       echo $line | grep "^@" >> "$3"_header2.txt
-done
-
-
-for header in $(cat "$3"_header2.txt)
-do
-        grep -A3 "$header" "$4" >> "$3"_R2.fastq
-
-done
-
+```
+# "$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with ACT, "$4" read2.fastq
 grep -B1 -A2 "TGA....TCACTCCTACGGG.GGC.GCAG" "$1" | grep -v "^--$" > "$2"_R1.fastq
 grep "^@M04398" "$2"_R1.fastq > "$2"_header1.txt
 awk '{print$1}' "$2"_header1.txt > "$2"_header2.txt
 
-for line in $(cat "$2"_header1.txt)
-do
-       echo $line | grep "^@" >> "$2"_header2.txt
-done
-
-for header in $(cat "$2"_header2.txt)
-do
-        grep -A3 "$header" "$4" >> "$2"_R2.fastq
-done
-
 ```
+
 
 *Now read files are ready for subsequent analysis using mothur*
 
