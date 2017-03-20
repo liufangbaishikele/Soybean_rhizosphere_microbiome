@@ -1,4 +1,4 @@
-# Soybean rhizosphere microbiome-soil type and cultivar impracts
+# Soybean rhizosphere microbiome-16S read analysis
   First run data
   
 
@@ -134,23 +134,29 @@ e.g., *mv SAMPLE1_S1_L001_R2_001.fastq.filtered   AgCV1_01_R2.fastq*
 
 At the end, all of the demultiplexed read1 and corresponding read2 file were checked to make sure they have same number of lines after extraction
 
-## Trimming primer, frameshift and molecule tag sequence using adapt2
+## Trimming primer, frameshift and molecule tag sequence using cutadapt2
 
+1) Read1 trimming
 
+```
+conda install cutadapt -y
+for line in $(cat R1_ID_for_cutadapt)
+do
+        echo $line
+        cutadapt -g ACTCCTACGGGNGGCWGCAG --overlap=20 -o trimmed_$line  $line
+done
 
+```
+2) Read2 trimming
 
+```
+for line in $(cat R2_ID_for_cutadapt)
+do
+        echo $line
+        cutadapt -g GGACTACHVGGGTWTCTAAT --overlap=20 -o trimmed_$line  $line
+done
 
-
-
-
-
-
-
-
-
-
-
-
+```
 
 ##                                            Read file arrangement 
 
