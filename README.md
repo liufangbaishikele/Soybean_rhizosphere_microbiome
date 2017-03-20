@@ -160,19 +160,27 @@ done
 
 ##                                            Read file arrangement 
 
-All of the Reads from Cultivar project are saved in
+All of the demultiplexed and trimmed reads from cultivar project are saved in
+
 ``/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq``
 
-While reads from strigolactone project are saved in 
+
+While those from strigolactone project are saved in 
+
 ``/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_strigolactone_demultiplex.fastq``
 
 *Now read files are ready for subsequent analysis using mothur*
 
-## Mothur sequence processing ##
+##                                           Mothur sequence processing ##
 
 Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
-### Modification include ###
+###                                          Modification include ###
+
+- 01_make.file
+
+
+
 
 - custom 16S reference-- start and end location determination
 
