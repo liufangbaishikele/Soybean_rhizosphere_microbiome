@@ -75,16 +75,18 @@ sh  demultiplex_update.sh  SAMPLE95_S95_L001_R1_001.fastq  For_B_12     ForCV6_0
 sh  demultiplex_update.sh  SAMPLE96_S96_L001_R1_001.fastq  Blank        ForCV6_08
     
 ```
-Here are some tricky stuffs I got because dos and unix character different
-Every file named by the fifth column of job file, got output got extra character, e.g., AgCV1_01.fastq becae AgCV1_01?.fastq
-But those file names could not be recognized by bash command, mv does not work. So, here came with the solution:
+Here are some tricky stuffs I got, because dos and unix character are different.
+Every file named by the fifth column of job file, got output with extra character, e.g., AgCV1_01.fastq became AgCV1_01?.fastq
+But those file names could not be recognized by bash command, mv does not work. So, here came with the solution 
 
 ```
 for file in *; do mv "$file" "$(echo $file | sed s'/\?r//g')"; done
 ```
 
-To avoid this error:
+To avoid this error (told by Miriam):
+
 1) check job file using head | od -c to check if there are any \r characters
+
 2) transfer file from dos to unix form by 
 ```
 dos2unix filename
