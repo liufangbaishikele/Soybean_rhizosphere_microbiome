@@ -174,24 +174,31 @@ While those from strigolactone project are saved in
 
 *Now read files are ready for subsequent analysis using mothur*
 
-##                                           Mothur sequence processing ##
+##                                           Mothur--sequence processing ##
 
 Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
-###                                          Modification include ###
+###                                          Procedure ###
 
 - 01_make.file
 
+``ls *_R1.fastq | column -t >R1_list``
 
+``ls *_R2.fastq | column -t >R2_list``
 
+``sed 's/trimmed_\(.*\)_R1.fastq/\1/' R1_list > sample_ID``
 
-- custom 16S reference-- start and end location determination
+``paste --delimiters= " " sample_ID R1_list R2_list | column -t >cultivar.file``
 
-Refer to [Git hub] (https://github.com/mothur/mothur/issues/235) 
-In my case, the start location is 6428, and end location is 23444
+** All of file name generated later begin with cultivar**
+** mv all fastq file and cultivar.file into trimmed_raw_read directory** 
 
-- make file
+- 02_make.contigs and summary
 
+``make.contigs(inputdir=/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq/trimmed_raw_read,outputdir=/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq/mothur,processors=8)``
+
+``summary.seqs(fasta=cultivar.trim.contigs.fasta,processors=8)`` 
+```
 After make.contigs:
  Start   End     NBases  Ambigs  Polymer NumSeqs
 Minimum:        1       267     267     0       3       1
@@ -202,6 +209,65 @@ Median:         1       429     429     1       5       1613130
 97.5%-tile:     1       430     430     16      8       3145602
 Maximum:        1       569     569     268     300     3226258
 Mean:   1       422.28  422.28  2.95994 5.10718
-number of Seqs:      **3226258**
 
-- screen.seqs ------
+```
+**number of Seqs: 3226258**
+
+Most of the sequence with length of 429 and 430,with 429bp (806-338+1-20-20)being our expected length. There are lots of sequences with ambiguous base more than 4bp, this indicate that a long target region may easy to introduce sequence error even with V3 300X2 pair_end sequencing
+
+Therefore, in the following screen process, I changed ``maxambig`` parameter from ``0`` to ``3``, meanwhile, ``maxlength`` changed to ``450``
+
+- 03_screen.seqs
+```
+screen.seqs(fasta=cultivar.trim.contigs.fasta,group=cultivar.contigs.groups,summary=cultivar.trim.contigs.summary,maxambig=3,maxlength=450,processors=8)
+```
+```
+summary.seqs(fasta=cultivar.trim.contigs.good.fasta,processors=8)
+```
+```
+Using 8 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       270     270     0       3       1
+2.5%-tile:      1       404     404     0       4       58233
+25%-tile:       1       406     406     0       4       582329
+Median:         1       429     429     0       5       1164658
+75%-tile:       1       429     429     1       6       1746987
+97.5%-tile:     1       430     430     3       6       2271083
+Maximum:        1       450     450     3       29      2329315
+Mean:   1       421.332 421.332 0.838009        4.9679
+# of Seqs:      2329315
+```
+**number of Seqs:2329315**
+
+- 04_unique.seqs
+
+```
+unique.seqs(fasta=cultivar.trim.contigs.good.fasta)
+```
+This reduced seqs from 2329315 to 1665541
+
+- 05_count.seqs.
+
+Error: when doing count, your group file contains more than 1 sequence name M04398_37_000000000-AVWAN_1_1116_17500_4330. Go back to the contigs.fasta file, report and name file, found that ForCV5_05 and Fresh_Ag_05 got same seqID.And this sequence is barcoded with ACT, should belong to ForCV5_05. So I go ahead and deleted corresponding seqs from corresponding files.
+``
+count.seqs(name=cultivar.trim.contigs.good.names,group=cultivar.contigs.good.groups,processors=8)
+``
+
+During this count process, it generate a count table with column being the count of each unique seq in each sample and rows beling unique sequence ID
+
+- custom 16S reference-- start and end location determination
+
+Refer to [Git hub] (https://github.com/mothur/mothur/issues/235) 
+In my case, the start location is 6428, and end location is 23444
+- pcr.seqs
+```
+pcr.seqs(fasta=silva.bacteria.fasta, start=6428, end=23444, keepdots=F, processors=8)
+```
+And change generated regerence file name to silva_V3_V4.fasta
+
+- 06_align.seqs
+
+ ```
+ align.seqs(fasta=cultivar.trim.contigs.good.unique.fasta,reference=silva_V3_V4.fasta,processors=8)
+ ```
