@@ -43,7 +43,7 @@ awk '{print$1}' "$3"_header1.txt > "$3"_header2.txt
 2) Read1 barcoded with TGA
 
 ```
-# "$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with ACT
+# "$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with TGA
 grep -B1 -A2 "TGA....TCACTCCTACGGG.GGC.GCAG" "$1" | grep -v "^--$" > "$2"_R1.fastq
 grep "^@M04398" "$2"_R1.fastq > "$2"_header1.txt
 awk '{print$1}' "$2"_header1.txt > "$2"_header2.txt
