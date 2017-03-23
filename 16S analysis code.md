@@ -197,7 +197,7 @@ Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
 - 02_make.contigs and summary
 
-``make.contigs(inputdir=/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq/trimmed_raw_read,outputdir=/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq/mothur,processors=8)``
+``make.contigs(inputdir=/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq/trimmed_raw_read,outputdir=/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_cultivar_demultiplex.fastq/mothur,file=cultivar.file,processors=8)``
 
 ``summary.seqs(fasta=cultivar.trim.contigs.fasta,processors=8)`` 
 ```
