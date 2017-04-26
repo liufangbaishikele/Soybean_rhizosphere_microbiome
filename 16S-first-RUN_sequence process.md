@@ -1,9 +1,10 @@
 
 
 
-#                                     Soybean rhizosphere microbiome-16S read analysis  #
+# Soybean rhizosphere microbiome-16S read analysis  #
 
-                                                       **First run data**
+*First run data*
+
 - The first run yields 5,312,110 reads. On average, 71.6% of the quality score is higher than 30.  After further demultiplexing, we got 4,541,875 reads left.
                                                         
   
