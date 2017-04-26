@@ -3,7 +3,7 @@
 
 # Soybean rhizosphere microbiome-16S read analysis  #
 
-*First run data*
+*First MiSeq run*
 
 - The first run yields 5,312,110 reads. On average, 71.6% of the quality score is higher than 30.  After further demultiplexing, we got 4,541,875 reads left.
                                                         
@@ -369,9 +369,45 @@ At this point, we used several strategy to control the sequence quality, includi
 ```
 classify.seqs(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table,reference=trainset9_032012.pds.fasta,taxonomy=trainset9_032012.pds.tax,cutoff=80,processors=8)
 ```
+- 14_remove.lineage
+Here we are ready to remove all of the unwanted taxon
+```
+remove.lineage(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table,taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy,taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)
+```
+- 15_summary.tax
 
-
-
+Make a summary of the taxon.
+```
+summary.tax(taxonomy=current,count=current)
+Using cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table as input file for the count parameter.
+Using cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy as input file for the taxonomy parameter.
+```
+Here is what the taxonomy.summary file looks like:
+And Phylotype based OTU clustering just used this taxonoy information to cluster sequences into OTUs. Taxlevel ranges from 1 to 6, represent Kingdom, phylum, class,order,family and genus.
+```
+taxlevel  rankID         taxon                                     daughterlevels  total    AgCV1_01  AgCV1_02  AgCV1_03
+0         0              Root                                      1               2053643  63212     11012     16321
+1         0.1            Bacteria                                  23              2053643  63212     11012     16321
+2         0.1.1          "Acidobacteria"                           22              166485   942       307       1452
+3         0.1.1.1        "Acidobacteria"_unclassified              1               333      3         2         4
+4         0.1.1.1.1      "Acidobacteria"_unclassified              1               333      3         2         4
+5         0.1.1.1.1.1    "Acidobacteria"_unclassified              1               333      3         2         4
+6         0.1.1.1.1.1.1  unclassified                              0               333      3         2         4
+3         0.1.1.2        Acidobacteria_Gp1                         1               39741    149       1         21
+4         0.1.1.2.1      Acidobacteria_Gp1_order_incertae_sedis    1               39741    149       1         21
+5         0.1.1.2.1.1    Acidobacteria_Gp1_family_incertae_sedis   1               39741    149       1         21
+6         0.1.1.2.1.1.1  Gp1                                       0               39741    149       1         21
+3         0.1.1.3        Acidobacteria_Gp10                        1               1490     6         6         17
+4         0.1.1.3.1      Acidobacteria_Gp10_order_incertae_sedis   1               1490     6         6         17
+5         0.1.1.3.1.1    Acidobacteria_Gp10_family_incertae_sedis  1               1490     6         6         17
+6         0.1.1.3.1.1.1  Gp10                                      0               1490     6         6         17
+3         0.1.1.4        Acidobacteria_Gp11                        1               228      0         1         1              
+```
+## Finally, we are ready to cluster our sequences to OTUs
+In fact, we have three options to process this OTU clustering
+1) Distance matrixed based (This is medium computing cosuming)
+2) Phylotype based (This is the least computing )
+3) Phylogenetic based (This is very aggresive computing process)
 
 
 
