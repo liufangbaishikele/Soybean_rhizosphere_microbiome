@@ -3,7 +3,7 @@
 
 #                                     Soybean rhizosphere microbiome-16S read analysis
                                                         First run data
-- The first run yields 5,312,110 reads, 71.6% with quality score higher than 30, and after demultiplex we got 4,541,875 reads.
+- The first run yields 5,312,110 reads. On average, 71.6% of the quality score is higher than 30.  After further demultiplexing, we got 4,541,875 reads left.
                                                         
   
 
@@ -178,7 +178,7 @@ While those from strigolactone project are saved in
 **Now read files are ready for subsequent analysis using mothur**
 
 
-##                                                  Mothur--sequence processing ##
+##                                                  Mothur--sequence processing- Cultivar project##
 
 Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
@@ -275,6 +275,10 @@ After the pcr.seqs process, it generated a file named silva.bacteria.pcr.fasta a
  ```
  align.seqs(fasta=cultivar.trim.contigs.good.unique.fasta,reference=silva_V3_V4.fasta,processors=8)
  ```
+- 07_summary.seqs
+``summary.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,processors=8)``
+
+```
 
 
 
