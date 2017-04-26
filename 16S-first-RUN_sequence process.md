@@ -478,15 +478,22 @@ Otu000011       25575   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 Otu000012       23072   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Xanthomonadales(100);Xanthomonadaceae(100);Rhodanobacter(100);
 Otu000013       23013   Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Sphingomonadales(100);Sphingomonadaceae(100);Novosphingobium(98);
 Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
-
 ```
+At the end of this whole pipeline, we got 250316 OTUs.
+
+## I tried stringent screen parameter after make.contigs, set the maxambig=0. Went through the whole pipeline and finally got 23908 OTUs. 
+
 **2) Phylotype based OTU clustering**
 
 - phylotype
+``phylotype(taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy)``
 
 - make.shared
+``make.shared(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.list,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,label=1)``
 
 - classify.otu
+``classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.list,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy,label=1)``
+
 
 
 
