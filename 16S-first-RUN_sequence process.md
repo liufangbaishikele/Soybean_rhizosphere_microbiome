@@ -479,7 +479,8 @@ Otu000012       23072   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 Otu000013       23013   Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Sphingomonadales(100);Sphingomonadaceae(100);Novosphingobium(98);
 Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
 ```
-**At the end of this whole pipeline, we got 250316 OTUs that belongs to 2053643 reads. The original reads number is 3,232,228. As a summary, after the whole pipeline, we got 63.5% reads left. AND the first screen.seqs is the main screen process, which removed about 902913 reads (27.9%)
+
+**At the end of this whole pipeline, we got 250316 OTUs that belongs to 2053643 reads. The original reads number is 3,232,228. As a summary, after the whole pipeline, we got 63.5% reads left. AND the first screen.seqs is the main screen process, which removed about 902913 reads (27.9%)**
 
 
 
@@ -494,6 +495,9 @@ Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 - classify.otu
 ``classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.list,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy,label=1)``
 
+**Using phylotype based OTU clustering we got about 661 OTUs**
+
+## Using stringent screening by changing changing maxambig parameter from 3 to 0. Pre.cluster still use diffs=5. AND at the end of the whole pipeline, I got 
 
 
 
