@@ -5,7 +5,7 @@
 
 *First MiSeq run*
 
-- The first run yields 5,312,110 reads. On average, 71.6% of the quality score is higher than 30.  After further demultiplexing, we got 4,541,875 reads left.
+- The first run yields 5,312,110 reads, with 3,223,228 belongs to cultivar project and 1,309,647 belongs to strigolactone project. On average, 71.6% of the quality score is higher than 30.  After further demultiplexing, we got 4,541,875 reads left.
                                                         
   
 
@@ -479,9 +479,9 @@ Otu000012       23072   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 Otu000013       23013   Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Sphingomonadales(100);Sphingomonadaceae(100);Novosphingobium(98);
 Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
 ```
-At the end of this whole pipeline, we got 250316 OTUs.
+**At the end of this whole pipeline, we got 250316 OTUs that belongs to 2053643 reads. The original reads number is 3,232,228. As a summary, after the whole pipeline, we got 63.5% reads left. AND the first screen.seqs is the main screen process, which removed about 902913 reads (27.9%)
 
-## I tried stringent screen parameter after make.contigs, set the maxambig=0. Went through the whole pipeline and finally got 23908 OTUs. 
+
 
 **2) Phylotype based OTU clustering**
 
@@ -493,6 +493,8 @@ At the end of this whole pipeline, we got 250316 OTUs.
 
 - classify.otu
 ``classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.list,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy,label=1)``
+
+
 
 
 
