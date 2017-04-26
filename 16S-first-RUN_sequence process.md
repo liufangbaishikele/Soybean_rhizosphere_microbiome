@@ -318,7 +318,52 @@ Mean:   1.99999 17016   420.418 0.838114        4.95788
 # of unique seqs:       1628156
 total # of seqs:        2287660
 ```
-- 09_filter.seqs
+- 09_filter.seqs  
+
+As we could see from the above summary, although the number of base pairs between 369 and 449, but the length of the whole length of alignment is 17015. This is caused by the format of our reference, there are lots of dots and dashes inside of each alignment. Below is a short example of the alignment.
+
+```
+>M04398_37_000000000-AVWAN_1_1101_8581_2023
+.G---G-G------G-A-A--TA-TT--GG-A-C-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AA-T-G-G--GC-----------------------------------------------------------------------------------------------------GC-A----A-----------------------------------------------------------------------------------------------------G-C--C-T-G-A-T-C-C-A---GC-C-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------A--T-GCC-G-C-G-T------------------------------------------------------------------------------------------------------------------------------------------------------------G-A-G--T--GA------------------------------------T-G--A--A--G-G-CC---------------------------------------------------------------------------------------TT-AG--------------------------------------------------------------------------------------G-G-T-
+```
+In order to make the downward distance_based OTU clustering easier and faster, we want to remove those useless dashes column if they are vertically the same among all of the alignment. vertical=T is the parameter define this. trump=. means that in one column, if one of alignment has ".", this column will be remove.
+Here is the command we use to do this filter process.
+
+``mothur > filter.seqs(fasta=cultivar.trim.contigs.good.unique.good.align,vertical=T,trump=.,processors=8)``
+
+**Here is a brief summary after filter process. As it shown, 15838 columns are removed**
+
+Length of filtered alignment: 1178
+Number of columns removed: 15838
+Length of the original alignment: 17016
+Number of sequences used to construct filter: 1628156
+
+- 10_unique.seqs (after filterr may make few sequences non unique)
+``
+mothur > unique.seqs(fasta=cultivar.trim.contigs.good.unique.good.filter.fasta,count=cultivar.trim.contigs.good.good.count_table)
+1628156 1625778
+``
+Then number of unique alignment decreased from 1628156 to 1625778.
+
+- 11_pre.cluster
+If we think about the amplicon sequencing technique, the most common consideration is PCR error. As we know, error could also introduced during sequencing process. To denoising those errors and make the subsequent OTU calling more accurate, we use pre.cluster to further denoise the data. Usually, we allow one base pair of ambiguity per 100bp, this means that two sequence will to clustered to one if they have 1bp of difference along 100bp length. In our case, the length of contigs are around 429, so we set this diffs=5. In fact, we tried using a stringent denoising set up using diffs=2, which caused severe problems during subsequent OTU clustering, with the generated distance file larger than 700GB.  
+
+```
+mothur > pre.cluster(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.fasta,count=cultivar.trim.contigs.good.unique.good.filter.count_table,diffs=2,processors=8)
+```
+- 12_chimera.vsearch
+
+Another quality control strategy is to detect the chimera and remove them.
+
+
+
+
+
+
+
+
+
+
 
 
 
