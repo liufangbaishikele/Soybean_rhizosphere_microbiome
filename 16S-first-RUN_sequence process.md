@@ -403,7 +403,8 @@ taxlevel  rankID         taxon                                     daughterlevel
 6         0.1.1.3.1.1.1  Gp10                                      0               1490     6         6         17
 3         0.1.1.4        Acidobacteria_Gp11                        1               228      0         1         1              
 ```
-## Finally, we are ready to cluster our sequences to OTUs
+
+**Finally, we are ready to cluster our sequences to OTUs**
 
 In fact, we have three options to process this OTU clustering
 
@@ -415,14 +416,15 @@ In my case, I used both distance based OTU clustering and phylotype based cluste
  
  
 **1) Average neribour distance based OTU clustering** 
-*If you got mothur version higher than 1.39.0, you will be able to use opticlust method. Otherwise, average-neighbor, nearest_nerghbor and furthest_neighbor method*
+
+
 
 - cluster.split
 ```
 cluster.split(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, splitmethod=classify, taxlevel=4, cutoff=0.20,processors=10)
 ```
-This process will generate a list file:
-cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list
+This process will generate a list file: cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list
+*If you got mothur version higher than 1.39.0, you will be able to use opticlust method. Otherwise, average-neighbor, nearest_nerghbor and furthest_neighbor method*
 
 - make.shared
 
@@ -479,13 +481,11 @@ Otu000012       23072   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 Otu000013       23013   Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Sphingomonadales(100);Sphingomonadaceae(100);Novosphingobium(98);
 Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
 ```
-### Summary
-
-**At the end of this whole pipeline, we got 250316 OTUs that belongs to 2053643 reads. The original reads number is 3,232,228. As a summary, after the whole pipeline, we got 63.5% reads left. AND the first screen.seqs is the main screen process, which removed about 902913 reads (27.9%)**
-
 
 
 **2) Phylotype based OTU clustering**
+
+
 
 - phylotype
 ``phylotype(taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy)``
@@ -499,27 +499,35 @@ Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 
 ### Summary
 
+
 - **At the end of this whole pipeline, we got 250316 OTUs that belongs to 2053643 reads. The original reads number is 3,232,228. As a summary, after the whole pipeline, we got 63.5% reads left. AND the first screen.seqs is the main screen process, which removed about 902913 reads (27.9%)**
 
 - **Using phylotype based OTU clustering we got about 661 OTUs, the total # of reads at the end of the pipeline is the same as distance-based OTU clustering**
-
 ***
+
+
+
 ## Stringent screening ##
 
 
 
-#### Changing ``maxambig`` parameter from ``3`` to ``0``. 
+** Changing ``maxambig`` parameter from ``3`` to ``0``**
+** ``Pre.cluster`` still use ``diffs=5``**
+#### At the end of the whole pipeline, we got **23908 OTUs** and  **total number of reads generated is 1033385 (32.06%)**
 
-#### ``Pre.cluster`` still use ``diffs=5``. 
-#### At the end of the whole pipeline, we got **23908 OTUs** and  **total number of reads generated is 1033385 (32.06%).**
+
 
 
 
 ##                                          Microbial community analysis in R                                              ##
 
-## File transfer
 
-After OTU clustering, generated .shared and .con.taxonomy file were transfered to local computer. R software is used for subsequent statitic analysis.
+
+### File transfer
+
+After OTU clustering, generated ``.shared`` and ``.con.taxonomy`` file were transfered to local computer using FileZilla. R software is used for subsequent statitic analysis. 
+
+
 
 
 
