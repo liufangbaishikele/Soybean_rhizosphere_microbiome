@@ -296,7 +296,7 @@ total # of seqs:        2329315
 ```
 As we could see from the above summary results, most of the alignments start at 2 and end at 17016. The total unique alignment  number is 1665541, with total alignment number being 2329315.
 
-- 08_screen.seqs
+- 08_screen.seqs  
 At this point, we want to keep sequences that all started at 2 and ended at 17016. Meantime, we set maximum polymer number to be 8 as another way of quality control. 
 
 ```
