@@ -278,7 +278,7 @@ After the pcr.seqs process, it generated a file named silva.bacteria.pcr.fasta a
 - 07_summary.seqs
 
 ```
-mothur > summary.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,processors=8)
+summary.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,processors=8)
 
 Using 8 processors.
 
@@ -300,9 +300,9 @@ As we could see from the above summary results, most of the alignments start at 
 At this point, we want to keep sequences that all started at 2 and ended at 17016. Meantime, we set maximum polymer number to be 8 as another way of quality control. 
 
 ```
-mothur>screen.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,summary=cultivar.trim.contigs.good.unique.summary,start=2,end=17016,maxhomop=8,processors=8)
+screen.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,summary=cultivar.trim.contigs.good.unique.summary,start=2,end=17016,maxhomop=8,processors=8)
 
-mothur>summary.seqs(fasta=cultivar.trim.contigs.good.unique.good.align,count=cultivar.trim.contigs.good.good.count_table,processors=8)
+summary.seqs(fasta=cultivar.trim.contigs.good.unique.good.align,count=cultivar.trim.contigs.good.good.count_table,processors=8)
 
 Using 8 processors.
 
@@ -329,7 +329,7 @@ As we could see from the above summary, although the number of base pairs betwee
 In order to make the downward distance_based OTU clustering easier and faster, we want to remove those useless dashes column if they are vertically the same among all of the alignment. vertical=T is the parameter define this. trump=. means that in one column, if one of alignment has ".", this column will be remove.
 Here is the command we use to do this filter process.
 
-``mothur > filter.seqs(fasta=cultivar.trim.contigs.good.unique.good.align,vertical=T,trump=.,processors=8)``
+``filter.seqs(fasta=cultivar.trim.contigs.good.unique.good.align,vertical=T,trump=.,processors=8)``
 
 **Here is a brief summary after filter process. As it shown, 15838 columns are removed**
 
@@ -340,7 +340,7 @@ Number of sequences used to construct filter: 1628156
 
 - 10_unique.seqs (after filterr may make few sequences non unique)
 ``
-mothur > unique.seqs(fasta=cultivar.trim.contigs.good.unique.good.filter.fasta,count=cultivar.trim.contigs.good.good.count_table)
+unique.seqs(fasta=cultivar.trim.contigs.good.unique.good.filter.fasta,count=cultivar.trim.contigs.good.good.count_table)
 1628156 1625778
 ``
 Then number of unique alignment decreased from 1628156 to 1625778.
@@ -349,12 +349,24 @@ Then number of unique alignment decreased from 1628156 to 1625778.
 If we think about the amplicon sequencing technique, the most common consideration is PCR error. As we know, error could also introduced during sequencing process. To denoising those errors and make the subsequent OTU calling more accurate, we use pre.cluster to further denoise the data. Usually, we allow one base pair of ambiguity per 100bp, this means that two sequence will to clustered to one if they have 1bp of difference along 100bp length. In our case, the length of contigs are around 429, so we set this diffs=5. In fact, we tried using a stringent denoising set up using diffs=2, which caused severe problems during subsequent OTU clustering, with the generated distance file larger than 700GB.  
 
 ```
-mothur > pre.cluster(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.fasta,count=cultivar.trim.contigs.good.unique.good.filter.count_table,diffs=2,processors=8)
+pre.cluster(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.fasta,count=cultivar.trim.contigs.good.unique.good.filter.count_table,diffs=2,processors=8)
 ```
-- 12_chimera.vsearch
+- 12_chimera.vsearch and remove.seqs
 
-Another quality control strategy is to detect the chimera and remove them.
+Another quality control strategy is to detect the chimera and remove them. Chimera is caused by false alignment due to sequence error or uncorrect alignment.
 
+```
+chimera.vsearch(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.fasta,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.count_table,dereplicate=t,processors=8)
+
+remove.seqs(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.fasta,accnos=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.accnos)
+```
+
+- 13_classify.seqs
+
+At this point, we used several strategy to control the sequence quality, including length, polymer #, chimera. But we still need another step to remove unwanted sequences that belong to Chloroplast, Mitochondria, unknown, Archaea and Eukaryota. So before we could do this, we first need to classify the sequences to taxon.
+```
+classify.seqs(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table,reference=trainset9_032012.pds.fasta,taxonomy=trainset9_032012.pds.tax,cutoff=80,processors=8)
+```
 
 
 
