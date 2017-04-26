@@ -276,13 +276,49 @@ After the pcr.seqs process, it generated a file named silva.bacteria.pcr.fasta a
  align.seqs(fasta=cultivar.trim.contigs.good.unique.fasta,reference=silva_V3_V4.fasta,processors=8)
  ```
 - 07_summary.seqs
-``summary.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,processors=8)``
 
 ```
+mothur > summary.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,processors=8)
 
+Using 8 processors.
 
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       8       3       0       2       1
+2.5%-tile:      2       17016   403     0       4       58233
+25%-tile:       2       17016   405     0       4       582329
+Median:         2       17016   428     0       5       1164658
+75%-tile:       2       17016   428     1       6       1746987
+97.5%-tile:     2       17016   429     3       6       2271083
+Maximum:        6701    17016   449     3       29      2329315
+Mean:   22.7809 17014.7 420.165 0.838006        4.96751
+# of unique seqs:       1665541
+total # of seqs:        2329315
+```
+As we could see from the above summary results, most of the alignments start at 2 and end at 17016. The total unique alignment  number is 1665541, with total alignment number being 2329315.
 
+- 08_screen.seqs
+At this point, we want to keep sequences that all started at 2 and ended at 17016. Meantime, we set maximum polymer number to be 8 as another way of quality control. 
 
+```
+mothur>screen.seqs(fasta=cultivar.trim.contigs.good.unique.align,count=cultivar.trim.contigs.good.count_table,summary=cultivar.trim.contigs.good.unique.summary,start=2,end=17016,maxhomop=8,processors=8)
+
+mothur>summary.seqs(fasta=cultivar.trim.contigs.good.unique.good.align,count=cultivar.trim.contigs.good.good.count_table,processors=8)
+
+Using 8 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       17016   369     0       3       1
+2.5%-tile:      2       17016   403     0       4       57192
+25%-tile:       2       17016   407     0       4       571916
+Median:         2       17016   428     0       5       1143831
+75%-tile:       2       17016   428     1       6       1715746
+97.5%-tile:     2       17016   429     3       6       2230469
+Maximum:        2       17016   449     3       8       2287660
+Mean:   1.99999 17016   420.418 0.838114        4.95788
+# of unique seqs:       1628156
+total # of seqs:        2287660
+```
+- 09_filter.seqs
 
 
 
