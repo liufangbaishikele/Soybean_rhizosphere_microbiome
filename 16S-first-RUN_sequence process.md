@@ -25,10 +25,10 @@ gunzip *
 >Lundberg, D.S., Yourstone, S., Mieczkowski, P., Jones, C.D. and Dangl, J.L., 2013. Practical innovations for high-throughput amplicon sequencing. Nature methods, 10(10), pp.999-1002.
 
 ### Barcode1 ###
->F-Bc1_Fs2,4,6 seqeunce is *TGA....TCACTCCTACGGG.GGC.GCAG*
+>F-Bc1_Fs2,4,6 seqeunce is *TGA....TCACTCCTACGGGNGGCWGCAG*
 
 ### Barcode2 ###
->F-Bc2_Fs1,3,5 sequence is *ACT....TCACTCCTACGGG.GGC.GCAG*
+>F-Bc2_Fs1,3,5 sequence is *ACT....TCACTCCTACGGGNGGCWGCAG*
 
 ### demultiplex script and jobs ###
 
@@ -38,7 +38,7 @@ gunzip *
 1) Read1 barcoded with ACT
 ```
 # "$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with ACT
-grep -B1 -A2 "ACT....TCACTCCTACGGG.GGC.GCAG" "$1" | grep -v "^--$" > "$3"_R1.fastq
+grep -B1 -A2 "ACT....TCACTCCTACGGG[ATGC]GGC[AT]GCAG" "$1" | grep -v "^--$" > "$3"_R1.fastq
 grep "^@M04398" "$3"_R1.fastq > "$3"_header1.txt
 awk '{print$1}' "$3"_header1.txt > "$3"_header2.txt
 ```
@@ -46,7 +46,7 @@ awk '{print$1}' "$3"_header1.txt > "$3"_header2.txt
 
 ```
 # "$1" is read1.fastq, "$2" is sampleID that barcoded with TGA, "$3" is sampleID that barcoded with TGA
-grep -B1 -A2 "TGA....TCACTCCTACGGG.GGC.GCAG" "$1" | grep -v "^--$" > "$2"_R1.fastq
+grep -B1 -A2 "TGA....TCACTCCTACGGG[ATGC]GGC[AT]GCAG" "$1" | grep -v "^--$" > "$2"_R1.fastq
 grep "^@M04398" "$2"_R1.fastq > "$2"_header1.txt
 awk '{print$1}' "$2"_header1.txt > "$2"_header2.txt
 
