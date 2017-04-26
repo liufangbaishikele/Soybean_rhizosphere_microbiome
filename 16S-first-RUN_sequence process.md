@@ -497,7 +497,7 @@ Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(
 
 **Using phylotype based OTU clustering we got about 661 OTUs**
 
-## Using stringent screening by changing changing maxambig parameter from 3 to 0. Pre.cluster still use diffs=5. AND at the end of the whole pipeline, I got 
+## Using stringent screening by changing changing maxambig parameter from 3 to 0. Pre.cluster still use diffs=5. AND at the end of the whole pipeline, I got 23908 OTUs and the total number of reads generated is 1033385.
 
 
 
