@@ -416,7 +416,32 @@ In my case, I used both distance based OTU clustering and phylotype based cluste
  
 **Average neribour distance based OTU clustering** *If you got mothur version higher than 1.39.0, you will be able to use opticlust method. Otherwise, average-neighbor, nearest_nerghbor and furthest_neighbor method*
 
+1) Distance matrix based OTU clustering
+- cluster.split
+```
+cluster.split(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, splitmethod=classify, taxlevel=4, cutoff=0.20,processors=10)
+```
+This process will generate a list file:
+cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list
 
+- make.shared
+
+We will set the similarity cutoff at 97% , i.e., label=0.03
+
+```
+make.shared(list=culticar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list, count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label=0.03)
+```
+This command will generate the OTU table that we are going to use. This is the format:
+
+```
+
+```
+- classify.otu
+
+classify all of the OTUs to their taxonoly using classify.otu
+```
+classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list, count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, label=0.03)
+```
 
 
 
