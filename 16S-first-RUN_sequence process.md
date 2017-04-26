@@ -434,6 +434,24 @@ make.shared(list=culticar.trim.contigs.good.unique.good.filter.unique.precluster
 This command will generate the OTU table that we are going to use. This is the format:
 
 ```
+label   Group   numOtus Otu000001       Otu000002       Otu000003       Otu000004      
+0.03    AgCV1_01        250316  0       978     16450   0       0       0
+0.03    AgCV1_02        250316  97      1812    37      0       0       0
+0.03    AgCV1_03        250316  102     1817    0       0       0       0
+0.03    AgCV1_04        250316  61      798     36      0       0       0
+0.03    AgCV1_05        250316  1727    568     0       48      0       0
+0.03    AgCV1_06        250316  0       330     62      0       0       1
+0.03    AgCV1_07        250316  0       188     100     74      0       27
+0.03    AgCV1_08        250316  200     198     76      0       0       10
+0.03    AgCV1_09        250316  0       4625    0       0       758     431
+0.03    AgCV1_10        250316  3447    3684    0       0       0       0
+0.03    AgCV2_01        250316  630     380     253     297     0       43
+0.03    AgCV2_02        250316  170     63      48      52      0       45
+0.03    AgCV2_03        250316  144     98      72      0       0       49
+0.03    AgCV2_04        250316  140     88      61      0       0       63
+0.03    AgCV2_05        250316  6431    146     592     0       0       0
+0.03    AgCV2_06        250316  436     2126    101     93      0       0
+0.03    AgCV2_07        250316  0       818     22      0       61      0
 
 ```
 - classify.otu
@@ -442,7 +460,26 @@ classify all of the OTUs to their taxonoly using classify.otu
 ```
 classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list, count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, label=0.03)
 ```
+Gernated taxonomy file look like this:
 
+```
+OTU     Size    Taxonomy
+Otu000001       178415  Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
+Otu000002       111061  Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Rhizobiales(100);Rhizobiaceae(100);Rhizobium(94);
+Otu000003       56934   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
+Otu000004       41375   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
+Otu000005       39473   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
+Otu000006       39064   Bacteria(100);"Proteobacteria"(100);Betaproteobacteria(100);Burkholderiales(100);Burkholderiaceae(100);Burkholderia(100);
+Otu000007       34317   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
+Otu000008       30362   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
+Otu000009       30118   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Xanthomonadales(100);Xanthomonadaceae(100);Stenotrophomonas(100);
+Otu000010       26774   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
+Otu000011       25575   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Xanthomonadales(100);Xanthomonadaceae(100);Stenotrophomonas(100);
+Otu000012       23072   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Xanthomonadales(100);Xanthomonadaceae(100);Rhodanobacter(100);
+Otu000013       23013   Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Sphingomonadales(100);Sphingomonadaceae(100);Novosphingobium(98);
+Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
+
+```
 
 
 
