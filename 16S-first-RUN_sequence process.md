@@ -91,7 +91,8 @@ To avoid this error (told by Miriam):
 
 2) transfer file from dos to unix form by 
 
-```dos2unix filename```
+```dos2unix filename
+```
 
 **2) Read2 demultiplex**
 
@@ -174,13 +175,14 @@ While those from strigolactone project are saved in
 
 ``/lustre/projects/staton/projects/soybean_strigolactones/16S_raw_fastq/fastq_gunzip/trimmed_strigolactone_demultiplex.fastq``
 
-*Now read files are ready for subsequent analysis using mothur*
+**Now read files are ready for subsequent analysis using mothur**
 
-                                            ## Mothur--sequence processing ##
+
+##                                                  Mothur--sequence processing ##
 
 Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
-###                                          Procedure ###
+###                                                      Procedure ###
 
 - 01_make.file
 
@@ -190,7 +192,7 @@ Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
 ``sed 's/trimmed_\(.*\)_R1.fastq/\1/' R1_list > sample_ID``
 
-``paste --delimiters= " " sample_ID R1_list R2_list | column -t >cultivar.file``
+``paste --delimiters= " " sample_ID R1_list R2_list | column -t > cultivar.file``
 
 ** All of file name generated later begin with cultivar**
 ** mv all fastq file and cultivar.file into trimmed_raw_read directory** 
@@ -252,9 +254,8 @@ This reduced seqs from 2329315 to 1665541
 - 05_count.seqs.
 
 Error: when doing count, your group file contains more than 1 sequence name M04398_37_000000000-AVWAN_1_1116_17500_4330. Go back to the contigs.fasta file, report and name file, found that ForCV5_05 and Fresh_Ag_05 got same seqID.And this sequence is barcoded with ACT, should belong to ForCV5_05. So I go ahead and deleted corresponding seqs from corresponding files.
-``
-count.seqs(name=cultivar.trim.contigs.good.names,group=cultivar.contigs.good.groups,processors=8)
-``
+
+``count.seqs(name=cultivar.trim.contigs.good.names,group=cultivar.contigs.good.groups,processors=8)``
 
 During this count process, it generate a count table with column being the count of each unique seq in each sample and rows beling unique sequence ID
 
@@ -262,14 +263,27 @@ During this count process, it generate a count table with column being the count
 
 Refer to [Git hub] (https://github.com/mothur/mothur/issues/235) 
 In my case, the start location is 6428, and end location is 23444
+
 - pcr.seqs
 ```
 pcr.seqs(fasta=silva.bacteria.fasta, start=6428, end=23444, keepdots=F, processors=8)
 ```
-And change generated regerence file name to silva_V3_V4.fasta
+After the pcr.seqs process, it generated a file named silva.bacteria.pcr.fasta and this is my customized reference. To make this easy to remember and make more sense, Ichanged the file name to silva_V3_V4.fasta
 
 - 06_align.seqs
 
  ```
  align.seqs(fasta=cultivar.trim.contigs.good.unique.fasta,reference=silva_V3_V4.fasta,processors=8)
  ```
+
+
+
+
+
+
+
+
+
+
+
+
