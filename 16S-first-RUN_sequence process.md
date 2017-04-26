@@ -404,11 +404,17 @@ taxlevel  rankID         taxon                                     daughterlevel
 3         0.1.1.4        Acidobacteria_Gp11                        1               228      0         1         1              
 ```
 ## Finally, we are ready to cluster our sequences to OTUs
-In fact, we have three options to process this OTU clustering
-1) Distance matrixed based (This is medium computing cosuming)
-2) Phylotype based (This is the least computing )
-3) Phylogenetic based (This is very aggresive computing process)
 
+In fact, we have three options to process this OTU clustering
+
+1) Distance matrixed based (This is medium computing consuming. If the sequence well preprocessed in forward procedure, suggest using this because this will give far more information than phylotype based clustering)
+2) Phylotype based (This is the least computing consuming )
+3) Phylogenetic based (This is computing aggresive, if several samples, easy to handle; if more samples it will take forever)
+
+In my case, I used both distance based OTU clustering and phylotype based clustering.
+ 
+ 
+**Average neribour distance based OTU clustering** *If you got mothur version higher than 1.39.0, you will be able to use opticlust method. Otherwise, average-neighbor, nearest_nerghbor and furthest_neighbor method*
 
 
 
