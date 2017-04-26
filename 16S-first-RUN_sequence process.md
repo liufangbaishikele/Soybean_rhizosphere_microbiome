@@ -463,7 +463,7 @@ classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluste
 Gernated taxonomy file look like this:
 
 ```
-OTU     Size    Taxonomy
+    OTU          Size    Taxonomy
 Otu000001       178415  Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
 Otu000002       111061  Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(100);Rhizobiales(100);Rhizobiaceae(100);Rhizobium(94);
 Otu000003       56934   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100);
