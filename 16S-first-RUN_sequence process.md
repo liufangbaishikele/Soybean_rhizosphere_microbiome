@@ -3,6 +3,8 @@
 
 #                                     Soybean rhizosphere microbiome-16S read analysis
                                                         First run data
+- The first run yields 5,312,110 reads, 71.6% with quality score higher than 30, and after demultiplex we got 4,541,875 reads.
+                                                        
   
 
 ##                                                    Sequence decompress
@@ -88,10 +90,8 @@ To avoid this error (told by Miriam):
 1) check job file using head | od -c to check if there are any \r characters
 
 2) transfer file from dos to unix form by 
-```
-dos2unix filename
 
-```
+```dos2unix filename```
 
 **2) Read2 demultiplex**
 
@@ -163,7 +163,7 @@ done
 
 ```
 
-##                                            Read file arrangement 
+## Read file arrangement ##
 
 All of the demultiplexed and trimmed reads from cultivar project are saved in
 
@@ -176,7 +176,7 @@ While those from strigolactone project are saved in
 
 *Now read files are ready for subsequent analysis using mothur*
 
-##                                           Mothur--sequence processing ##
+                                            ## Mothur--sequence processing ##
 
 Sequence preprocess refer to [MiSeq Sop] (https://www.mothur.org/wiki/MiSeq_SOP)
 
