@@ -414,9 +414,9 @@ In fact, we have three options to process this OTU clustering
 In my case, I used both distance based OTU clustering and phylotype based clustering.
  
  
-**Average neribour distance based OTU clustering** *If you got mothur version higher than 1.39.0, you will be able to use opticlust method. Otherwise, average-neighbor, nearest_nerghbor and furthest_neighbor method*
+**1) Average neribour distance based OTU clustering** 
+*If you got mothur version higher than 1.39.0, you will be able to use opticlust method. Otherwise, average-neighbor, nearest_nerghbor and furthest_neighbor method*
 
-1) Distance matrix based OTU clustering
 - cluster.split
 ```
 cluster.split(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, splitmethod=classify, taxlevel=4, cutoff=0.20,processors=10)
@@ -480,7 +480,13 @@ Otu000013       23013   Bacteria(100);"Proteobacteria"(100);Alphaproteobacteria(
 Otu000014       21996   Bacteria(100);"Proteobacteria"(100);Gammaproteobacteria(100);"Enterobacteriales"(100);Enterobacteriaceae(100);
 
 ```
+**2) Phylotype based OTU clustering**
 
+- phylotype
+
+- make.shared
+
+- classify.otu
 
 
 
