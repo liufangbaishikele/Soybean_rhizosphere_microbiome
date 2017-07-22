@@ -51,7 +51,7 @@ cat file1 file2 > file_combine will be used to combine 3rd and 4th run fastq to 
 BEFORE the above command, I need to rename fastq file name from 4th_run, because they are the same as 3rd run
 
 #### Change file name from 4th_run/raw_fastq 
-e.g., mv AgB10_S13_L001_R1_001.fastq $(echo AgB10_S13_L001_R1_001.fastq | sed "s/-/_/g") , which will change fastq file from underscore format to AgB10-S13-L001-R1-001.fastq
+e.g., mv AgB10_S13_L001_R1_001.fastq $(echo AgB10_S13_L001_R1_001.fastq | sed "s/_/-/g") , which will change fastq file from underscore format to AgB10-S13-L001-R1-001.fastq
 
 **Create a for loop to change all fastq file from underscore format to dash format**
 ```
