@@ -34,19 +34,11 @@ Each of the above folder consist of zipped fastq file of each sample.
 ```
 gunzip /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/*
 ```
-* Change file name from ``AgCV1-1_S1_L001_R1_001.fastq`` to ``Ag_CV1_1_S1_L001_R1_001.fastq`` by:
+* Change file names by:
 
 ```
 for file in *; do echo $file; mv $file $(echo $file | sed 's/Ag/Ag_/g'); done
-```
-Same operations for ForCV\* fastq files
-
-```
 for file in *; do echo $file; mv $file $(echo $file | sed 's/For/For_/g'); done
-```
-Change character ``-`` to ``_`` for all of the fastq file names
-
-```
 for file in *; do echo $file; mv $file $(echo $file | sed 's/-/_/g'); done
 ```
 
