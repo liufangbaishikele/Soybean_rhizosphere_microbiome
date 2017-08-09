@@ -29,3 +29,9 @@ A12-53759856  B8-53765776   D4-53768738   F12-53764779  G8-53767766
 ...           ...           ...           ...           ...
 ```
 Each of the above folder consist of zipped fastq file of each sample.
+
+* Unzip all of the fastq file inside of raw_fastq direcotry by
+```
+gunzip /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/*
+```
+* Transfer the fastq file of Ag_B_9, Ag_B_10, Ag_B_11, Ag_B_12
