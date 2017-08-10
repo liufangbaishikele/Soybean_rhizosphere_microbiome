@@ -41,4 +41,9 @@ for file in *; do echo $file; mv $file $(echo $file | sed 's/Ag/Ag_/g'); done
 for file in *; do echo $file; mv $file $(echo $file | sed 's/For/For_/g'); done
 for file in *; do echo $file; mv $file $(echo $file | sed 's/-/_/g'); done
 ```
+* Move all fastq file of bulk soils samples to raw_fastq directory
+
+```
+cp /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/*.fastq  /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/
+```
 
