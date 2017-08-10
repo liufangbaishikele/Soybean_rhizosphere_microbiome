@@ -43,6 +43,6 @@ for file in *; do echo $file; mv $file $(echo $file | sed 's/-/_/g'); done
 * Move all fastq file of bulk soils samples to raw_fastq directory
 
 ```
-cp /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/*.fastq  /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/
+cp /nics/d/home/fliu21/16S_cultivar_proj/4th_run/raw_fastq/*.fastq  /nics/d/home/fliu21/16S_cultivar_full_project/raw_fastq/
 ```
 
