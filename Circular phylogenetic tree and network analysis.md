@@ -133,7 +133,7 @@ After several seconds I generated a circular tree. I can not wait to transfer to
 1) First, use make.lefse command (inside of mothur) to create lefse formatted file. The LEfSe formatted file is can be used as an input to the LEfSe program. 
 
 2) install lefse using conda 
-* First need to set up channel following this [link] (https://bioconda.github.io/recipes/lefse/README.html)
+* First need to set up channel following this [link](https://bioconda.github.io/recipes/lefse/README.html)
 * Using  ``conda install lefse`` to finish installation
 
 3) cp format\_lefse.py to my working directory (because when I install lefse, this function is not listed inside my anaconda2/bin directory)
