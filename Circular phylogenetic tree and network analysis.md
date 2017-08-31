@@ -45,9 +45,16 @@ It is a DVCS that transfers code between your local system and Bitbucket Cloud.
 * OK, no problem. Let's intall Mercurial following this documentation from [Bitbucket support](https://confluence.atlassian.com/get-started-with-bitbucket/mercurial-setup-860009660.html) , and then we can use ``hg`` command to install export2graphlan from bitbucket cloud. Again, got stucked at the first step ``cat /etc/apt/sources.list``. All right, I will just go to Mercurial website to download the source and install on beacon. It disappointed me because it does not have linux source. No problem, I can install it on my computer (Mac), however, Mercurial is written in Python (which means I also need to install pathon on my computer, and maybe other software that is needed for download pipeline)
 * Finally I give up with direct intallation of export2graphlan
 
-*HERE are my strategies*:
+**HERE are my strategies**:
 
-1) 
+1) I explored in their [Bitbucket depository](https://bitbucket.org/CibioCM/export2graphlan/src/db0a809958d7ed860da44c9f9d51f2c9b068757f?at=default) AND looked at their source code. Found a good sign: this funciton is build using python. Great.
+
+* Python is available on beacon.
+
+```
+
+```
+
 2) 
 
 
