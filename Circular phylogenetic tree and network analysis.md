@@ -130,6 +130,9 @@ After several seconds I generated a circular tree. I can not wait to transfer to
 
 ## Now I will switch to LEfSe as this is what they used for export2graphlan demo.
 
+1) First, use make.lefse command (inside of mothur) to create lefse formatted file. The LEfSe formatted file is can be used as an input to the LEfSe program. 
+
+
 
 
 ----
