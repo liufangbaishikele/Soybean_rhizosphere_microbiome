@@ -38,12 +38,19 @@ Tips: Here if I want to use picrust parameter(used for bacterial community funct
 
 In my case, I will not do function prediction, so just skip using picrust paramter.
 
-### Using export2graphlan to produce annocation and tree file for GraPhlAn
+### Using export2graphlan to produce annocation.txt and tree.txt file for GraPhlAn
 
 [export2graphlan](https://bitbucket.org/CibioCM/export2graphlan) This is a conversion software tool for producing both annotation and tree file for GraPhlAn.
 
 1) Install export2graphlan
 * First from **Anaconda**- Installation form anaconda cloud ``conda install -c bioconda export2graphlan``. It always conflict with other packages. 
+
+*Question: when I install anaconda, it asked me if I wish the installer to prepend the anacaonda2 install location to PATH in /nics/d/home/fliu21/.bash.rc
+
+I chose no as I am running out of space in my home directory, so I want this PATH being /lustre/medusa/fliu21/anaconda2/bin
+As a solution, everytime I want to intall any software from anaconda cloud, I first need to set up the environment using ``export PATH=/lustre/medusa/fliu21/anaconda2/bin:$PATH``
+
+
 * Then from **bitbucket**, I tried to follow [this documentation](https://bitbucket.org/CibioCM/export2graphlan) 
 by using ``hg clone https://hg@bitbucket.org/CibioCM/export2graphlan``
 BUT this ``hg`` command is a Mercurial command, which does not work on beacon.
@@ -76,11 +83,51 @@ Then I added those library to my environment using conda
 
 * So, I looked into the source directory in hclust2 repository ``Nicola Segata/hclust2``. Then downloaded the [hclust2 directory](https://bitbucket.org/nsegata/hclust2/get/3d589ab2cb68.zip). By the way, this hclust2 is scripted with python language. 
 
-## Here 
+### Inside of the directory of /lustre/medusa/fliu21/circular_phylogenetic_tree, I have prepared those files:
 
+```
+-rw-r--r--. 1 fliu21 tug2004  89M Aug 30 18:23 cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.biom
+-rwxr-xr-x. 1 fliu21 tug2004  29K Aug 30 16:23 export2graphlan.py
+-rw-r--r--. 1 fliu21 tug2004 661K Aug 30 16:25 lefse_input.txt
+-rw-r--r--. 1 fliu21 tug2004 101K Aug 30 16:26 lefse_output.txt
+-rw-r--r--. 1 fliu21 tug2004  575 Aug 30 16:27 PIPELINE.sh
+-rw-r--r--. 1 fliu21 tug2004 5.3K Aug 30 17:00 LICENSE.txt
+drwxr-xr-x. 3 fliu21 tug2004 4.0K Aug 30 16:40 hclust2
 
+```
+The hclust2 directory has below files inside
 
+```
+drwxr-xr-x. 3 fliu21 tug2004 4.0K Aug 30 16:39 examples
+-rwxr-xr-x. 1 fliu21 tug2004  35K Aug 30 16:39 hclust2.py
+-rw-r--r--. 1 fliu21 tug2004  34K Aug 30 16:40 hclust2.pyc
+-rwxr-xr-x. 1 fliu21 tug2004    0 Aug 30 16:39 __init__.py
+-rw-r--r--. 1 fliu21 tug2004  138 Aug 30 16:40 __init__.pyc
+-rw-r--r--. 1 fliu21 tug2004 9.5K Aug 30 16:39 README.md
+```
+Now preparation is done for runing export2graphlan, Let's do it!
 
+```
+module load python
+
+python export2graphlan.py -i cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.biom  -t tree.txt -a annot.txt --title "HMP Aerobiosis" --annotations 2,3 --external_annotations 4,5,6 --fname_row 0 --skip_rows 1,2 --ftop 200 
+```
+After a while, it will generate the tree.txt and annotation.txt file
+
+----
+
+## Import export2graphlan output file (tree.txt and annotation.txt) to GraPhlAn software and start building circular tree
+
+First, loading GraPhlAn to my environment using ``conda install -c bioconda graphlan  ``
+Then navigate to /lustre/medusa/fliu21/circular_phylogenetic_tree ``cd /lustre/medusa/fliu21/circular_phylogenetic_tree``
+Run graphlan
+```
+graphlan_annotate.py tree.txt tree_annot.txt --annot annot.txt
+graphlan.py tree_annot.txt cultivar_tree.png --dpi 150 --size 14 
+
+```
+After several seconds I generated a circular tree. I can not wait to transfer to my local computer and look it. 
+----
 
 
 
