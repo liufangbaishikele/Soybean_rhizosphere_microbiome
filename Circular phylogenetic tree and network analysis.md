@@ -38,7 +38,7 @@ Tips: Here if I want to use picrust parameter(used for bacterial community funct
 
 In my case, I will not do function prediction, so just skip using picrust paramter.
 
-### Using export2graphlan to produce annocation.txt and tree.txt file for GraPhlAn
+**Using export2graphlan to produce annocation.txt and tree.txt file for GraPhlAn**
 
 [export2graphlan](https://bitbucket.org/CibioCM/export2graphlan) This is a conversion software tool for producing both annotation and tree file for GraPhlAn.
 
@@ -83,7 +83,7 @@ Then I added those library to my environment using conda
 
 * So, I looked into the source directory in hclust2 repository ``Nicola Segata/hclust2``. Then downloaded the [hclust2 directory](https://bitbucket.org/nsegata/hclust2/get/3d589ab2cb68.zip). By the way, this hclust2 is scripted with python language. 
 
-### Inside of the directory of /lustre/medusa/fliu21/circular_phylogenetic_tree, I have prepared those files:
+**Files inside of the directory of /lustre/medusa/fliu21/circular_phylogenetic_tree** 
 
 ```
 -rw-r--r--. 1 fliu21 tug2004  89M Aug 30 18:23 cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.biom
@@ -116,7 +116,7 @@ After a while, it will generate the tree.txt and annotation.txt file
 
 ----
 
-## Import export2graphlan output file (tree.txt and annotation.txt) to GraPhlAn software and start building circular tree
+**Yay, ready to run GraPhlAn software and build circular tree
 
 First, loading GraPhlAn to my environment using ``conda install -c bioconda graphlan  ``
 Then navigate to /lustre/medusa/fliu21/circular_phylogenetic_tree ``cd /lustre/medusa/fliu21/circular_phylogenetic_tree``
@@ -126,7 +126,8 @@ graphlan_annotate.py tree.txt tree_annot.txt --annot annot.txt
 graphlan.py tree_annot.txt cultivar_tree.png --dpi 150 --size 14 
 
 ```
-After several seconds I generated a circular tree. I can not wait to transfer to my local computer and look it. 
+After several seconds I generated a circular tree. I can not wait to transfer to my local computer and look it. Here it is:
+
 ----
 
 
