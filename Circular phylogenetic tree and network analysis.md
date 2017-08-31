@@ -29,8 +29,8 @@ Ag_B_6	      Ag_B_06	  Agriculture	  Bulk	      Bulk
 [export2graphlan](https://bitbucket.org/CibioCM/export2graphlan) This is a conversion software tool for producing both annotation and tree file for GraPhlAn.
 
 1) Install export2graphlan
-* First try - Installation form anaconda cloud ``conda install -c bioconda export2graphlan``. It always conflict with other packages. 
-* Then, I tried to follow [this documentation](https://bitbucket.org/CibioCM/export2graphlan) 
+* First from **Anaconda**- Installation form anaconda cloud ``conda install -c bioconda export2graphlan``. It always conflict with other packages. 
+* Then from **bitbucket**, I tried to follow [this documentation](https://bitbucket.org/CibioCM/export2graphlan) 
 by using ``hg clone https://hg@bitbucket.org/CibioCM/export2graphlan``
 BUT this ``hg`` command is a Mercurial command, which does not work on beacon.
 
@@ -38,12 +38,17 @@ BUT this ``hg`` command is a Mercurial command, which does not work on beacon.
 
 **What is Mercurial?**
 
-
-Well. From this [Bitbucket support](https://confluence.atlassian.com/get-started-with-bitbucket/mercurial-setup-860009660.html) webpage I found that it is a DVCS that transfers code between your local system and Bitbucket Cloud.
+It is a DVCS that transfers code between your local system and Bitbucket Cloud.
 
 ---
 
-* OK, no problem. Let's intall Mercurial first, then using hg command to install export2graphlan from bitbucket cloud. Again, stucked at the first step ``cat /etc/apt/sources.list``
+* OK, no problem. Let's intall Mercurial following this documentation from [Bitbucket support](https://confluence.atlassian.com/get-started-with-bitbucket/mercurial-setup-860009660.html) , and then we can use ``hg`` command to install export2graphlan from bitbucket cloud. Again, got stucked at the first step ``cat /etc/apt/sources.list``. All right, I will just go to Mercurial website to download the source and install on beacon. It disappointed me because it does not have linux source. No problem, I can install it on my computer (Mac), however, Mercurial is written in Python (which means I also need to install pathon on my computer, and maybe other software that is needed for download pipeline)
+* Finally I give up with direct intallation of export2graphlan
+
+*HERE are my strategies*:
+1) 
+2) 
+
 
 
 
