@@ -40,6 +40,7 @@ BUT this ``hg`` command is a Mercurial command, which does not work on beacon.
 
 
 Well. From this [Bitbucket support](https://confluence.atlassian.com/get-started-with-bitbucket/mercurial-setup-860009660.html) webpage I found that it is a DVCS that transfers code between your local system and Bitbucket Cloud.
+
 ---
 
 * OK, no problem. Let's intall Mercurial first, then using hg command to install export2graphlan from bitbucket cloud. Again, stucked at the first step ``cat /etc/apt/sources.list``
