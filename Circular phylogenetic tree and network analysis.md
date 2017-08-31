@@ -126,7 +126,11 @@ graphlan_annotate.py tree.txt tree_annot.txt --annot annot.txt
 graphlan.py tree_annot.txt cultivar_tree.png --dpi 150 --size 14 
 
 ```
-After several seconds I generated a circular tree. I can not wait to transfer to my local computer and look it. [Here](https://drive.google.com/drive/my-drive) it is:
+After several seconds I generated a circular tree. I can not wait to transfer to my local computer and look it. [Here](https://drive.google.com/drive/my-drive) it is. It is very wired looking no rings and useful information. I think the problem comes from the annotation from biom file. It can not be annotated properly, so only a tree is built but no abundance and metadata information.
+
+## Now I will switch to LEfSe as this is what they used for export2graphlan demo.
+
+
 
 ----
 
