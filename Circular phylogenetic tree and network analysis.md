@@ -35,7 +35,10 @@ by using ``hg clone https://hg@bitbucket.org/CibioCM/export2graphlan``
 BUT this ``hg`` command is a Mercurial command, which does not work on beacon.
 
 ---
+
 **What is Mercurial?**
+
+
 Well. From this [Bitbucket support](https://confluence.atlassian.com/get-started-with-bitbucket/mercurial-setup-860009660.html) webpage I found that it is a DVCS that transfers code between your local system and Bitbucket Cloud.
 ---
 
