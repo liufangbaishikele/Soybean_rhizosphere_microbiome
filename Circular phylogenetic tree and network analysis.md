@@ -46,6 +46,7 @@ It is a DVCS that transfers code between your local system and Bitbucket Cloud.
 * Finally I give up with direct intallation of export2graphlan
 
 *HERE are my strategies*:
+
 1) 
 2) 
 
