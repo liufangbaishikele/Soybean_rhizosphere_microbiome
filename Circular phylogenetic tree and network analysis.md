@@ -1,7 +1,7 @@
 #                    Cultivar 2016 project graphlan and igraph practice
 
 -------
-GraPhlAn analysis practice
+## GraPhlAn analysis practice
 
 [Refered to: bitbucket/Nicola Segata repository/ GraPhlAn wiki page](https://bitbucket.org/nsegata/graphlan/wiki/browse/)
 
@@ -25,6 +25,20 @@ Ag_B_5	      Ag_B_05	  Agriculture	  Bulk	      Bulk
 Ag_B_6	      Ag_B_06	  Agriculture	  Bulk	      Bulk
 ```
 ### Prapare .biom format input for export2graphlan
+* log into beacon using ssh NETID@duo.acf.tennessee.edu
+* module load mothur
+* Go to mothur environment and using make.biom command to generate biom file as input for export2graphlan
+```
+make.biom(shared=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared,constaxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.cons.taxonomy,matrixtype=dense,label=0.03,metadata=cultivar_meta.txt)
+```
+Tips: Here if I want to use picrust parameter(used for bacterial community function prediction), several things is needed for this work. 
+``1`` I need to set reftaxonomy parameter, which is the greengene version taxonomy for class.seqs process. Could be downloaded from ([greengenes reference taxonomy link](http://www.mothur.org/w/images/6/68/Gg_13_8_99.taxonomy.tgz)) 
+``2`` At the same time, the constaxonomy file need to be classified using greengene reference taxonomy.
+``3`` Picrust paramter needs green genes OTU IDs map table together with reference taxonomy , which could be downloaded from [this link](http://www.mothur.org/w/images/b/be/GG_13_5_otuMapTable.zip)
+
+In my case, I will not do function prediction, so just skip using picrust paramter.
+
+### Using export2graphlan to produce annocation and tree file for GraPhlAn
 
 [export2graphlan](https://bitbucket.org/CibioCM/export2graphlan) This is a conversion software tool for producing both annotation and tree file for GraPhlAn.
 
@@ -47,15 +61,23 @@ It is a DVCS that transfers code between your local system and Bitbucket Cloud.
 
 **HERE are my strategies**:
 
-1) I explored in their [Bitbucket depository](https://bitbucket.org/CibioCM/export2graphlan/src/db0a809958d7ed860da44c9f9d51f2c9b068757f?at=default) AND looked at their source code. Found a good sign: this funciton is build using python. Great.
+1) I explored in their [Bitbucket depository](https://bitbucket.org/CibioCM/export2graphlan/src/db0a809958d7ed860da44c9f9d51f2c9b068757f?at=default) AND looked at their source code. Found that this funciton is build using python. Great!
 
-* Python is available on beacon.
-
-```
+* Python is available on beacon. AND, export2graphlan requires the following additional library:
 
 ```
+pandas ver. 0.13.1 (pandas)
+BIOM ver. 2.0.1 (biom-format, only if you have input files in BIOM format) # installed by conda
+SciPy (scipy, required by hclust2)
+```
+Then I added those library to my environment using conda
 
-2) 
+* When I run export2graphlan.py using its example data from export2graphlan ``/ examples / hmp_aerobiosis / `` directory, unfortunately, I got another error indicate that hclust2.hclust2 is no loaded.
+
+* So, I looked into the source directory in hclust2 repository ``Nicola Segata/hclust2``. Then downloaded the [hclust2 directory](https://bitbucket.org/nsegata/hclust2/get/3d589ab2cb68.zip). By the way, this hclust2 is scripted with python language. 
+
+## Here 
+
 
 
 
