@@ -184,7 +184,19 @@ Got an error:
 /lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/rpy2/rinterface/__init__.py:186: RRuntimeWarning: Error in kruskal.test.formula(y ~ x1 + x2 + x3, ) : 
   'formula' should be of the form response ~ group
 ```
-* There maybe some format thing that is wrong when I generate the lefse.in file using my dataset. Let me try to run this command use their example data.
+* This may caused by the uncorrect format when I generate the lefse.in file using my dataset (cultivar.....0.03.lefse). Let me try to run this command use their example data.
+
+```
+python format_input.py hmp_aerobiosis_small.txt hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000
+```
+* I got same error! WELL, there example data did not work either. There must be something wrong with the software I installed from anaconda.  
+
+**Change strategy - download LEfSe depository from bitbucket**
+
+```
+wget https://bitbucket.org/nsegata/lefse/get/54694b4b0d9e.zip
+```
+
 
 
 ----
