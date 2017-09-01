@@ -176,8 +176,16 @@ sS'Forest'
 * After google and try different solutions, finally solved by ``conda update --all``
 * Here are the command I used for running ``run_lefse.py``
 ```
+run_lefse.py cultivar_lefse.in cultivar_lefse.res
+```
+Got an error: 
 
 ```
+/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/rpy2/rinterface/__init__.py:186: RRuntimeWarning: Error in kruskal.test.formula(y ~ x1 + x2 + x3, ) : 
+  'formula' should be of the form response ~ group
+```
+* There maybe some format thing that is wrong when I generate the lefse.in file using my dataset. Let me try to run this command use their example data.
+
 
 ----
 
