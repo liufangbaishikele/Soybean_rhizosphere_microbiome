@@ -196,11 +196,29 @@ python format_input.py hmp_aerobiosis_small.txt hmp_aerobiosis_small.in -c 1 -s 
 ```
 wget https://bitbucket.org/nsegata/lefse/get/54694b4b0d9e.zip
 ```
+AND then run their example using `` python run_lefse.py hmp_aerobiosis_small.in hmp_aerobiosis_small.res``
+IT WORKED!!!
+Then I did same thing for my data, it takes forever-ever-.....
 
+---
+** Two things keep inmind when reopen a terminal
 
-
+1) module load python/3.6.1 (Don't know why, the python/2...did not work for run\_lefse.py)
+2) If want to use anaconda installed software, forget to type in ``export PATH=/lustre/medusa/fliu21/anaconda2/bin:$PATH``. Otherwise, the function does not funtionable.
 ----
 
+*****
+     ***
+*****
+* WOW!! I learned a lot, but the results haven't generated yet.
+LET's continue...
 
+#### 
 
+**I got two choices**
+
+1) I could submit a job and wait for overnight and see if it will finish or not
+2) Let me generate a OTU table that based on genus level taxonomy instead of 97% similarity.
+
+WELL, I will try both ;)
 
