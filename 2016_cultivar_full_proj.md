@@ -72,10 +72,12 @@ cd /nics/d/home/fliu21/16S_cultivar_proj/raw_fastq
 
 
 
+----------------
+# Strigolactone - tips for subset shared file based on sample list
 
+----------------
 
-## Good tips for subset shared file based on sample list
-
+* Make a list of the sampleID you want to keep in the subset shared file
 ```
 awk '{print $1 }' strigolactone.file | paste -s -d-
 ```
@@ -83,14 +85,24 @@ The output looks likes this, which is used to run ``make.shared`` with ``groups=
 ```
 CT_10-CT_1-CT_2-CT_3-CT_4-CT_5-CT_6-CT_7-CT_8-CT_9-Gene10_10-Gene10_1-Gene10_2-Gene10_3-Gene10_4-Gene10_5-Gene10_6-Gene10_7-Gene10_8-Gene10_9-Gene1_10-Gene1_1-Gene1_2-Gene1_3-Gene14_10-Gene14_1-Gene14_2-Gene14_3-Gene14_4-Gene14_5-Gene14_6-Gene14_7-Gene14_8-Gene14_9-Gene1_4-Gene1_5-Gene1_6-Gene1_7-Gene1_8-Gene1_9-HYPIII_B_1-HYPIII_B_2-HYPIII_B_3-HYPIII_B_4-HYPIII_B_5-HYPIII_B_6-HYPIII_B_7-HYPIII_B_8
 ```
-An example-Here forest and pasture are just lables of two samples.
+* Run make.shared to subset OTU table to groups of sample (In my case, I want to filter PCR\_blanks)
 
 ```
-make.shared(list=98_sq_phylip_amazon.fn.list, group=amazon.groups, groups=forest-pasture)
+make.shared(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list,count=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,label=0.03,groups=CT_10-CT_1-CT_2-CT_3-CT_4-CT_5-CT_6-CT_7-CT_8-CT_9-Gene10_10-Gene10_1-Gene10_2-Gene10_3-Gene10_4-Gene10_5-Gene10_6-Gene10_7-Gene10_8-Gene10_9-Gene1_10-Gene1_1-Gene1_2-Gene1_3-Gene14_10-Gene14_1-Gene14_2-Gene14_3-Gene14_4-Gene14_5-Gene14_6-Gene14_7-Gene14_8-Gene14_9-Gene1_4-Gene1_5-Gene1_6-Gene1_7-Gene1_8-Gene1_9-HYPIII_B_1-HYPIII_B_2-HYPIII_B_3-HYPIII_B_4-HYPIII_B_5-HYPIII_B_6-HYPIII_B_7-HYPIII_B_8)
 ```
+* After this process, all of the shared file including opti-mcc.shared and tx.shared are all filtered off PCR blank samples.
 
+** make.lefse** & **make.biom** process could also filter off samples that we are not interested in for downward analysis. In my case, Gene14\_10 sample has tiny reads, So I want to filter off this outlier from the whole dataset.
 
-
+1) make.lefse 
+```
+make.lefse(shared=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.shared,constaxonomy=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.cons.taxonomy,label=0.03,design=design.txt,groups=CT_10-CT_1-CT_2-CT_3-CT_4-CT_5-CT_6-CT_7-CT_8-CT_9-Gene10_10-Gene10_1-Gene10_2-Gene10_3-Gene10_4-Gene10_5-Gene10_6-Gene10_7-Gene10_8-Gene10_9-Gene1_10-Gene1_1-Gene1_2-Gene1_3-Gene14_1-Gene14_2-Gene14_3-Gene14_4-Gene14_5-Gene14_6-Gene14_7-Gene14_8-Gene14_9-Gene1_4-Gene1_5-Gene1_6-Gene1_7-Gene1_8-Gene1_9-HYPIII_B_1-HYPIII_B_2-HYPIII_B_3-HYPIII_B_4-HYPIII_B_5-HYPIII_B_6-HYPIII_B_7-HYPIII_B_8)
+```
+2) make.biom
+```
+make.biom(shared=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.shared,constaxonomy=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.cons.taxonomy,metadata=design.txt,groups=CT_10-CT_1-CT_2-CT_3-CT_4-CT_5-CT_6-CT_7-CT_8-CT_9-Gene10_10-Gene10_1-Gene10_2-Gene10_3-Gene10_4-Gene10_5-Gene10_6-Gene10_7-Gene10_8-Gene10_9-Gene1_10-Gene1_1-Gene1_2-Gene1_3-Gene14_1-Gene14_2-Gene14_3-Gene14_4-Gene14_5-Gene14_6-Gene14_7-Gene14_8-Gene14_9-Gene1_4-Gene1_5-Gene1_6-Gene1_7-Gene1_8-Gene1_9-HYPIII_B_1-HYPIII_B_2-HYPIII_B_3-HYPIII_B_4-HYPIII_B_5-HYPIII_B_6-HYPIII_B_7-HYPIII_B_8,label=0.03)
+```
+Both ``make.biom`` and ``make.lefse`` are used to combine ``shared`` and ``constaxonomy`` information together with meta data (which is used for differential abundance analysis, biomarker detection and circular taxonomy tree as well as network analysis- Cytoskape).  
 
 
 
