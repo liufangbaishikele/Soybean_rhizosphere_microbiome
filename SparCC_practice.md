@@ -47,3 +47,4 @@ Options:
                         default).
 
 ```
+Look into the example file, the input out table is formated with **rows being OTUs** from 1 to 50; **columns are sample** names from 1 to 200 samples
