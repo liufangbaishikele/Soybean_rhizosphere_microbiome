@@ -107,6 +107,10 @@ Both ``make.biom`` and ``make.lefse`` are used to combine ``shared`` and ``const
 
 
 
+**Tips for convert csv file to txt file in linux**
 
+```
+sed 's/,/\t/g' cultivar_meta.csv > cultivar.design
+```
 
 
