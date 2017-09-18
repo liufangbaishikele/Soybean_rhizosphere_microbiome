@@ -222,3 +222,18 @@ LET's continue...
 
 WELL, I will try both ;)
 
+
+#### Try with smaller dataset to learn how annotation works.
+
+Using 2017 fresh soil sample collected from plant science center and organic crop unit of ETREC
+* Using ``make.lefse`` to generate LEfSe recognized format.
+* LEfSe analysis
+* Pipe LEfSe input and output to GraPhylAn to do annotation and drawing circular tree plot
+
+
+
+
+
+
+
+
