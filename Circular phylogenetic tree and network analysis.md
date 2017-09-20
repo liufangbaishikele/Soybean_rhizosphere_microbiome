@@ -271,8 +271,10 @@ Bacteria.Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.
     ######################################################################
 
 1) LEfSe will be used to find biomarkers
-2) phyloseq will be used to manipulate OTU table and taxonomy table to generate relative abundance of each OTU table and combine taxonomy table. Write out the csv file and format the file in linux. 
-``awk '{print $14 "\t" $15 "\t" $16 "\t" $17}' OTU_and_Tax.txt | sed 's/\t/./g'> popolus.tree``
+2) phyloseq will be used to manipulate OTU table and taxonomy table to generate relative abundance of each OTU table and combine taxonomy table. Write out the csv file and format the file in linux. Remember to delete the first row (rank names)  
+```
+awk '{print $14 "\t" $15 "\t" $16 "\t" $17}' OTU_and_Tax.txt | sed 's/\t/./g'|awk 'NR>=2 && NR<=123 {print}'> popolus.tree``
+```
 3)
 
 
