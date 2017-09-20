@@ -254,7 +254,13 @@ Bacteria.Acidobacteria.Acidobacteria_Gp10.Acidobacteria_Gp10_order_incertae_sedi
 Bacteria.Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.Acidobacteria_Gp2_family_incertae_sedis.Gp2     2.59856630191          $
 ```
 6) I used export2graphlan to do aumatic annotation. The annotation file is very wired. 
-        * The taxonomy level from phylum to otu instead of ``order level (which is what I expected because I did make.share at label=3)``
+
+* The taxonomy level from phylum to otu instead of ``order level``
+* There are no backgroud color
+* No annotation for phylum or class or order taxonomy.
+* The output tree only marked out those being defined as biomarkers.
+* No useful information at all.
+
 
 
 
