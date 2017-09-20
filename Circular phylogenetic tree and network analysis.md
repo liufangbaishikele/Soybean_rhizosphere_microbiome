@@ -261,6 +261,13 @@ Bacteria.Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.
 * The output tree only marked out those being defined as biomarkers.
 * No useful information at all.
 
+------------------------
+------------------------
+
+###########################################################
+####### Generate tree and annot file manually       #######
+###########################################################
+
 
 
 
