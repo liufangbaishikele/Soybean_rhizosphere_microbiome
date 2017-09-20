@@ -228,7 +228,38 @@ WELL, I will try both ;)
 Using 2017 fresh soil sample collected from plant science center and organic crop unit of ETREC
 * Using ``make.lefse`` to generate LEfSe recognized format.
 * LEfSe analysis
-* Pipe LEfSe input and output to GraPhylAn to do annotation and drawing circular tree plot
+* Pipe LEfSe input and output to export2graphlan to automatically generate ``annotation`` and ``tree`` file
+* Use ``graphlan_annotate.py`` to add annotation information to tree file
+* Draw tree using annotated tree file by ``graphlan.py``
+
+1) I could install all of the softwares using anaconda installation, no conflicts poped out
+2) ``make.lefse``-mothur build in command were used to generate the *.lefse* file as input for LEfSe software
+
+3) ``lefse-format_input.py`` were used to format *.lefse* file for generating specific format input for ``run_lefse.py`` function
+4) ``run_lefse.py`` used for finding biomarker features. This is the fuction similar to differential abundance analysis of metagenomeSeq package in R.
+5) The output file is *.res* file, which looks like below:
+
+```
+Bacteria.Firmicutes.Firmicutes_unclassified.Firmicutes_unclassified.Firmicutes_unclassified     2.05404833458                   -
+Bacteria.Firmicutes.Clostridia.Halanaerobiales.Halanaerobiaceae.Halanaerobiaceae_unclassified   1.42163535921                   -
+Bacteria.Bacteroidetes.Bacteroidetes_incertae_sedis_class_incertae_sedis.Bacteroidetes_incertae_sedis_order_incertae_sedis.Bacteroidetes_incertae_sedis$
+Bacteria.Proteobacteria.Deltaproteobacteria.Myxococcales.Myxococcales_unclassified	4.32492528949                   -
+Bacteria.Armatimonadetes.Chthonomonadetes.Chthonomonadales.Chthonomonadaceae    2.40009801459                   -
+Bacteria.Proteobacteria.Deltaproteobacteria.Syntrophobacterales.Syntrophobacteraceae.Syntrophobacteraceae_unclassified  2.68190497062                  $
+Bacteria.Bacteroidetes.Sphingobacteria  4.16190055103                   -
+Bacteria.Thermodesulfobacteria.Thermodesulfobacteria.Thermodesulfobacteriales   2.14905685608                   -
+Bacteria.Acidobacteria.Acidobacteria_Gp6.Acidobacteria_Gp6_order_incertae_sedis.Acidobacteria_Gp6_family_incertae_sedis.Gp6.Otu009	4.56351559583  $
+Bacteria.Planctomycetes.Planctomycetes_unclassified.Planctomycetes_unclassified.Planctomycetes_unclassified.Planctomycetes_unclassified.Otu090. 1.68111$
+Bacteria.Acidobacteria.Acidobacteria_Gp10.Acidobacteria_Gp10_order_incertae_sedis.Acidobacteria_Gp10_family_incertae_sedis.Gp10.Otu040. 3.29532767429  $
+Bacteria.Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.Acidobacteria_Gp2_family_incertae_sedis.Gp2     2.59856630191          $
+```
+6) I used export2graphlan to do aumatic annotation. The annotation file is very wired. 
+        * The taxonomy level from phylum to otu instead of ``order level (which is what I expected because I did make.share at label=3)``
+
+
+
+
+
 
 
 
