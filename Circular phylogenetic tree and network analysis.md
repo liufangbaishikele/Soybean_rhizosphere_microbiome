@@ -264,11 +264,8 @@ Bacteria.Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.
 ------------------------
 ------------------------
 
-    ######################################################################
+\*****       Generate tree and annot file manually            \******
 
-    #######       Generate tree and annot file manually            #######
-
-    ######################################################################
 
 1) LEfSe will be used to find biomarkers
 
