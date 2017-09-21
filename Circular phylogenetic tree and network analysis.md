@@ -271,13 +271,17 @@ Bacteria.Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.
     ######################################################################
 
 1) LEfSe will be used to find biomarkers
+
 2) phyloseq will be used to manipulate OTU table and taxonomy table to generate relative abundance of each OTU table and combine taxonomy table. Write out the csv file and format the file in linux. Remember to delete the first row (rank names)  
 ```
 awk '{print $14 "\t" $15 "\t" $16 "\t" $17 "\t" $1}' OTU_and_Tax.txt | sed 's/\t/./g'|awk 'NR>=2 && NR<=123 {print}'> popolus.tree
 ```
+
 3)echo "Bacteria\_unclassified Planctomycetes Proteobacteria Actinobacteria Acidobacteria Chlamydiae Bacteroidetes Firmicutes Verrucomicrobia TM7 Gemmatimonadetes OD1 Chloroflexi OP11 WS3 Armatimonadetes Nitrospira BRC1 Spirochaetes Aquificae Deinococcus-Thermus Thermodesulfobacteria Thermotogae Deferribacteres" | tr " " "\n" > popolus.annot
+
 4)Edit annotation file that in the format as this [Human project tree](https://bitbucket.org/nsegata/graphlan/src/e91e79a421f96fdd28e8152b4de1c1b4e95ebb32/examples/HMP_tree/annot.txt?at=default&fileviewer=file-view-default)
 **Tips** In this step, use R and excel as well as linux command together to make it work more efficiently.
+
 5) Both tree and annotation file just looks fine. BUT the clade\_marker\_color can not work very well when I run graphlan\_annotate.py. Which I will look into more details using my strigolactone dataset.
 
 ------------------------------------
