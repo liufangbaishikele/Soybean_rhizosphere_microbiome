@@ -10,5 +10,17 @@
 tar -zcvf filename.tar.gz orinigalfiles*
 ```
 
+
+### Tried gsiscp method on command line, 
+
+```
+ssh fliu21@dtn1.newton.utk.edu 
+gsiscp -c NONE -oNoneEnabled=yes -oNoneSwitch=yes /lustre/projects/staton/projects/soybean_strigolactone/folder datamover8.nics.utk.edu:/lustre/haven/gamma/staton/projects/01_first_run 
+```
+PASSCODE are always wrong.
+
+
+### Applied Globus Web-based Data Transfer.
+
 **Endpoint of Newton** I used is **dtn1**
 **ACF Endpoint** is **nics\#ACF**
