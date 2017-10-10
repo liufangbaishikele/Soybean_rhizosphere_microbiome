@@ -19,6 +19,18 @@ gunzip *
 
 ```
 
+When submit sample sheet, the format looks like this one:
+
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description
+SLESCCol11_SLESCrar34,SAMPLE1,16Spool4,,A001,CGTCGGTAA,,
+SLESCCol12_SLESCrar35,SAMPLE2,16Spool4,,A002,GTGTCCAAT,,
+Tips to make file arrangement easier
+
+I7_index_ID need to be reverse complemented from Lundberg material. Otherwise, these I7_index could not be recognized during demultiplexing.
+Sample_ID shoud be the combined sample name that barcoded with same reverse barcode. In this form: sampletreat#_TGA_sampletreat#_ACT This sample ID will be the directory name of each R1 and R2 read files.
+Sample_Name will be part of R1 and R2 file name.
+
+
 ##                                                       Demultiplex 
 
 
