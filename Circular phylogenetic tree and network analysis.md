@@ -362,9 +362,9 @@ total_plotted_degrees   340
    * ``start_rotation `` - ** not sure yet **
    
    iV. Set up ``clade_marker_color``, ``clade_marker_size``  and ``clade_marker_shape``
-   * Wildcard character could be used to define ``clade\_marker\_color`` and ``clade_marker_shape``
    
-   In terms of shapes, see the documentation from this [read.me](https://bitbucket.org/nsegata/graphlan/src/e91e79a421f96fdd28e8152b4de1c1b4e95ebb32/readme.txt?at=default&fileviewer=file-view-default)
+   * Wildcard character could be used to define ``clade\_marker\_color`` and ``clade_marker_shape``
+   * In terms of shapes, see the documentation from this [read.me](https://bitbucket.org/nsegata/graphlan/src/e91e79a421f96fdd28e8152b4de1c1b4e95ebb32/readme.txt?at=default&fileviewer=file-view-default)
    
    ** clade\_marker\_shape**
    ```
@@ -387,7 +387,7 @@ total_plotted_degrees   340
   Verrucomicrobia*        clade_marker_color	#3a44ff
   TM7*    clade_marker_color	#23b5ff
   ```
- ** clase\_marker\_size ** - were calculated from R and write out to csv file. Then copied from excel to linux.
+ ** clase\_marker\_size, from Phylum to Class, Family and Genus levels ** - were calculated from R and write out to csv file. Then copied from excel to linux.
  
  ```
  Acidobacteria   clade_marker_size	981.6777199
@@ -397,6 +397,18 @@ total_plotted_degrees   340
  Verrucomicrobia clade_marker_size	366.2989901
  Actinobacteria  clade_marker_size	614.0824273
  ```
-  V. 
-
-
+  V. Set up annotation background color correponding to clade marker colors.
+  
+  Vi. Using a trick to set up legend for different color of each Phylum.
+  * Because their are Acidobacteria\_Phylum information inside of the tree file. So, it will treat is as isolated clade information. The color of each phylum is corresponding to ``clade_marker_color`` of each phylum.
+  
+  ```
+  Acidobacteria_Phylum    clade_marker_color	#07aeba
+  Actinobacteria_Phylum   clade_marker_color	#b6cc0e
+  ```
+  Combined with below
+  ```
+  Acidobacteria_Phylum    clade_marker_size	300
+  Actinobacteria_Phylum   clade_marker_size	300
+  ```
+  Vii. Now ready for adding ring parameters. YAY!!!!
