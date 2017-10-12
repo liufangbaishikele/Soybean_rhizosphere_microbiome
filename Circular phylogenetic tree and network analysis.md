@@ -296,13 +296,18 @@ awk '{print $14 "\t" $15 "\t" $16 "\t" $17 "\t" $1}' OTU_and_Tax.txt | sed 's/\t
 * Transfer data to R and prepare tree and annotation file.
 
 1) Creat phyloseq objective using *.shared*, and *cons.taxonomy* mothur output files.
+
 2) merge.phyloseq with *.meta* file
+
 3) subset phyloseq to only rhizosphere samples using ``subset_sample``function
+
 4) Merge subseted phyloseq based on *treat* variablel using ``merge_samples``. This step will sum the relative abundance that belongs to same treatment. After merge\_samples, I got phyloseq objective that with 12 samples, 170 taxon and 5 sample variables. sample\_names are:
 ```
 "Agriculture_CV1" "Agriculture_CV2" "Agriculture_CV3" "Agriculture_CV4" "Agriculture_CV5" "Agriculture_CV6" "Forest_CV1"      "Forest_CV2"  "Forest_CV3"  "Forest_CV4"  "Forest_CV5"  "Forest_CV6" 
 ```
+
 5) Combine classification table and OTU table together and set row name being family level taxonomy.
+
 6) Write out combined dataset to be used to prepare *tree* and *annotation* file.
 
 ###  Manually generate and edit tree and annotation file in excel, R and linux.
