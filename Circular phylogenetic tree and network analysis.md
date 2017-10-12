@@ -314,7 +314,12 @@ awk '{print $14 "\t" $15 "\t" $16 "\t" $17 "\t" $1}' OTU_and_Tax.txt | sed 's/\t
 
 1. Creat tree file.
 
+* During this step, change classification name of those unclassified to corresponding level, e.g., in class level, the corresponding unclassified proteobacteria change to protoebacteria\_unclassified\_c.
+* Pay attention to Chloroflexi 
+* Pay attention to Alphaprotoebacteria, Beta--, Gamma--, Delta--, protoebacteria-unclassified.
+
 ** During this step I made a serious mistake, I forgot to change tab to dot characters between classification levels ** 
+
 The right format should like below
 ```
 Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.Acidobacteria_Gp2_family_incertae_sedis
@@ -334,23 +339,64 @@ Firmicutes.Bacilli.Bacillales.Paenibacillaceae_1
 title   Rhizosphere microbiome between cultivars
 ```
 
-   ii. total\_plotted\_degress - this is used to define how many degree of 360 will be used for plot tree. The left are used for ring label usage. In my case, I used 340 degree out of 360 degree
+   ii. ``total_plotted_degress`` - this is used to define how many degree of 360 will be used for plot tree. The left are used for ring label usage. In my case, I used 340 degree out of 360 degree
     
 ```
 total_plotted_degrees   340
 ```
-   iii. annotation\_background\_alpha were used to define the transparency of annotation background color. 
-   * brantch\_bracket\_depth  - is the ratio of bracket depth to the distance between two neigbour vertical nodes
-   * annotation\_font\_size
-   * annotation\_legend\_font\_size     
-   * title\_font\_size 
-   * ``brantch_bracket_width``  - still have not figure out.
-   * ``class_legend_font_size``  - not sure yet
-   * ``start_rotation `` - not sure yet
+   iii. Global parameter set up
+   * ``annotation_background_alpha`` were used to define the transparency of annotation background color. 
+   * ``brantch_bracket_depth``  - is the ratio of bracket depth to the distance between two neigbour vertical nodes
+   * ``annotation_font_size``
+   * ``annotation_legend_font_size`` The will generate legend like the third column.
+   ```
+   Alphaproteobacteria     annotation	a:Alphaproteobacteria
+   Betaproteobacteria	annotation	b:Betaproteobacteria
+   Deltaproteobacteria     annotation	c:Deltaproteobacteria
+   Gammaproteobacteria     annotation	d:Gammaproteobacteria
+   ```
    
-
-
-
-
+   * ``title_font_size ``
+   * ``brantch_bracket_width``  - ** still have not figure out.**
+   * ``class_legend_font_size``  - ** not sure yet **
+   * ``start_rotation `` - ** not sure yet **
+   
+   iV. Set up ``clade_marker_color``, ``clade_marker_size``  and ``clade_marker_shape``
+   * Wildcard character could be used to define ``clade\_marker\_color`` and ``clade_marker_shape``
+   
+   In terms of shapes, see the documentation from this [read.me](https://bitbucket.org/nsegata/graphlan/src/e91e79a421f96fdd28e8152b4de1c1b4e95ebb32/readme.txt?at=default&fileviewer=file-view-default)
+   
+   ** clade\_marker\_shape**
+   ```
+   Alphaproteobacteria*    clade_marker_shape	o
+   Betaproteobacteria*     clade_marker_shape	*
+   Deltaproteobacteria*    clade_marker_shape	p
+   Gammaproteobacteria*    clade_marker_shape	s
+   Proteobacteria_unclassified_c*  clade_marker_shape	D
+   ```
+  ** clade\_marker\_color**
+  
+  ```
+  Acidobacteria*  clade_marker_color	#07aeba
+  Actinobacteria* clade_marker_color	#b6cc0e
+  Bacteroidetes*  clade_marker_color	#ed5567
+  Chloroflexi*    clade_marker_color	#316022
+  Firmicutes*     clade_marker_color	#f936f6
+  Planctomycetes* clade_marker_color	#f2701a
+  Proteobacteria* clade_marker_color	#ffee32
+  Verrucomicrobia*        clade_marker_color	#3a44ff
+  TM7*    clade_marker_color	#23b5ff
+  ```
+ ** clase\_marker\_size ** - were calculated from R and write out to csv file. Then copied from excel to linux.
+ 
+ ```
+ Acidobacteria   clade_marker_size	981.6777199
+ Proteobacteria  clade_marker_size	2302.54174
+ Bacteroidetes   clade_marker_size	468.1885592
+ Planctomycetes  clade_marker_size	283.5515276
+ Verrucomicrobia clade_marker_size	366.2989901
+ Actinobacteria  clade_marker_size	614.0824273
+ ```
+  V. 
 
 
