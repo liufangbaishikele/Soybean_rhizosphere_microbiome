@@ -288,11 +288,14 @@ awk '{print $14 "\t" $15 "\t" $16 "\t" $17 "\t" $1}' OTU_and_Tax.txt | sed 's/\t
  ####          Manually generate tree and annot file using cultivar family level data              ####
  ###########################################################################################
 ```
+
+### Prepare dataset in R
+
 * Using phylotype based OTU clustering method, generate OTU table with only cultivar samples (treatment) and only bulk&fresh soil (soil type). Subset samples could be achieved during make.shared via giving it sample list using ``groups=sample1-sample2-sample3-ect.`` However, for subsequent analysis using *.shared* and *.cons.taxonomy* in R, it is very easy to subset the whole dataset based on treatment or labels. So, I did not do subset when generating *.shared* file.
 
 * Transfer data to R and prepare tree and annotation file.
 
-1) Creat phyloseq objective using *.shared*, *cons.taxonomy* 
+1) Creat phyloseq objective using *.shared*, and *cons.taxonomy* mothur output files.
 2) merge.phyloseq with *.meta* file
 3) subset phyloseq to only rhizosphere samples using ``subset_sample``function
 4) Merge subseted phyloseq based on *treat* variablel using ``merge_samples``. This step will sum the relative abundance that belongs to same treatment. After merge\_samples, I got phyloseq objective that with 12 samples, 170 taxon and 5 sample variables. sample\_names are:
@@ -302,6 +305,9 @@ awk '{print $14 "\t" $15 "\t" $16 "\t" $17 "\t" $1}' OTU_and_Tax.txt | sed 's/\t
 5) Combine classification table and OTU table together and set row name being family level taxonomy.
 6) Write out combined dataset to be used to prepare *tree* and *annotation* file.
 
+###  Manually generate and edit tree and annotation file in excel, R and linux.
+
+1) Creat tree file.
 
 
 
