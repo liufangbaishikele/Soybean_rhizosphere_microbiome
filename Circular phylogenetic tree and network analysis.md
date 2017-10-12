@@ -329,14 +329,25 @@ Firmicutes.Bacilli.Bacillales.Paenibacillaceae_1
 2. Generate annotation file
 
     i. title parameter
+    
 ```
 title   Rhizosphere microbiome between cultivars
 ```
-    ii. total\_plotted\_degress - this is used to define how many degree of 360 will be used for plot tree. The left are used for ring label usage. In my case, I used 340 degree out of 360 degree
+
+   ii. total\_plotted\_degress - this is used to define how many degree of 360 will be used for plot tree. The left are used for ring label usage. In my case, I used 340 degree out of 360 degree
+    
 ```
 total_plotted_degrees   340
 ```
-    iii. 
+   iii. annotation\_background\_alpha were used to define the transparency of annotation background color. 
+   * brantch\_bracket\_depth  - is the ratio of bracket depth to the distance between two neigbour vertical nodes
+   * annotation\_font\_size
+   * annotation\_legend\_font\_size     
+   * title\_font\_size 
+   * ``brantch_bracket_width``  - still have not figure out.
+   * ``class_legend_font_size``  - not sure yet
+   * ``start_rotation `` - not sure yet
+   
 
 
 
