@@ -314,6 +314,20 @@ awk '{print $14 "\t" $15 "\t" $16 "\t" $17 "\t" $1}' OTU_and_Tax.txt | sed 's/\t
 
 1) Creat tree file.
 
+** During this step I made a serious mistake, I forgot to change tab to dot characters between classification levels ** 
+The right format should like below
+```
+Acidobacteria.Acidobacteria_Gp2.Acidobacteria_Gp2_order_incertae_sedis.Acidobacteria_Gp2_family_incertae_sedis
+Actinobacteria.Actinobacteria.Actinomycetales.Micrococcaceae
+Bacteroidetes.Sphingobacteria.Sphingobacteriales.Cytophagaceae
+Chloroflexi.Ktedonobacteria.Ktedonobacterales.Ktedonobacteraceae
+Firmicutes.Bacilli.Bacillales.Paenibacillaceae_1
+...
+...
+
+```
+2) Generate annotation file
+1) 
 
 
 
