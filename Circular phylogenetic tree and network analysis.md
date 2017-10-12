@@ -327,6 +327,7 @@ Firmicutes.Bacilli.Bacillales.Paenibacillaceae_1
 
 ```
 2) Generate annotation file
+
 i) 
 
 
