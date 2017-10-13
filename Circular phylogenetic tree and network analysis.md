@@ -481,8 +481,10 @@ UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal 
   3. ** NOTE ** Graphlan are very sensitive to extra characters or spaces or format 
     * ``head -n file | od -c `` to check is there are windows format that after pasting from excel
     * Using ``Vim`` to highlight trailing spaces and tabs in txt file in linux.
-    
-      1. 
+      1. ``Vim cultivar.annot_04``
+      2. ``:set hlsearch ``
+      3. ``/\s\+$``
+      4. ``:%s/\s\+$//``
   
     
   
