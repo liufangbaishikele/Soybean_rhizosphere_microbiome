@@ -412,3 +412,73 @@ total_plotted_degrees   340
   Actinobacteria_Phylum   clade_marker_size	300
   ```
   Vii. Now ready for adding ring parameters. YAY!!!!
+  
+  1. Global options
+  
+    * ``ring_label_font_size``
+    * ``ring_internal_separator_thickness``
+    * ``ring_width``
+    * ``ring_separator_color``
+    * ``ring_label``
+    * ``ring_label_color``
+    
+    ** NOTE ** I have no idea why when I copy the following contents from excel to my annotation file, it always got decode problems.
+    Here are the error information
+    
+    ```
+    Classes not implemented for external annotations
+Traceback (most recent call last):
+  File "/lustre/medusa/fliu21/anaconda2/bin/graphlan_annotate.py", line 56, in <module>
+    ctree.annotate( args['annot'], args['outtree'] if args['outtree'] else args['intree'] ) # ,
+  File "/lustre/medusa/fliu21/anaconda2/bin/src/graphlan_lib.py", line 320, in annotate
+    Phylo.write( self.tree, out_file, "phyloxml")
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/_io.py", line 83, in write
+    n = getattr(supported_formats[format], 'write')(trees, fp, **kwargs)
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 131, in write
+    return Writer(obj).write(file, encoding=encoding, indent=indent)
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 675, in __init__
+    self._tree = ElementTree.ElementTree(self.phyloxml(phyloxml))
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 688, in phyloxml
+    elem.append(self.phylogeny(tree))
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 652, in wrapped
+    elem.append(getattr(self, method)(item))
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 654, in wrapped
+    elem.text = _serialize(obj.value)
+  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 627, in _serialize
+    return unicode(value)
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal not in range(128)
+
+    ```
+    The problems is that when I copy content from excel, their are some format that unix or python can not recognize
+    
+    ```
+    ring_internal_separator_thickness	1	2 
+    ring_width	1	0.8
+    ring_separator_color	1	#888888
+    ring_label	1	Ag_CV1
+    ring_label_color	1	#ce0404
+    ```
+    
+    When I head this part using ``head -38 cultivar.annot_04 | tail -l | od -c ``
+    
+    I found that at the end of the first line, it came out two numbers(302 240) that is not what I pasted into. See below:
+    
+    ```
+    r   i   n   g   _   i   n   t   e   r   n   a
+    l   _   s   e   p   a   r   a   t   o   r   _   t   h   i   c
+    k   n   e   s   s  \t   2  \t   2 302 240
+    ```
+    So, I checked and editted the pasted content. It should be fine now.
+  2. clade specific parameter in this format ``[clade_name] ring_option ring_level(integers)  parameter``
+  
+    * ``ring_alpha``
+    * ``ring_height``
+    * ``ring_color``
+    
+  
+    
+  
+  
+  
+  
+  
