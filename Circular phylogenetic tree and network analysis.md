@@ -474,7 +474,8 @@ UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal 
     * ``ring_alpha``
     * ``ring_height``
     * ``ring_color``
-    
+  ** Here, the ring alpha value were calculated as average relative abundance within treatment and multiply 10** 
+  
   ** Note ** When you forgot to type in all the clade specific paramters and you set up more external ring levesl, during annotation, it will give me a warning that ``Classes not implemented for external annotations``
   Make sure add all of the clade ring information.
   
