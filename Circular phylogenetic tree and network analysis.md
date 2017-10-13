@@ -478,6 +478,11 @@ UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal 
   ** Note ** When you forgot to type in all the clade specific paramters and you set up more external ring levesl, during annotation, it will give me a warning that ``Classes not implemented for external annotations``
   Make sure add all of the clade ring information.
   
+  3. ** NOTE ** Graphlan are very sensitive to extra characters or spaces or format 
+    * ``head -n file | od -c `` to check is there are windows format that after pasting from excel
+    * Using ``Vim`` to highlight trailing spaces and tabs in txt file in linux.
+      1. 
+  
     
   
   
