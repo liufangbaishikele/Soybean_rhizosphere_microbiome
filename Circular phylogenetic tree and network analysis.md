@@ -487,9 +487,17 @@ UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal 
       3. ``/\s\+$``
       4. ``:%s/\s\+$//``
   
+  4. Add rings for agriculture and forest fresh & bulk soil samples
+    * Inside of R, subset ``r_filter_family_phyloseq`` object to fresh and bulk soil samples.
+    * Merge phyloseq based on Treat factor and creat ``bulkfreshsub_r_filter_family_phyloseq``. Sample_sums 
     
-  
-  
+    ```
+    Agriculture_Bulk Agriculture_Fresh       Forest_Bulk      Forest_Fresh 
+               12                 5                12                 5 
+    ```
+    * Combine OTU and taxonomy table to one table and write out as csv format
+    * Inside of excel, make sure otu# order match with that of rhizosphere one.
+    * Calculate alpha (average relative abundance within treatment * 10)
   
   
   
