@@ -48,3 +48,63 @@ Options:
 
 ```
 Look into the example file, the input out table is formated with **rows being OTUs** from 1 to 50; **columns are sample** names from 1 to 200 samples
+
+## SparCC at class level using phyloseq-based OTU cluster data (including .shared and .cons.taxonomy)
+
+* Prepare table format in R using phyloseq package
+  1. Generate class level phyloseq using all samples
+  2. Subset samples to include only Ag rhizosphere samples
+  3. Filter off classes that has maximum abundance smaller than 20
+  4. transform absolute abundance to relative abundance.
+  5. Comebine tax\_table and otu\_table
+  6. Write out ``r_filter_Ag_Rhi_otu_and_tax_table.csv`` table to local
+  
+* Upload table to beacon server /lustre/medusa/fliu21/SparCC directory
+* change csv file to txt file using 
+
+```
+sed 's/,/\t/g' r_filter_Ag_Rhi_otu_and_tax_table.csv > r_filter_Ag_Rhi_otu_and_tax_table.txt
+```
+
+* Inside of ``AgRhi_SparCC `` directory, create ``basis_corr`` and ``pvals`` folder
+* Go back to ``/lustre/medusa/fliu21/SparCC`` directory
+
+* RUN SparCC.py command
+
+```
+python SparCC.py AgRhi_SparCC/r_filter_Ag_Rhi_otu_and_tax_table.txt  -i 5 --cor_file=AgRhi_SparCC/basis_corr/cor_spearman.out -a spearman
+```
+* Now prepare bootstrap txt file 
+
+...
+...
+
+
+* Calculate p\_value
+
+
+...
+...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
