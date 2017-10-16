@@ -105,16 +105,16 @@ Options:
    
    2. My code
    
-* I created a subfolder ``bootstrap_simulation`` inside of pval folder to hold the simulated dataset
+  * I created a subfolder ``bootstrap_simulation`` inside of pval folder to hold the simulated dataset
 
-* Run command 
+  * Run command 
      
      ```
      python MakeBootstraps.py  AgRhi_SparCC/r_filter_Ag_Rhi_otu_and_tax_table.txt -n 200  
      --template=AgRhi_otu_count_permutation#.txt --path=AgRhi_SparCC/pvals/bootstrap_simulation/
      ```
      
-* Part of the simulated output file by ``MakeBootstraps.py``
+  * Part of the simulated output file by ``MakeBootstraps.py``
      
      ```
      AgRhi_otu_count_permutation0.txt    
@@ -127,7 +127,7 @@ Options:
      AgRhi_otu_count_permutation162.txt 
      ```
      
- * Calculate p\_value
+   * Calculate p\_value
 
 
 ...
