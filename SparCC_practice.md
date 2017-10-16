@@ -154,10 +154,19 @@ Options:
    ```
    **NOTE** The above for loop did not do the work for 200 samples. It just generated one file named ``AgRhi_bootstrap_permutation``
    
-     * Told by Miriam, the variable $i need double quoted when named together with underscore. Because this will separate the content between`` _``. So always double quote when name a file with variable.
-     * Function double cite - echo (echo path/filename\_"$i") 
+   * Told by Miriam, the variable $i need double quoted when named together with underscore. Because this will separate the content between`` _``. So always double quote when name a file with variable.
+   * Function double cite - echo (echo path/filename\_"$i") 
    
+   * Here are the right script
    
+   ```
+   for ((i=0;i<=199;i++))
+   do
+     echo $i
+     python SparCC.py AgRhi_SparCC/pvals/bootstrap_simulation/AgRhi_otu_count_permutation"$i".txt -i 20 --cor_file=AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation"$i"_corr.txt -a SparCC
+     
+   done
+   ```
    
    2. Change script to excutable
    ``chmod u+x calculate_SparCC_on_simulated_dataset.sge``
