@@ -152,6 +152,12 @@ Options:
      
    done
    ```
+   **NOTE** The above for loop did not do the work for 200 samples. It just generated one file named ``AgRhi_bootstrap_permutation``
+   
+     * Told by Miriam, the variable $i need double quoted when named together with underscore. Because this will separate the content between`` _``. So always double quote when name a file with variable.
+     * Function double cite - echo (echo path/filename\_"$i") 
+   
+   
    
    2. Change script to excutable
    ``chmod u+x calculate_SparCC_on_simulated_dataset.sge``
