@@ -107,16 +107,16 @@ Options:
 
 2. My code
    
-  * I created a subfolder ``bootstrap_simulation`` inside of pval folder to hold the simulated dataset
+* I created a subfolder ``bootstrap_simulation`` inside of pval folder to hold the simulated dataset
 
-  * Run command 
+* Run command 
      
      ```
      python MakeBootstraps.py  AgRhi_SparCC/r_filter_Ag_Rhi_otu_and_tax_table.txt -n 200  
      --template=AgRhi_otu_count_permutation#.txt --path=AgRhi_SparCC/pvals/bootstrap_simulation/
      ```
      
-  * Part of the simulated output file by ``MakeBootstraps.py``
+* Part of the simulated output file by ``MakeBootstraps.py``
      
      ```
      AgRhi_otu_count_permutation0.txt    
@@ -129,7 +129,7 @@ Options:
      AgRhi_otu_count_permutation162.txt 
      ```
      
-   * Calculate p\_value using shuffled dataset with exactly the same parameter set up when calculate the former data set. Name all the output files consistently, numbered sequentially, and with a '.txt' extension.
+* Calculate p\_value using shuffled dataset with exactly the same parameter set up when calculate the former data set. Name all the output files consistently, numbered sequentially, and with a '.txt' extension.
    
    
 **NOTE** If I only calculate p\_value using one shuffled dataset, the command will like below
@@ -138,6 +138,7 @@ Options:
    python SparCC.py AgRhi_SparCC/pvals/bootstrap_simulation/AgRhi_otu_count_permutation0.txt -i 20 --cor_file=AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation0_corr.txt -a SparCC
    
    ```
+   
 ** As I have 200 bootstrap permutations, I will write a for loop to do this work **
    
    1. Creat a script
