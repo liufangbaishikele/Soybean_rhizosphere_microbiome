@@ -78,6 +78,7 @@ python SparCC.py AgRhi_SparCC/r_filter_Ag_Rhi_otu_and_tax_table.txt  -i 20 --cor
 ```
    1. Here -i means the number of inference iterations to avaerage over. -a means the algrithm for calculate correaction, which include SparCC, Peason, Spearman and Kendall.
    
+   
 * Now make shuffled datasets for calculating p value using ``MakeBootstraps.py`` function.
 
    1. Here are the help file of ``MakeBootstraps`` (documentation)
@@ -129,7 +130,7 @@ Options:
      AgRhi_otu_count_permutation162.txt 
      ```
      
-* Calculate p\_value using shuffled dataset with exactly the same parameter set up when calculate the former data set. Name all the output files consistently, numbered sequentially, and with a '.txt' extension.
+* Calculate SparCC using shuffled dataset with exactly the same parameter set up when calculate the former data set. Name all the output files consistently, numbered sequentially, and with a '.txt' extension.
    
    
   **NOTE** If I only calculate p\_value using one shuffled dataset, the command will like below
@@ -178,6 +179,11 @@ Options:
    ```
    4. It will take a while to finish SparCC calculation using 200 simulated datasets.
    
+* Now ready to do one\_sided and two\_sided p_value calculattion
+ 
+```
+python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation#_corr.txt 200 -o AgRhi_SparCC/pvals/AgRhi_one_sided_pvalue.txt -t one_sided
+```
 
 
 
