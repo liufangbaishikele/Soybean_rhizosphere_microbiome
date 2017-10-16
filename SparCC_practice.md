@@ -74,7 +74,7 @@ sed 's/,/\t/g' r_filter_Ag_Rhi_otu_and_tax_table.csv > r_filter_Ag_Rhi_otu_and_t
 * RUN SparCC.py command
 
 ```
-python SparCC.py AgRhi_SparCC/r_filter_Ag_Rhi_otu_and_tax_table.txt  -i 20 --cor_file=AgRhi_SparCC/basis_corr/cor_spearman.out -a spearman
+python SparCC.py AgRhi_SparCC/r_filter_Ag_Rhi_otu_and_tax_table.txt  -i 20 --cor_file=AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt -a SparCC
 ```
    1. Here -i means the number of inference iterations to avaerage over. -a means the algrithm for calculate correaction, which include SparCC, Peason, Spearman and Kendall.
    
@@ -129,12 +129,37 @@ Options:
      AgRhi_otu_count_permutation162.txt 
      ```
      
-   * Calculate p\_value
-
-
-...
-...
-
+   * Calculate p\_value using shuffled dataset with exactly the same parameter set up when calculate the former data set. Name all the output files consistently, numbered sequentially, and with a '.txt' extension.
+   
+   ** NOTE ** If I only calculate p\_value using one shuffled dataset, the command will like below
+   
+   ```
+   python SparCC.py AgRhi_SparCC/pvals/bootstrap_simulation/AgRhi_otu_count_permutation0.txt -i 20 --cor_file=AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation0_corr.txt -a SparCC
+   
+   ```
+   ** As I have 200 bootstrap permutations, I will write a for loop to do this work **
+   
+   1. Creat a script
+   ``nano calculate_SparCC_on_simulated_dataset.sge``
+   
+   ```
+   for ((i=1;i<=200;i++))
+   do
+     echo $i
+     python SparCC.py AgRhi_SparCC/pvals/bootstrap_simulation/AgRhi_otu_count_permutation$i.txt -i 20 --cor_file=AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation$i_corr.txt -a SparCC
+     
+   done
+   ```
+   
+   2. Change script to excutable
+   ``chmod u+x calculate_SparCC_on_simulated_dataset.sge``
+   
+   3. RUN ``calculate_SparCC_on_simulated_dataset.sge``script
+   
+   ```
+   sh calculate_SparCC_on_simulated_dataset.sge
+   ```
+   
 
 
 
