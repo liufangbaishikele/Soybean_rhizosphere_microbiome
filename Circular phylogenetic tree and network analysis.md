@@ -498,6 +498,13 @@ UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal 
     * Combine OTU and taxonomy table to one table and write out as csv format
     * Inside of excel, make sure otu# order match with that of rhizosphere one.
     * Calculate alpha (average relative abundance within treatment * 10)
+    
+  5. Ready to run ``graphlan_annot.py`` and ``graphlan.py``
+  
+  ```
+  graphlan_annotate.py --annot cultivar.annot_07 cultivar.tree cultivar_annot_07.tree 
+  graphlan.py cultivar_annot_07.tree cultivar_tree_07.png --dpi 300 --pad 1 --size 16
+  ```
   
   
   
