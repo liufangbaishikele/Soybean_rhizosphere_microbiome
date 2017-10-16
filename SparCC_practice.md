@@ -145,7 +145,7 @@ Options:
    ``nano calculate_SparCC_on_simulated_dataset.sge``
    
    ```
-   for ((i=1;i<=200;i++))
+   for ((i=0;i<=199;i++))
    do
      echo $i
      python SparCC.py AgRhi_SparCC/pvals/bootstrap_simulation/AgRhi_otu_count_permutation$i.txt -i 20 --cor_file=AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation$i_corr.txt -a SparCC
@@ -161,6 +161,7 @@ Options:
    ```
    sh calculate_SparCC_on_simulated_dataset.sge
    ```
+   4. It will take a while to finish SparCC calculation using 200 simulated datasets.
    
 
 
