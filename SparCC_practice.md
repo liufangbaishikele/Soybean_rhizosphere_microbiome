@@ -131,13 +131,14 @@ Options:
      
    * Calculate p\_value using shuffled dataset with exactly the same parameter set up when calculate the former data set. Name all the output files consistently, numbered sequentially, and with a '.txt' extension.
    
-   ** NOTE ** If I only calculate p\_value using one shuffled dataset, the command will like below
+   
+**NOTE** If I only calculate p\_value using one shuffled dataset, the command will like below
    
    ```
    python SparCC.py AgRhi_SparCC/pvals/bootstrap_simulation/AgRhi_otu_count_permutation0.txt -i 20 --cor_file=AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation0_corr.txt -a SparCC
    
    ```
-   ** As I have 200 bootstrap permutations, I will write a for loop to do this work **
+** As I have 200 bootstrap permutations, I will write a for loop to do this work **
    
    1. Creat a script
    ``nano calculate_SparCC_on_simulated_dataset.sge``
