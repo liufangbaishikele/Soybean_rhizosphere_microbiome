@@ -170,20 +170,25 @@ Options:
    ```
    
    2. Change script to excutable
-   ``chmod u+x calculate_SparCC_on_simulated_dataset.sge``
+   ``chmod u+x AgRhi_calculate_SparCC_on_simulated_dataset.sge``
    
-   3. RUN ``calculate_SparCC_on_simulated_dataset.sge``script
+   3. RUN ``AgRhi_calculate_SparCC_on_simulated_dataset.sge``script
    
    ```
-   sh calculate_SparCC_on_simulated_dataset.sge
+   sh AgRhi_calculate_SparCC_on_simulated_dataset.sge
    ```
    4. It will take a while to finish SparCC calculation using 200 simulated datasets.
    
-* Now ready to do one\_sided and two\_sided p_value calculattion
- 
+* Now ready to do one\_sided 
 ```
 python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation#_corr.txt 200 -o AgRhi_SparCC/pvals/AgRhi_one_sided_pvalue.txt -t one_sided
 ```
+* two\_sided p\_value calculattion
+
+```
+python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation#_corr.txt 200 -o AgRhi_SparCC/pvals/AgRhi_two_sided_pvalue.txt -t two_sided
+```
+ 
 
 
 
