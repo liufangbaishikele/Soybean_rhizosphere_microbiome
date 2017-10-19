@@ -188,6 +188,13 @@ python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/
 ```
 python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/pvals/bootstrap_corr/AgRhi_bootstrap_permutation#_corr.txt 200 -o AgRhi_SparCC/pvals/AgRhi_two_sided_pvalue.txt -t two_sided
 ```
+ 5. Change both SparCC correlation matrix and two\_sided p\_value from *txt* to *csv* format and transfer to local computer and upload to R to start network visualization using igraph package.
+ 
+ ```
+ sed 's/\t/,/g' ForRhi_two_sided_pvalue.txt > ForRhi_two_sided_pvalue.csv
+ cd /lustre/medusa/fliu21/SparCC/ForRhi_SparCC/basis_corr
+ sed 's/\t/,/g' ForRhi_cor_sparcc.txt > ForRhi_cor_sparcc.csv
+ ```
  
 
 
