@@ -9,6 +9,7 @@ The reason that I manipulate shared file inside of mothur instead of within R is
 1. Rarefy\_based normalization - Subset ``.shared`` using rarefaction method to minimum read depth along all samples 
 
 ``sub_sample``
+
 ```
 
 ```
