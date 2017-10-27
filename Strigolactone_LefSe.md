@@ -74,7 +74,8 @@ run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluste
 Here are the output:
 
 ```
-
+Number of significantly discriminative features: 7257 ( 757 ) before internal wilcoxon
+Number of discriminative features with abs LDA score > 2.0 : 0
 ```
 
 
