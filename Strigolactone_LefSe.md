@@ -49,6 +49,10 @@ $%s/"//g
 
 6. Run ``lefse-format_lefse.py`` to change format for running real lefse analysis
 
+**At this step, -o pamameter is very import** 
+
+``-o : set the normalization value. The default set is -1 means no normalization``
+
 ```
 lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in -c 1 -s -1 -u 2
 ```
