@@ -65,10 +65,8 @@ lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.
 ```
 
 7. Doing lefse analysis using ``run_lefse.py``
-  * ``-y`` parameter is used to set whether the test is performed in one against one or in one again all setting. default is one against all y = 0
-  
-  * y=1
-  
+  * y=1 (parameter is used to set whether the test is performed in one against one or in one again all setting. default is one against all y = 0)
+    1. 
 ```
 run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res_1 -l 2 -b 100 -t strigolactone_genus_lefse -y 1
 
