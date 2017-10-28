@@ -55,14 +55,22 @@ $%s/"//g
 
   * 1st (-o 1000000)
 
-```
-lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 -c 1 -s -1 -u 2 -o 1000000
-```
+   ```
+   lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 -c 1 -s -1 -u 2 -o 1000000
+   ```
   * 2nd (-o 100)
 
-```
-lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_2 -c 1 -s -1 -u 2 -o 100
-```
+   ```
+   lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_2 -c 1 -s -1 -u 2 -o 100
+   ```
+   * 3rd (-o=10000)
+   
+   ```
+   lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_3 -c 1 -s -1 -u 2 -o 10000
+   ```
+   
+   
+   
 
 7. Doing lefse analysis using ``run_lefse.py``
 
@@ -79,10 +87,15 @@ lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.
     ```
     run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_2 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.res_2 -l 2 -b 100 -t strigolactone_genus_LefSe -y 1
     Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
-    
-
+    Number of discriminative features with abs LDA score > 2.0 : 0
     ```
-
+    3.
+    ```
+    run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_3 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.res_3 -l 2 -b 100 -t strigolactone_genus_LefSe -y 1
+    
+    Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
+    Number of discriminative features with abs LDA score > 2.0 : 50
+    ```
 
 
 
