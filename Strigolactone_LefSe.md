@@ -68,7 +68,10 @@ $%s/"//g
    ```
    lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_3 -c 1 -s -1 -u 2 -o 10000
    ```
-   
+   * 4th (-o=100000)
+   ```
+   lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_4 -c 1 -s -1 -u 2 -o 100000
+   ```
    
    
 
@@ -78,10 +81,14 @@ $%s/"//g
   
     1. 
     ```
-    run_lefse.py   strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res_1 -l 2 -b 100 -t strigolactone_genus_lefse -y 1
+    run_lefse.py   strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res_1_l2 -l 2 -b 100 -t strigolactone_genus_lefse -y 1
 
     Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
     Number of discriminative features with abs LDA score > 2.0 : 719
+    
+    run_lefse.py   strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res_1_l4 -l 4 -b 100 -t strigolactone_genus_lefse -y 1
+    Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
+    Number of discriminative features with abs LDA score > 4.0 : 50
     ```
     2. 
     ```
@@ -96,7 +103,13 @@ $%s/"//g
     Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
     Number of discriminative features with abs LDA score > 2.0 : 50
     ```
-
+    4. plot LDA stem\_leaf plot using ``lefse-plot_res.py``
+    
+    ```
+    lefse-plot_res.py  strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.res_3 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.plot_3.png --dpi 300 --title strigolactone_genus_lefse
+    Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
+    Number of discriminative features with abs LDA score > 2.0 : 394
+    ```
 
 
 
