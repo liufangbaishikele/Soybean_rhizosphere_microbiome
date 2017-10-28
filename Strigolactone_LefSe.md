@@ -53,35 +53,29 @@ $%s/"//g
 
 ``-o : set the normalization value. The default set is -1 means no normalization``
 
+  * 1st (-o 1000000)
+
 ```
-lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in -c 1 -s -1 -u 2
+lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 -c 1 -s -1 -u 2 -o 1000000
 ```
+  * 2nd (-o 100)
+
+```
+lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_2 -c 1 -s -1 -u 2 -o 100
+```
+
 7. Doing lefse analysis using ``run_lefse.py``
   * ``-y`` parameter is used to set whether the test is performed in one against one or in one again all setting. default is one against all y = 0
   
+  * y=1
+  
 ```
-run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res -l 2 -b 100 -t strigolactone_genus_level_lefse -y 0
-```
+run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res_1 -l 2 -b 100 -t strigolactone_genus_lefse -y 1
 
-Here are the output:
-
+Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
+Number of discriminative features with abs LDA score > 2.0 : 719
 ```
-Number of significantly discriminative features: 720 ( 757 ) before internal wilcoxon
-Number of discriminative features with abs LDA score > 2.0 : 0
-```
-
- *  y = 1
-
-```
-run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res -l 2 -b 100 -t strigolactone_genus_level_lefse -y 1
-```
-Here are the output:
-
-```
-Number of significantly discriminative features: 7257 ( 757 ) before internal wilcoxon
-Number of discriminative features with abs LDA score > 2.0 : 0
-```
-
+ 
 
 
 
