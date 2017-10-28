@@ -65,6 +65,7 @@ lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.
 ```
 
 7. Doing lefse analysis using ``run_lefse.py``
+
   * y=1 (parameter is used to set whether the test is performed in one against one or in one again all setting. default is one against all y = 0)
   
     1. 
@@ -74,7 +75,13 @@ lefse-format_input.py strigolactone.trim.contigs.good.unique.good.filter.unique.
     Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
     Number of discriminative features with abs LDA score > 2.0 : 719
     ```
+    2. 
+    ```
+    run_lefse.py strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.in_2 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.res_2 -l 2 -b 100 -t strigolactone_genus_LefSe -y 1
+    Number of significantly discriminative features: 719 ( 756 ) before internal wilcoxon
+    
 
+    ```
 
 
 
