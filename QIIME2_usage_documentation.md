@@ -210,6 +210,8 @@ Options:
                                   (silence is golden).  [default: False]
   --help                          Show this message and exit.
 ```
-
+-------------------------------
 ## Start analysis using QIIME
 -------------------------------
+
+
