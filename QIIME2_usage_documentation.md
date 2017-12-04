@@ -73,6 +73,49 @@ Commands:
 
 ## To enable tab completion of command in bash by ``source tab-qiime``
 
+## Have a look at qiime information by ``qiime info``
+
+```
+System versions
+Python version: 3.5.4
+QIIME 2 release: 2017.11
+QIIME 2 version: 2017.11.0
+q2cli version: 2017.11.0
+
+Installed plugins
+alignment 2017.11.0
+composition 2017.11.0
+dada2 2017.11.0
+deblur 2017.11.0
+demux 2017.11.0
+diversity 2017.11.0
+emperor 2017.11.0
+feature-classifier 2017.11.0
+feature-table 2017.11.0
+gneiss 2017.11.0
+longitudinal 2017.11.0
+metadata 2017.11.0
+phylogeny 2017.11.0
+quality-control 2017.11.0
+quality-filter 2017.11.0
+sample-classifier 2017.11.0
+taxa 2017.11.0
+types 2017.11.0
+vsearch 2017.11.0
+
+Application config directory
+/nics/d/home/fliu21/.config/q2cli
+
+Getting help
+To get help with QIIME 2, visit https://qiime2.org
+
+Citing QIIME 2
+If you use QIIME 2 in any published work, you should cite QIIME 2 and the plugins that you used. To display the citations for QIIME 2 and all installed plugins, run:
+
+  qiime info --citations
+
+```
+**qiime info --citation** very useful 
 
 
 
