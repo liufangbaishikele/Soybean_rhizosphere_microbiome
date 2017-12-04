@@ -117,6 +117,93 @@ If you use QIIME 2 in any published work, you should cite QIIME 2 and the plugin
 ```
 **qiime info --citation** very useful 
 
+## QIIME command structure
 
+```
+qiime demux emp-single \
+  --i-seqs emp-single-end-sequences.qza \
+  --m-barcodes-file sample-metadata.tsv \
+  --m-barcodes-category BarcodeSequence \
+  --o-per-sample-sequences demux.qza
+```
+1. First give plugin name - **demux** (in this case)
+emp-single is the commands from demux plugin
 
+2. Commands from the plugin
+IF I want to know all available commands from this plugin, I could just type in ``qiime demux emp-single --help``
+```
+Usage: qiime demux [OPTIONS] COMMAND [ARGS]...
+Description: This QIIME 2 plugin supports demultiplexing of single-end and
+  paired-end sequence reads and visualization of sequence quality
+  information.
+
+  Plugin website: https://github.com/qiime2/q2-demux
+
+  Getting user support: Please post to the QIIME 2 forum for help with this
+  plugin: https://forum.qiime2.org
+
+  Citing this plugin: No citation available. Cite plugin website:
+  https://github.com/qiime2/q2-demux
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  emp-paired  Demultiplex paired-end sequence data generated with the EMP
+              protocol.
+  emp-single  Demultiplex sequence data generated with the EMP protocol.
+  summarize   Summarize counts per sample.
+```
+3. options for each commands- could be found from help documents.
+```
+qiime demux emp_single --help
+```
+
+Here are the help information for enm-single command.
+```
+Usage: qiime demux emp-single [OPTIONS]
+
+  Demultiplex sequence data (i.e., map barcode reads to sample ids) for data
+  generated with the Earth Microbiome Project (EMP) amplicon sequencing
+  protocol. Details about this protocol can be found at
+  http://www.earthmicrobiome.org/protocols-and-standards/
+
+Options:
+  --i-seqs PATH                   Artifact: EMPPairedEndSequences |
+                                  EMPSingleEndSequences | RawSequences
+                                  [required]
+                                  The single-end sequences to be
+                                  demultiplexed.
+  --m-barcodes-file PATH          Metadata file or artifact viewable as
+                                  metadata. This option may be supplied
+                                  multiple times to merge metadata  [required]
+  --m-barcodes-category TEXT      Category from metadata file or artifact
+                                  viewable as metadata  [required]
+                                  The sample
+                                  metadata category listing the per-sample
+                                  barcodes.
+  --p-rev-comp-barcodes / --p-no-rev-comp-barcodes
+                                  [default: False]
+                                  If provided, the barcode
+                                  sequence reads will be reverse complemented
+                                  prior to demultiplexing.
+  --p-rev-comp-mapping-barcodes / --p-no-rev-comp-mapping-barcodes
+                                  [default: False]
+                                  If provided, the barcode
+                                  sequences in the sample metadata will be
+                                  reverse complemented prior to
+                                  demultiplexing.
+  --o-per-sample-sequences PATH   Artifact: SampleData[SequencesWithQuality]
+                                  [required if not passing --output-dir]
+                                  The
+                                  resulting demultiplexed sequences.
+  --output-dir DIRECTORY          Output unspecified results to a directory
+  --cmd-config PATH               Use config file for command options
+  --verbose                       Display verbose output to stdout and/or
+                                  stderr during execution of this action.
+                                  [default: False]
+  --quiet                         Silence output if execution is successful
+                                  (silence is golden).  [default: False]
+  --help                          Show this message and exit.
+```
 
