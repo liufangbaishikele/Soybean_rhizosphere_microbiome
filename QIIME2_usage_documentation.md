@@ -20,7 +20,8 @@ BUT when I type ``qiime``, the command was still not found.
 ``source activate qiime2-2017.11`` 
 now qiime become functional;)
 
-## Start using qiime first by 
+## knock around the documentations
+
 **``qiime --help``**
 Here are the output
 ```
