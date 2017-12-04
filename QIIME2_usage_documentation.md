@@ -71,9 +71,11 @@ Commands:
 ```
 
 
-## To enable tab completion of command in bash by ``source tab-qiime``
+## To enable tab completion of command in bash by 
+### ``source tab-qiime``
 
-## Have a look at qiime information by ``qiime info``
+## Have a look at qiime information by 
+### ``qiime info``
 
 ```
 System versions
