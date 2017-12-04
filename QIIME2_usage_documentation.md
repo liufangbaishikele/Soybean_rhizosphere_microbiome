@@ -1,7 +1,7 @@
 # Qiime2 
 ----------------
 
-#### Upload qiime to env
+## Upload qiime to env
 
 Module load qiime from ACF by ``module load qiime2/2017.11``
 Check if qiime2 loaded to the current environment by ``module list`` (during this process anaconda3 is all loaded)
@@ -13,12 +13,12 @@ I thought the problem may caused by the path or environment. So I double checked
 the problem may comes from this. So I unload anaconda3 by ``module unload anaconda3/4.4.0`` and type in mothur again. It worked!
 BUT when I type ``qiime``, the command was still not found.
 
-#### Active conda environment
+## Active conda environment
 
 **NOW go back to qiime documentation** look carefully and found that after upload qiime, I still need to active the conda environment by
 ``source activate qiime2-2017.11`` 
 now qiime become functional;)
 
-#### Start using qiime first by ``qiime --help``
+## Start using qiime first by ``qiime --help``
 
 
