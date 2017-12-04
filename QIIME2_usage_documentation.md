@@ -1,6 +1,7 @@
 # Qiime2 
 ----------------
-
+## Intall and get familiar with QIIME
+-----------------
 ## Upload qiime to env
 
 Module load qiime from ACF by ``module load qiime2/2017.11``
@@ -19,7 +20,8 @@ BUT when I type ``qiime``, the command was still not found.
 ``source activate qiime2-2017.11`` 
 now qiime become functional;)
 
-## Start using qiime first by ``qiime --help``
+## Start using qiime first by 
+**``qiime --help``**
 Here are the output
 ```
 QIIME is caching your current deployment for improved performance. This may take a few moments and should only happen once per deployment.
@@ -72,10 +74,10 @@ Commands:
 
 
 ## To enable tab completion of command in bash by 
-### ``source tab-qiime``
+**``source tab-qiime``**
 
 ## Have a look at qiime information by 
-### ``qiime info``
+**``qiime info``**
 
 ```
 System versions
@@ -209,3 +211,5 @@ Options:
   --help                          Show this message and exit.
 ```
 
+## Start analysis using QIIME
+-------------------------------
