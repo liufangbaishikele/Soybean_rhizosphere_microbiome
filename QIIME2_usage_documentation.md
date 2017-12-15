@@ -135,7 +135,7 @@ qiime demux emp-single \
 emp-single is the commands from demux plugin
 
 2. Commands from the plugin
-IF I want to know all available commands from this plugin, I could just type in ``qiime demux emp-single --help``
+IF I want to know all available commands from this plugin, I could just type in ``qiime demux emp-single`` and tap enter button.
 ```
 Usage: qiime demux [OPTIONS] COMMAND [ARGS]...
 Description: This QIIME 2 plugin supports demultiplexing of single-end and
@@ -161,10 +161,10 @@ Commands:
 ```
 3. options for each commands- could be found from help documents.
 ```
-qiime demux emp_single --help
+qiime demux emp_single
 ```
+Then hit enter button.
 
-Here are the help information for enm-single command.
 ```
 Usage: qiime demux emp-single [OPTIONS]
 
@@ -217,4 +217,64 @@ Options:
 1. First import sequence data (if undemultiplexed, both fastq and barcode is needed) and sample data (if undemultiplexed, barcode catogery is needed)
 2. Demultiplex (if already indivisual samples, skip this step)
 3. Make a summary of the sequencing depth and quality of sequences
-4. Denoise using ``data2`` OR ``deblur``
+4. Denoise using ``dada2`` OR ``deblur``
+
+**Web based dada2 documentation**
+
+  * First, open [qiime documentation](https://docs.qiime2.org/2017.11/)
+  * Second, click the ``Plugins`` menu on the left panel
+  * Third: click [dada2: Plugin for sequence quality control with DADA2](https://docs.qiime2.org/2017.11/plugins/available/dada2/)
+  
+  * Now, I found two function of dada2
+  ``(1) demoise-paired``
+  ``(2) denoise-single``
+  
+**Documentation using command line**
+
+  * Functions of dada2
+  
+```qiime dada2
+```
+  IT will give below information
+
+  ```
+  Usage: qiime dada2 [OPTIONS] COMMAND [ARGS]...
+
+    Description: This QIIME 2 plugin wraps DADA2 and supports sequence quality
+    control for single-end and paired-end reads using the DADA2 R library.
+
+    Plugin website: http://benjjneb.github.io/dada2/
+
+    Getting user support: Please post to the QIIME 2 forum for help with this
+    plugin: https://forum.qiime2.org
+
+    Citing this plugin: DADA2: High-resolution sample inference from Illumina
+    amplicon data. Benjamin J Callahan, Paul J McMurdie, Michael J Rosen,
+    Andrew W Han, Amy Jo A Johnson, Susan P Holmes. Nature Methods 13, 581–583
+    (2016) doi:10.1038/nmeth.3869.
+
+  Options:
+    --help  Show this message and exit.
+
+  Commands:
+    denoise-paired  Denoise and dereplicate paired-end sequences
+    denoise-single  Denoise and dereplicate single-end sequences
+  ```
+  * Look at options of **denoise-paired** by type in ``qiime dada2 denoise-paired``
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
