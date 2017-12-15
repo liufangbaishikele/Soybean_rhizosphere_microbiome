@@ -214,5 +214,7 @@ Options:
 -------------------------------
 ## Start analysis using QIIME
 -------------------------------
-
-
+1. First import sequence data (if undemultiplexed, both fastq and barcode is needed) and sample data (if undemultiplexed, barcode catogery is needed)
+2. Demultiplex (if already indivisual samples, skip this step)
+3. Make a summary of the sequencing depth and quality of sequences
+4. Denoise using ``data2`` OR ``deblur``
