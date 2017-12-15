@@ -231,10 +231,8 @@ Options:
   
 **Documentation using command line**
 
-  * Functions of dada2
+  * Look at available functions of dada2, by typing in ``qiime dada2``
   
-```qiime dada2
-```
   IT will give below information
 
   ```
@@ -261,6 +259,143 @@ Options:
     denoise-single  Denoise and dereplicate single-end sequences
   ```
   * Look at options of **denoise-paired** by type in ``qiime dada2 denoise-paired``
+  Here are the documentation
+  ```
+  Usage: qiime dada2 denoise-paired [OPTIONS]
+
+  This method denoises paired-end sequences, dereplicates them, and filters
+  chimeras.
+
+Options:
+  --i-demultiplexed-seqs PATH     Artifact:
+                                  SampleData[PairedEndSequencesWithQuality]
+                                  [required]
+                                  The paired-end demultiplexed
+                                  sequences to be denoised.
+  --p-trunc-len-f INTEGER         [required]
+                                  Position at which forward read
+                                  sequences should be truncated due to
+                                  decrease in quality. This truncates the 3'
+                                  end of the of the input sequences, which
+                                  will be the bases that were sequenced in the
+                                  last cycles. Reads that are shorter than
+                                  this value will be discarded. After this
+                                  parameter is applied there must still be at
+                                  least a 20 nucleotide overlap between the
+                                  forward and reverse reads. If 0 is provided,
+                                  no truncation or length filtering will be
+                                  performed
+  --p-trunc-len-r INTEGER         [required]
+                                  Position at which reverse read
+                                  sequences should be truncated due to
+                                  decrease in quality. This truncates the 3'
+                                  end of the of the input sequences, which
+                                  will be the bases that were sequenced in the
+                                  last cycles. Reads that are shorter than
+                                  this value will be discarded. After this
+                                  parameter is applied there must still be at
+                                  least a 20 nucleotide overlap between the
+                                  forward and reverse reads. If 0 is provided,
+                                  no truncation or length filtering will be
+                                  performed
+  --p-trim-left-f INTEGER         [default: 0]
+                                  Position at which forward read
+                                  sequences should be trimmed due to low
+                                  quality. This trims the 5' end of the input
+                                  sequences, which will be the bases that were
+                                  sequenced in the first cycles.
+  --p-trim-left-r INTEGER         [default: 0]
+                                  Position at which reverse read
+                                  sequences should be trimmed due to low
+                                  quality. This trims the 5' end of the input
+                                  sequences, which will be the bases that were
+                                  sequenced in the first cycles.
+  --p-max-ee FLOAT                [default: 2.0]
+                                  Reads with number of expected
+                                  errors higher than this value will be
+                                  discarded.
+  --p-trunc-q INTEGER             [default: 2]
+                                  Reads are truncated at the
+                                  first instance of a quality score less than
+                                  or equal to this value. If the resulting
+                                  read is then shorter than `trunc_len_f` or
+                                  `trunc_len_r` (depending on the direction of
+                                  the read) it is discarded.
+  --p-chimera-method [none|pooled|consensus]
+                                  [default: consensus]
+                                  The method used to
+                                  remove chimeras. "none": No chimera removal
+                                  is performed. "pooled": All reads are pooled
+                                  prior to chimera detection. "consensus":
+                                  Chimeras are detected in samples
+                                  individually, and sequences found chimeric
+                                  in a sufficient fraction of samples are
+                                  removed.
+  --p-min-fold-parent-over-abundance FLOAT
+                                  [default: 1.0]
+                                  The minimum abundance of
+                                  potential parents of a sequence being tested
+                                  as chimeric, expressed as a fold-change
+                                  versus the abundance of the sequence being
+                                  tested. Values should be greater than or
+                                  equal to 1 (i.e. parents should be more
+                                  abundant than the sequence being tested).
+                                  This parameter has no effect if
+                                  chimera_method is "none".
+  --p-n-threads INTEGER           [default: 1]
+                                  The number of threads to use
+                                  for multithreaded processing. If 0 is
+                                  provided, all available cores will be used.
+  --p-n-reads-learn INTEGER       [default: 1000000]
+                                  The number of reads to
+                                  use when training the error model. Smaller
+                                  numbers will result in a shorter run time
+                                  but a less reliable error model.
+  --p-hashed-feature-ids / --p-no-hashed-feature-ids
+                                  [default: True]
+                                  If true, the feature ids in
+                                  the resulting table will be presented as
+                                  hashes of the sequences defining each
+                                  feature. The hash will always be the same
+                                  for the same sequence so this allows feature
+                                  tables to be merged across runs of this
+                                  method. You should only merge tables if the
+                                  exact same parameters are used for each run.
+  --o-table PATH                  Artifact: FeatureTable[Frequency] [required
+                                  if not passing --output-dir]
+                                  The resulting
+                                  feature table.
+  --o-representative-sequences PATH
+                                  Artifact: FeatureData[Sequence] [required if
+                                  not passing --output-dir]
+                                  The resulting
+                                  feature sequences. Each feature in the
+                                  feature table will be represented by exactly
+                                  one sequence, and these sequences will be
+                                  the joined paired-end sequences.
+  --output-dir DIRECTORY          Output unspecified results to a directory
+  --cmd-config PATH               Use config file for command options
+  --verbose                       Display verbose output to stdout and/or
+                                  stderr during execution of this action.
+                                  [default: False]
+  --quiet                         Silence output if execution is successful
+                                  (silence is golden).  [default: False]
+  --help                          Show this message and exit.
+
+Error: Missing option: --i-demultiplexed-seqs
+Error: Missing option: --p-trunc-len-f
+Error: Missing option: --p-trunc-len-r
+Error: Missing option: --o-table
+Error: Missing option: --o-representative-sequences
+Note: When only providing names for a subset of the output Artifacts or
+Visualizations, you must specify an output directory through use of the
+--output-dir DIRECTORY flag.
+
+```
+**Output from dada2 analysis**
+  * representative-sequences (this is a file with sequence ID and corresponding sequences)
+  * table (very like the count_table of mothur output, with sequence ID and corresponding counts across all samples)
+  
   
   
 
