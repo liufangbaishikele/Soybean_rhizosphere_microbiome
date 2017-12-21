@@ -398,11 +398,48 @@ Visualizations, you must specify an output directory through use of the
   
   
   
+------------------------------------------------------
+Analysis of 2017 AgOCU and AgPSC sequence using qiime2
+------------------------------------------------------
 
 
+**Prepare dataset with only two samples fro 2017 sequencing**
+
+```
+AgOCU_fresh_1_S41_L001_R1_001.fastq.gz  
+AgOCU_fresh_1_S41_L001_R2_001.fastq.gz
+
+AgPSC_fresh_1_S82_L001_R1_001.fastq.gz
+AgPSC_fresh_1_S82_L001_R2_001.fastq.gz
+```
 
 
+1. Import sequence and create a .qza artifact
 
+```
+qiime tools import \
+--type "SampleData[PairedEndSequencesWithQuality]" \
+--input-path /nics/d/home/fliu21/qiime2_pair_end/Ag_trial_2017_raw_read/ \
+--output-path /nics/d/home/fliu21/qiime2_pair_end/Ag_trial_2017_qiime_analysis/Ag_trial_sequence.qza \
+--source-format CasavaOneEightSingleLanePerSampleDirFmt
+```
+2. Quality control and filtering using dada2
+
+```
+qiime dada2 denoise-paired \
+--i-demultiplexed-seqs Ag_trial_sequence.qza \
+--o-representative-sequences Ag_trial_rep_sequence_dada2.qza \
+--o-table Ag_trial_dada2_table.qza --p-trim-left-f 0 \
+--p-trim-left-r 0 \
+--p-trunc-len-f 250 \
+--p-trunc-len-r 250
+```
+3. Summarize and visualize featureTable and FeatureData
+
+```
+
+
+```
 
 
 
