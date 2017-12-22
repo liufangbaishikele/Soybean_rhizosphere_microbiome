@@ -428,18 +428,18 @@ qiime tools import \
 ```
 qiime dada2 denoise-paired \
 --i-demultiplexed-seqs Ag_trial_sequence.qza \
---o-representative-sequences Ag_trial_rep_sequence_dada2.qza \
---o-table Ag_trial_dada2_table.qza --p-trim-left-f 0 \
+--p-n-threads 16  \
 --p-trim-left-r 0 \
+--p-trim-left-f 0 \
+--p-trunc-len-r 250 \
 --p-trunc-len-f 250 \
---p-trunc-len-r 250
+--o-representative-sequences Ag_trial_seqs_dada2.qza \
+--o-table Ag_trial_table_dada2.qza
+
 ```
 3. Summarize and visualize featureTable and FeatureData
 
-```
 
-
-```
 
 
 
