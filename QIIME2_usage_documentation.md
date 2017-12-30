@@ -449,6 +449,21 @@ qiime dada2 denoise-paired \
 ```
 I have no idea, this step took forever. Something may be wrong with my code
 
+Alternatively, use this 
+
+```
+qiime dada2 denoise-paired \
+> --i-demultiplexed-seqs paired-end-demux.qza \
+> --p-n-threads 16  \
+> --p-trim-left-r 0 \
+> --p-trim-left-f 0 \
+> --p-trunc-len-r 250 \
+> --p-trunc-len-f 250 \
+> --o-representative-sequences Ag_trial_seqs_dada2.qza \
+> --o-table Ag_trial_table_dada2.qza
+
+```
+
 
 3. Summarize and visualize featureTable and FeatureData
 
