@@ -423,6 +423,16 @@ qiime tools import \
 --output-path /nics/d/home/fliu21/qiime2_pair_end/Ag_trial_2017_qiime_analysis/Ag_trial_sequence.qza \
 --source-format CasavaOneEightSingleLanePerSampleDirFmt
 ```
+
+Alternatively
+
+```
+qiime tools import \
+--type 'SampleData[PairedEndSequencesWithQuality]' \
+--input-path $PWD/pe-33-manifest \
+--output-path /nics/d/home/fliu21/qiime2_pair_end/Ag_trial_2017_qiime_analysis/paired-end-demux.qza \
+--source-format PairedEndFastqManifestPhred33
+```
 2. Quality control and filtering using dada2
 
 ```
@@ -437,6 +447,9 @@ qiime dada2 denoise-paired \
 --o-table Ag_trial_table_dada2.qza
 
 ```
+I have no idea, this step took forever. Something may be wrong with my code
+
+
 3. Summarize and visualize featureTable and FeatureData
 
 
