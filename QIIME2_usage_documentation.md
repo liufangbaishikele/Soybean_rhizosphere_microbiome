@@ -513,8 +513,10 @@ qiime feature-table tabulate-seqs \
 4. Export qiime feature-table
 
 ```
+qiime tools export Ag_trial_table_dada2.qza \
+--output-dir Ag_trial_table_dada2_export
 ```
-
+The output is a biom file, which is not readable using vim.
 
 
 
