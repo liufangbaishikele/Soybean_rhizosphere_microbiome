@@ -495,10 +495,25 @@ qiime dada2 denoise-paired \
 
 3. Summarize and visualize featureTable and FeatureData
 
+* Summarize table data
 
+```
+qiime feature-table summarize \
+--i-table Ag_trial_table_dada2.qza \
+--o-visualization Ag_trial_table_dada2.qzv
+```
+* summarize unique sequence data
 
+```
+qiime feature-table tabulate-seqs \
+--i-data Ag_trial_seqs_dada2.qza \
+--o-visualization Ag_trial_seqs_dada2.qzv
+```
 
+4. Export qiime feature-table
 
+```
+```
 
 
 
