@@ -464,6 +464,34 @@ qiime dada2 denoise-paired \
 
 ```
 
+Because this step is time consuming, so I submited job to ACF. Below is the job scripts. During the first try, got error **RuntimeError: Click will abort further execution because Python 3 was configured to use ASCII as encoding for the environment** In order to solve this problem, I need to make sure what my locale is. Just type in ``locale`` I will see. Based on this [link](http://click.pocoo.org/5/python3/), I added ``export LC_ALL=en_US.UTF-8 export LANG=en_US.UTF-8``
+
+```
+#PBS -S /bin/bash
+#PBS -A ACF-UTK0032
+#PBS -l nodes=1,walltime=6:00:00
+#PBS -N Ag_trial_dada2_denoise
+#PBS_NNODES 16
+
+module load qiime2/2017.11
+source activate qiime2-2017.11
+cd $PBS_O_WORKDIR
+
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+qiime dada2 denoise-paired \
+--i-demultiplexed-seqs paired-end-demux.qza \
+--p-n-threads 16  \
+--p-trim-left-r 0 \
+--p-trim-left-f 0 \
+--p-trunc-len-r 250 \
+--p-trunc-len-f 250 \
+--o-representative-sequences Ag_trial_seqs_dada2.qza \
+--o-table Ag_trial_table_dada2.qza
+
+```
+
 
 3. Summarize and visualize featureTable and FeatureData
 
