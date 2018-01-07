@@ -548,9 +548,18 @@ qiime tools import \
 *Extract reference reads based on my primer sequence*
 
 ```
+qiime feature-classifier extract-reads \
+--i-sequences 99_otus.qza \
+--p-f-primer CCTACGGGNGGCWGCAG \
+--p-r-primer GACTACHVGGGTATCTAATCC \
+--o-reads 99-greengene-341-805-ref-seqs.qza
+```
+
+*Once all of the above preparation work were done, the next step is to train the classifier using Naive Bayes method*
 
 ```
 
+```
 
 
 
