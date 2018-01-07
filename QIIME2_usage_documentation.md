@@ -414,7 +414,7 @@ AgPSC_fresh_1_S82_L001_R2_001.fastq.gz
 ```
 
 
-1. Import sequence and create a .qza artifact
+1. **Import sequence and create a .qza artifact**
 
 ```
 qiime tools import \
@@ -433,7 +433,7 @@ qiime tools import \
 --output-path /nics/d/home/fliu21/qiime2_pair_end/Ag_trial_2017_qiime_analysis/paired-end-demux.qza \
 --source-format PairedEndFastqManifestPhred33
 ```
-2. Quality control and filtering using dada2
+2. **Quality control and filtering using dada2**
 
 ```
 qiime dada2 denoise-paired \
@@ -493,7 +493,7 @@ qiime dada2 denoise-paired \
 ```
 
 
-3. Summarize and visualize featureTable and FeatureData
+3. **Summarize and visualize featureTable and FeatureData**
 
 * Summarize table data
 
@@ -510,13 +510,31 @@ qiime feature-table tabulate-seqs \
 --o-visualization Ag_trial_seqs_dada2.qzv
 ```
 
-4. Export qiime feature-table
+4. **Export qiime feature-table**
 
 ```
 qiime tools export Ag_trial_table_dada2.qza \
 --output-dir Ag_trial_table_dada2_export
 ```
 The output is a biom file, which is not readable using vim.
+
+
+5. **Train greengene reference to generate customized feature classifers**
+
+* Download the greengene dada from this [link](ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz)
+* Unzip the ``tar.gz`` file using ``tar -xzvf gg_13_8_otus.tar.gz``
+* Running qiime command to customize reference
+
+*Generate .qza file using 99_otus.fasta*
+
+```
+qiime tools import \
+--type 'FeatureData[Sequence]' \
+--input-path 99_otus.fasta \
+--output-path 99_outs.qza
+```
+*Generate .qza file using 99_otu_taxonomy.txt*
+
 
 
 
