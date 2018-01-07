@@ -536,6 +536,20 @@ qiime tools import \
 *Generate .qza file using 99_otu_taxonomy.txt*
 
 
+```
+qiime tools import \
+--type 'FeatureData[Taxonomy]' \
+--source-format HeaderlessTSVTaxonomyFormat \
+--input-path 99_otu_taxonomy.txt \
+--output-path 99_otu_taxonomy.qza
+
+```
+
+*Extract reference reads based on my primer sequence*
+
+```
+
+```
 
 
 
