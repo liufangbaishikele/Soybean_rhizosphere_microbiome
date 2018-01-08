@@ -555,10 +555,22 @@ qiime feature-classifier extract-reads \
 --o-reads 99-greengene-341-805-ref-seqs.qza
 ```
 
+*Generate the classifier*
+
+```
+qiime feature-classifier fit-classifier-naive-bayes \
+--i-reference-reads 99-greengene-341-805-ref-seqs.qza \
+--i-reference-taxonomy 99_otu_taxonomy.qza \
+--o-classifier 99_greengene_341_805_ref_classifier.qza
+```
+
 *Once all of the above preparation work were done, the next step is to train the classifier using Naive Bayes method*
 
 ```
-
+qiime feature-classifier classify-sklearn \
+--i-classifier 99_greengene_341_805_ref_classifier.qza \
+--i-reads Ag_trial_seqs_dada2.qza \
+--o-classification Ag_trial_dada2_taxonomy.qza
 ```
 
 
