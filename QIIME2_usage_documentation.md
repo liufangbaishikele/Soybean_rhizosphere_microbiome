@@ -425,6 +425,7 @@ qiime tools import \
 ```
 
 Alternatively
+*This commands works for me*
 
 ```
 qiime tools import \
