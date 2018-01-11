@@ -574,6 +574,44 @@ qiime feature-classifier classify-sklearn \
 --o-classification Ag_trial_dada2_taxonomy.qza
 ```
 
+### Done with qiime unique feature_table and taxonomy analysis
+
+**PICRUST function prediction analysis**
+
+1. Install picrust software in my home directory ``/nics/d/home/fliu21/anaconda2/bin``
+
+  * deactivate qiime2-2017.11  *but still do not have permission for installation on ACF*
+  
+  ```
+  source deactivate
+  ```
+  * Logout of beacon and re-login
+  * conda install -c bioconda picrust
+  
+2. Mac installation : python 3.5.2  >  anaconda > qiime2-2017.12
+
+  * Install python 3.5.2 from this [link](https://www.python.org/downloads/)
+  * Download Anaconda package for Mac OS system from this [link](https://www.anaconda.com/download/) and double-click to install
+  * Follow this documentation for installation of qiime2 within conda environment [link](https://docs.qiime2.org/2017.12/install/native/#install-qiime-2-within-a-conda-environment)
+  
+  ```
+  conda install wget
+  ```
+  ```
+  wget https://data.qiime2.org/distro/core/qiime2-2017.12-py35-osx-conda.yml
+  conda env create -n qiime2-2017.12 --file qiime2-2017.12-py35-osx-conda.yml
+  ```
+  
+  
+  
+  
+  
+  ```
+  
+
+
+
+
 
 
 
