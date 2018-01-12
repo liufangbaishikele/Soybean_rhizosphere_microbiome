@@ -547,9 +547,9 @@ qiime vsearch cluster-features-closed-reference \
 --i-table Ag_trial_table_dada2.qza \
 --i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
 --p-perc-identity 1 \
---o-clustered-table Ag_trial_closeRef_table_dada2.qza \
---o-clustered-sequences Ag_trial_colseRef_seqs_dada2.qza \
---o-unmatched-sequences Ag_trial_closeRef_unmatched_seqs_dada2.qza
+--o-clustered-table Ag_trial_closeRef_99_table_dada2.qza \
+--o-clustered-sequences Ag_trial_closeRef_99_seqs_dada2.qza \
+--o-unmatched-sequences Ag_trial_closeRef_99_unmatched_seqs_dada2.qza
 ```
 6. Using close_ref sequence as input for PICRUSTs
 
