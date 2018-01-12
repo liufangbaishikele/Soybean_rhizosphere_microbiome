@@ -624,18 +624,11 @@ qiime feature-classifier classify-sklearn \
   
   ```
   conda install wget
-  ```
-  ```
+  
   wget https://data.qiime2.org/distro/core/qiime2-2017.12-py35-osx-conda.yml
   conda env create -n qiime2-2017.12 --file qiime2-2017.12-py35-osx-conda.yml
   ```
-  
-  
-  
-  
-  
-  ```
-  
+3. 
 
 
 
