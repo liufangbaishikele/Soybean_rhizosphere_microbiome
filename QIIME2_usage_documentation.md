@@ -682,10 +682,11 @@ Following this qiime forum [link](https://forum.qiime2.org/t/picrust-support/137
   --o-unmatched-sequences Ag_trial_closeRef_99_unmatched_seqs_dada2.qza
   ```
  
-  
-5. Using close_ref sequence as input for PICRUSTs
 
-  * **Normalization** of the OTU table using ``normalize_by_copy_number.py`` from PICRUST 
+5.  **Normalization** of the OTU table using ``normalize_by_copy_number.py`` from PICRUST 
+
+ *Using close_ref sequence as input for PICRUSTs*
+ 
   GOT error message
   ```
   Traceback (most recent call last):
@@ -710,12 +711,18 @@ IOError: [Errno 2] No such file or directory: '/nics/d/home/fliu21/anaconda2/lib
   -i feature-table.biom \
   -o normalized_feature_table.biom 
   ```
-  * **Function prediction** using normalized OTU table 
+6. **Function prediction** using normalized OTU table 
   Similar error pops out. No such file or directory:'/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/ko_13_5_precalculated.tab.gz'. Solution is the same, just download KO file from this [link](http://kronos.pharmacology.dal.ca/public_files/picrust/picrust_precalculated_v1.1.3/13_5/ko_13_5_precalculated.tab.gz) to ``/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/`` directory using ``wget`` command
   ```
   predict_metagenomes.py -i normalized_feature_table.biom -o metagenome_prediction.biom
   ```
+7. Categorize the KO list to pathway information using KEGG_pathway at 3 level
 
+```
+categorize_by_function.py -i metagenome_prediction.biom -c KEGG_Pathways -l 3 -o metagenome_prediction_L3.biom
+```
+  
+ 
 
 
 
