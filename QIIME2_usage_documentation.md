@@ -538,8 +538,26 @@ qiime feature-table tabulate-seqs \
   --i-tree Ag_trial_unrooted_tree_dada2.qza \
   --o-rooted-tree Ag_trial_rooted_tree_dada2.qza
   ```
+5. **Generate close_referenced feature table using 99_gg_341_785_seqs as reference sequences**
+Following this qiime forum [link](https://forum.qiime2.org/t/picrust-support/1376/10)
 
-5. **Export qiime feature-table**
+```
+qiime vsearch cluster-features-closed-reference \
+--i-sequences Ag_trial_seqs_dada2.qza \
+--i-table Ag_trial_table_dada2.qza \
+--i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
+--p-perc-identity 1 \
+--o-clustered-table Ag_trial_closeRef_table_dada2.qza \
+--o-clustered-sequences Ag_trial_colseRef_seqs_dada2.qza \
+--o-unmatched-sequences Ag_trial_closeRef_unmatched_seqs_dada2.qza
+```
+6. Using close_ref sequence as input for PICRUSTs
+
+```
+```
+
+
+6. **Export qiime feature-table**
 
 ```
 qiime tools export Ag_trial_table_dada2.qza \
@@ -548,7 +566,7 @@ qiime tools export Ag_trial_table_dada2.qza \
 The output is a biom file, which is not readable using vim.
 
 
-6. **Train greengene reference to generate customized feature classifers**
+7. **Train greengene reference to generate customized feature classifers**
 
 * Download the greengene dada from this [link](ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz)
 * Unzip the ``tar.gz`` file using ``tar -xzvf gg_13_8_otus.tar.gz``
