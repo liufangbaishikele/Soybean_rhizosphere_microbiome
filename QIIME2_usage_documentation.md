@@ -699,7 +699,7 @@ Following this qiime forum [link](https://forum.qiime2.org/t/picrust-support/137
     fileobj = self.myfileobj = __builtin__.open(filename, mode or 'rb')
 IOError: [Errno 2] No such file or directory: '/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/16S_13_5_precalculated.tab.gz'
   ```
-  * Search and download precalculated 16S data from this [link](http://kronos.pharmacology.dal.ca/public_files/picrust/picrust_precalculated_v1.1.3/13_5/16S_13_5_precalculated.tab.gz)
+  * **Solution** - Search and download precalculated 16S data from this [link](http://kronos.pharmacology.dal.ca/public_files/picrust/picrust_precalculated_v1.1.3/13_5/16S_13_5_precalculated.tab.gz)
   
   **NOTE**
   Now in PICRUST1.1.3 version, there is only ``16S_13_5_precalculated.tab.gz`` and older version``18may2012``, BUT not 16S_13_8_precalculated.tab.gz. However, 16S_13_8_gg is the greengene reference I used for taxnomy and closeRef OTU clustering. As a quick practice, I just use 16S_13_8_precalculated.tab.gz (which is not right).
@@ -711,8 +711,7 @@ IOError: [Errno 2] No such file or directory: '/nics/d/home/fliu21/anaconda2/lib
   -o normalized_feature_table.biom 
   ```
   * **Function prediction** using normalized OTU table 
-  Similar error pops out. No such file or directory:'/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/ko_13_5_precalculated.tab.gz'
-  
+  Similar error pops out. No such file or directory:'/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/ko_13_5_precalculated.tab.gz'. Solution is the same, just download KO file from this [link](http://kronos.pharmacology.dal.ca/public_files/picrust/picrust_precalculated_v1.1.3/13_5/ko_13_5_precalculated.tab.gz) to ``/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/`` directory using ``wget`` command
   ```
   predict_metagenomes.py -i normalized_feature_table.biom -o metagenome_prediction.biom
   ```
