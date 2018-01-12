@@ -510,8 +510,36 @@ qiime feature-table tabulate-seqs \
 --i-data Ag_trial_seqs_dada2.qza \
 --o-visualization Ag_trial_seqs_dada2.qzv
 ```
+4. Generate phylogenetic tree
 
-4. **Export qiime feature-table**
+  * Generate alignment file using sequence data
+  ```
+  qiime alignment mafft \
+  --i-sequences Ag_trial_seqs_dada2.qza \
+  --o-alignment Ag_trial_align_dada2.qza
+  ```
+  * Mask the the alignment file to remove highly variable positions, which are generally considered to add noise to a resulting phylogenetic tree.
+  
+  ```
+  qiime alignment mask \
+  --i-alignment Ag_trial_align_dada2.qza \
+  --o-masked-alignment Ag_trial_masked_align_dada2.qza
+  ```
+  * Generate unrooted tree
+  
+  ```
+  qiime phylogeny fasttree --i-alignment Ag_trial_masked_align_dada2.qza --o-tree Ag_trial_unrooted_tree_dada2.qza
+  ```
+  
+  * Creat rooted tree using unrooted tree by midpoint method 
+  
+  ```
+  qiime phylogeny midpoint-root \
+  --i-tree Ag_trial_unrooted_tree_dada2.qza \
+  --o-rooted-tree Ag_trial_rooted_tree_dada2.qza
+  ```
+
+5. **Export qiime feature-table**
 
 ```
 qiime tools export Ag_trial_table_dada2.qza \
@@ -520,7 +548,7 @@ qiime tools export Ag_trial_table_dada2.qza \
 The output is a biom file, which is not readable using vim.
 
 
-5. **Train greengene reference to generate customized feature classifers**
+6. **Train greengene reference to generate customized feature classifers**
 
 * Download the greengene dada from this [link](ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz)
 * Unzip the ``tar.gz`` file using ``tar -xzvf gg_13_8_otus.tar.gz``
