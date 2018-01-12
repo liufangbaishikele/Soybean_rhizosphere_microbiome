@@ -541,16 +541,30 @@ qiime feature-table tabulate-seqs \
 5. **Generate close_referenced feature table using 99_gg_341_785_seqs as reference sequences**
 Following this qiime forum [link](https://forum.qiime2.org/t/picrust-support/1376/10)
 
-```
-qiime vsearch cluster-features-closed-reference \
---i-sequences Ag_trial_seqs_dada2.qza \
---i-table Ag_trial_table_dada2.qza \
---i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
---p-perc-identity 1 \
---o-clustered-table Ag_trial_closeRef_99_table_dada2.qza \
---o-clustered-sequences Ag_trial_closeRef_99_seqs_dada2.qza \
---o-unmatched-sequences Ag_trial_closeRef_99_unmatched_seqs_dada2.qza
-```
+
+  * 99% similarity based
+  ```
+  qiime vsearch cluster-features-closed-reference \
+  --i-sequences Ag_trial_seqs_dada2.qza \
+  --i-table Ag_trial_table_dada2.qza \
+  --i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
+  --p-perc-identity 1 \
+  --o-clustered-table Ag_trial_closeRef_99_table_dada2.qza \
+  --o-clustered-sequences Ag_trial_closeRef_99_seqs_dada2.qza \
+  --o-unmatched-sequences Ag_trial_closeRef_99_unmatched_seqs_dada2.qza
+  ```
+  * 97% similarity based
+  ```
+  qiime vsearch cluster-features-closed-reference \
+  --i-sequences Ag_trial_seqs_dada2.qza \
+  --i-table Ag_trial_table_dada2.qza \
+  --i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
+  --p-perc-identity 3 \
+  --o-clustered-table Ag_trial_closeRef_97_table_dada2.qza \
+  --o-clustered-sequences Ag_trial_closeRef_97_seqs_dada2.qza \
+  --o-unmatched-sequences Ag_trial_closeRef_97_unmatched_seqs_dada2.qza
+  ```
+  
 6. Using close_ref sequence as input for PICRUSTs
 
 ```
