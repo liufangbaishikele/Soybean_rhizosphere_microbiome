@@ -538,49 +538,11 @@ qiime feature-table tabulate-seqs \
   --i-tree Ag_trial_unrooted_tree_dada2.qza \
   --o-rooted-tree Ag_trial_rooted_tree_dada2.qza
   ```
-5. **Generate close_referenced feature table using 99_gg_341_785_seqs as reference sequences**
-Following this qiime forum [link](https://forum.qiime2.org/t/picrust-support/1376/10)
 
 
-  * 99% similarity based
-  ```
-  qiime vsearch cluster-features-closed-reference \
-  --i-sequences Ag_trial_seqs_dada2.qza \
-  --i-table Ag_trial_table_dada2.qza \
-  --i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
-  --p-perc-identity 1 \
-  --o-clustered-table Ag_trial_closeRef_99_table_dada2.qza \
-  --o-clustered-sequences Ag_trial_closeRef_99_seqs_dada2.qza \
-  --o-unmatched-sequences Ag_trial_closeRef_99_unmatched_seqs_dada2.qza
-  ```
-  * 97% similarity based
-  ```
-  qiime vsearch cluster-features-closed-reference \
-  --i-sequences Ag_trial_seqs_dada2.qza \
-  --i-table Ag_trial_table_dada2.qza \
-  --i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
-  --p-perc-identity 3 \
-  --o-clustered-table Ag_trial_closeRef_97_table_dada2.qza \
-  --o-clustered-sequences Ag_trial_closeRef_97_seqs_dada2.qza \
-  --o-unmatched-sequences Ag_trial_closeRef_97_unmatched_seqs_dada2.qza
-  ```
-  
-6. Using close_ref sequence as input for PICRUSTs
-
-```
-```
 
 
-6. **Export qiime feature-table**
-
-```
-qiime tools export Ag_trial_table_dada2.qza \
---output-dir Ag_trial_table_dada2_export
-```
-The output is a biom file, which is not readable using vim.
-
-
-7. **Train greengene reference to generate customized feature classifers**
+5. **Train greengene reference to generate customized feature classifers**
 
 * Download the greengene dada from this [link](ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz)
 * Unzip the ``tar.gz`` file using ``tar -xzvf gg_13_8_otus.tar.gz``
@@ -617,7 +579,7 @@ qiime feature-classifier extract-reads \
 ```
 
 *Generate the classifier*
-
+Once all of the above preparation work were done, the next step is to train the classifier using Naive Bayes method
 ```
 qiime feature-classifier fit-classifier-naive-bayes \
 --i-reference-reads 99-greengene-341-805-ref-seqs.qza \
@@ -625,7 +587,7 @@ qiime feature-classifier fit-classifier-naive-bayes \
 --o-classifier 99_greengene_341_805_ref_classifier.qza
 ```
 
-*Once all of the above preparation work were done, the next step is to train the classifier using Naive Bayes method*
+6. **Gernate taxnomy table using customized classifier**
 
 ```
 qiime feature-classifier classify-sklearn \
@@ -633,6 +595,19 @@ qiime feature-classifier classify-sklearn \
 --i-reads Ag_trial_seqs_dada2.qza \
 --o-classification Ag_trial_dada2_taxonomy.qza
 ```
+
+
+7. **Export qiime feature-table (as biom)**
+
+```
+qiime tools export Ag_trial_table_dada2.qza \
+--output-dir Ag_trial_table_dada2_export
+```
+The output is a biom file, which is not readable using vim.
+
+
+
+
 
 ### Done with qiime unique feature_table and taxonomy analysis
 
@@ -648,19 +623,99 @@ qiime feature-classifier classify-sklearn \
   * Logout of beacon and re-login
   * conda install -c bioconda picrust
   
-2. Mac installation : python 3.5.2  >  anaconda > qiime2-2017.12
+2. Mac installation : python 3.5.2  >  anaconda > qiime2-2017.12 
 
   * Install python 3.5.2 from this [link](https://www.python.org/downloads/)
   * Download Anaconda package for Mac OS system from this [link](https://www.anaconda.com/download/) and double-click to install
   * Follow this documentation for installation of qiime2 within conda environment [link](https://docs.qiime2.org/2017.12/install/native/#install-qiime-2-within-a-conda-environment)
-  
+
   ```
   conda install wget
   
   wget https://data.qiime2.org/distro/core/qiime2-2017.12-py35-osx-conda.yml
   conda env create -n qiime2-2017.12 --file qiime2-2017.12-py35-osx-conda.yml
   ```
-3. 
+ 
+3. Mac installation of picrust
+
+
+ **conda install -c bioconda picrust**
+
+  Error 
+  ```
+  Solving environment: failed
+
+  UnsatisfiableError: The following specifications were found to be in conflict:
+    - picrust
+    - pyzmq
+  Use "conda info <package>" to see the dependencies for each package.
+  ```
+
+   **conda install -c bioconda python=2.7 picrust**
+   
+  Error
+  ```
+    UnsatisfiableError: The following specifications were found to be in conflict:
+      - clyent -> python=3.5
+      - python=2.7
+    Use "conda info <package>" to see the dependencies for each package.
+  ```
+  **Solution**
+  
+  * ``conda update anaconda``
+  * ``conda install -c bioconda picrust``
+
+
+4. **Generate close_referenced feature table using 99_gg_341_785_seqs as reference sequences**
+Following this qiime forum [link](https://forum.qiime2.org/t/picrust-support/1376/10)
+
+
+  * 99% similarity based
+  ```
+  qiime vsearch cluster-features-closed-reference \
+  --i-sequences Ag_trial_seqs_dada2.qza \
+  --i-table Ag_trial_table_dada2.qza \
+  --i-reference-sequences 99_greengene_341_805_ref_seqs.qza \
+  --p-perc-identity 1 \
+  --o-clustered-table Ag_trial_closeRef_99_table_dada2.qza \
+  --o-clustered-sequences Ag_trial_closeRef_99_seqs_dada2.qza \
+  --o-unmatched-sequences Ag_trial_closeRef_99_unmatched_seqs_dada2.qza
+  ```
+ 
+  
+5. Using close_ref sequence as input for PICRUSTs
+
+  * **Normalization** of the OTU table using ``normalize_by_copy_number.py`` from PICRUST 
+  GOT error message
+  ```
+  Traceback (most recent call last):
+  File "/nics/d/home/fliu21/anaconda2/bin/normalize_by_copy_number.py", line 131, in <module>
+    main()
+  File "/nics/d/home/fliu21/anaconda2/bin/normalize_by_copy_number.py", line 77, in main
+    count_table_fh = gzip.open(input_count_table,'rb')
+  File "/nics/d/home/fliu21/anaconda2/lib/python2.7/gzip.py", line 34, in open
+    return GzipFile(filename, mode, compresslevel)
+  File "/nics/d/home/fliu21/anaconda2/lib/python2.7/gzip.py", line 94, in __init__
+    fileobj = self.myfileobj = __builtin__.open(filename, mode or 'rb')
+IOError: [Errno 2] No such file or directory: '/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/16S_13_5_precalculated.tab.gz'
+  ```
+  * Search and download precalculated 16S data from this [link](http://kronos.pharmacology.dal.ca/public_files/picrust/picrust_precalculated_v1.1.3/13_5/16S_13_5_precalculated.tab.gz)
+  
+  **NOTE**
+  Now in PICRUST1.1.3 version, there is only ``16S_13_5_precalculated.tab.gz`` and older version``18may2012``, BUT not 16S_13_8_precalculated.tab.gz. However, 16S_13_8_gg is the greengene reference I used for taxnomy and closeRef OTU clustering. As a quick practice, I just use 16S_13_8_precalculated.tab.gz (which is not right).
+  
+  * Now when I run the command it just works fine
+  ```
+  normalize_by_copy_number.py \
+  -i feature-table.biom \
+  -o normalized_feature_table.biom 
+  ```
+  * **Function prediction** using normalized OTU table 
+  Similar error pops out. No such file or directory:'/nics/d/home/fliu21/anaconda2/lib/python2.7/site-packages/picrust/data/ko_13_5_precalculated.tab.gz'
+  
+  ```
+  predict_metagenomes.py -i normalized_feature_table.biom -o metagenome_prediction.biom
+  ```
 
 
 
