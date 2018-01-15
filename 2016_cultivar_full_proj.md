@@ -57,8 +57,32 @@ cp /nics/d/home/fliu21/16S_cultivar_proj/4th_run/raw_fastq/*.fastq  /nics/d/home
 
 ```
 cd /nics/d/home/fliu21/16S_cultivar_proj/raw_fastq
-
+ls *R1_001.fastq > forward_ID
+ls *R1_001.fastq > reverse_ID
+sed 's/\([^.*]\)_S.*/\1/' forward_ID > treatment_ID
+paste --delimiters="\t" treatment_ID forward_ID reverse)_ID > cultivar.files
 ```
+2. make.contigs together with oligo file will only make contigs using extactly match of both forward and reverse primer
+
+* Here is a quick example illustrating how oligo works
+  * There are 167705 raw reads in this sample
+  * make.contigs(ffastq=Ag_B_10_S13_L001_R1_001.fastq, rfastq=Ag_B_10_S13_L001_R2_001.fastq,processors=16)
+  * the output trim.contigs file has 167,705 contigs.
+ 
+  *BUT when I make.contigs together using oligo file*
+  * make.contigs(ffastq=Ag_B_10_S13_L001_R1_001.fastq, rfastq=Ag_B_10_S13_L001_R2_001.fastq,oligos=cultivar.oligo,processors=16)
+  * It turned out that only 149,099 contigs are left after make.contigs as those with mismatch with primer sequences were automatically discarded
+  
+3. The following are a quick summary of lost of reads along each step of mothur pipeline 
+
+  Total read from 136 samples - 19,358,039
+  After make.contigs - 15,946,467
+  After trimming- 12,247,497
+  After trimming – 11,773,645 
+  Romove Chimera – 9,967,343 
+  Remove non-bacteria – 9,946,720 
+  OTUs- 175,957 (9,945,986 reads = 9,945,986/ 15,946,467 = 62.37% ; 9,945,986/19,358,039=51.37%)
+
 
 
 .
