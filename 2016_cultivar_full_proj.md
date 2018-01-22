@@ -79,11 +79,17 @@ paste --delimiters="\t" treatment_ID forward_ID reverse)_ID > cultivar.files
 **Sequence number summary**
 -----------------------------
   Total read from 136 samples - 19,358,039
+  
   After make.contigs - 15,946,467
-  After trimming- 12,247,497
-  After trimming – 11,773,645 
+  
+  After trimming- 12,247,497 
+  
+  After trimming – 11,773,645
+  
   Romove Chimera – 9,967,343 
-  Remove non-bacteria – 9,946,720 
+  
+  Remove non-bacteria – 9,946,720
+  
   OTUs- 175,957 (9,945,986 reads = 9,945,986/ 15,946,467 = 62.37% ; 9,945,986/19,358,039=51.37%)
 
 
