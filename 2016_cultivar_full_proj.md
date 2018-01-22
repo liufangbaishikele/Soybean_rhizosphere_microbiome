@@ -75,6 +75,9 @@ paste --delimiters="\t" treatment_ID forward_ID reverse)_ID > cultivar.files
   
 3. The following are a quick summary of lost of reads along each step of mothur pipeline 
 
+-----------------------------
+**Sequence number summary**
+-----------------------------
   Total read from 136 samples - 19,358,039
   After make.contigs - 15,946,467
   After trimming- 12,247,497
