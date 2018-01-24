@@ -605,8 +605,14 @@ qiime tools export Ag_trial_table_dada2.qza \
 ```
 The output is a biom file, which is not readable using vim.
 
+8. **Add taxonomy information and metadata to OTU biom table** using biom add_metadata function of biom-format package through conda installation ``conda install -c bioconda biom-format ``
 
-
+  * Copy OTU biom, taxonomy.tsv and metadata.tsv to the same folder 
+  * **Remember** to change the header of taxonomy.tsv with #OTUID taxonomy  confidence
+  * Double check sampleID from sample_metadata table and that inside of biom, make sure they match with each other and in right order
+  * biom add_metadata -i -o --sample-metadata-fp --observation-metadata-fp --sc-separated taxonomy
+  * Then the output could be used to be imported to phyloseq using ``import_biom``
+  
 
 
 ### Done with qiime unique feature_table and taxonomy analysis
