@@ -196,8 +196,15 @@ python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/
  sed 's/\t/,/g' ForRhi_cor_sparcc.txt > ForRhi_cor_sparcc.csv
  ```
  
-
-
+------------------------------------------------------
+## SparCC analysis on soybean genotype project
+------------------------------------------------------
+* Navigate to working directory ``/lustre/haven/gamma/staton/projects/soybean_rhizosphere/05_final_run/16S_cultivar_proj/analysis/002_mothur_analysis/rarefied_shared_SparCC``
+* copy genus level OTU table created by mothur to this current SparCC directory 
+* Subset shared file to Ag_soil, Ag_Rhi, For_soil, For_Rhi.
+* Rarefy shared file to 19023 sequencing depth
+* Remove any taxa that with total reads smaller than 50.
+* Write out genus OTU table to local computer ``/Users/fangliu/Documents/2016_cultivar_project/R_analysis/SparCC_2nd``
 
 
 
