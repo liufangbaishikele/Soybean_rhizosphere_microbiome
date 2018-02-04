@@ -26,4 +26,5 @@ ImportError: No module named Bio
   * Now if I type ``python graphlan.py`` it just output information of usage and too few arguments.
   * Now installation are done and we are ready for build tree and produce annotation file.
   
-4. 
+4. For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment.
+  * 
