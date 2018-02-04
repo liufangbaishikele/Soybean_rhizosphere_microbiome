@@ -27,4 +27,8 @@ ImportError: No module named Bio
   * Now installation are done and we are ready for build tree and produce annotation file.
   
 4. For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment.
-  * 
+  * First, prep-process phylotype-based shared file and cons taxonomy file ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.shared`` and ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy``
+  * As sub.sample command in mothur could not combine subseted shared file with cons taxonomy file. So the below preprocessing will be done in R.
+  * Remove genus that has tax_sum smaller than 100
+  * Rarefy shared file to minimum depth
+  * Write out edited OTU table and taxonomy table for generating circular tree. 
