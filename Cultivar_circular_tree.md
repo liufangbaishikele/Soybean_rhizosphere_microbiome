@@ -22,3 +22,5 @@ bash Anaconda3-4.4.0-Linux-x86_64.sh
     from Bio import Phylo
 ImportError: No module named Bio
   ```
+  * It indicate that biopython module is not installed. To check if this is the problem, run python command ``import Bio``
+  * 
