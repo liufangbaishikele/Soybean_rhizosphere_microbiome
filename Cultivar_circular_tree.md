@@ -26,9 +26,46 @@ ImportError: No module named Bio
   * Now if I type ``python graphlan.py`` it just output information of usage and too few arguments.
   * Now installation are done and we are ready for build tree and produce annotation file.
   
-4. For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment.
+4. **R data pre-process**
+For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment.
   * First, prep-process phylotype-based shared file and cons taxonomy file ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.shared`` and ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy``
   * As sub.sample command in mothur could not combine subseted shared file with cons taxonomy file. So the below preprocessing will be done in R.
-  * Remove genus that has tax_sum smaller than 100
-  * Rarefy shared file to minimum depth
-  * Write out edited OTU table and taxonomy table for generating circular tree. 
+  * Rarefy OTU table to minimum sequencing depth
+  * Prune OTU table to keep top 200 genus based on tax_sums results
+  * Transform count phyloseq object to relative abundance
+  * Merge samples based on treatment category. Here fun=mean does not work for OTU table, in fact, it use fun=sum (means it sums value of replications that belongs to each treatment)
+  ```
+  Agriculture_Bulk, Agriculture_CV1, Agriculture_CV2, Agriculture_CV3, Agriculture_CV4, Agriculture_CV5, Agriculture_CV6, Agriculture_Fresh, Forest_Bulk, Forest_CV1, Forest_CV2, Forest_CV3, Forest_CV4, Forest_CV5, Forest_CV6, Forest_Fresh  
+  ```
+  * Combine taxa table and otu table and write out the dataset to local computer for manual annotation and tree building
+  * Generate node size 
+  ```
+  Genus_node_size<-data.frame(name=tax_table(merge_r_graphlan_phyloseq)[,6],size=taxa_sums(merge_r_graphlan_phyloseq))
+  Family...
+  Order...
+  Class...
+  Phylum...
+  ```
+ 5. Generate tree file and annotation file - Now the downward process are done in ACF
+  * 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
