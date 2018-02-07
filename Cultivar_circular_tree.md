@@ -46,8 +46,11 @@ For this circular phylogenetic tree, I will use not only taxanomy information bu
   Class...
   Phylum...
   ```
- 5. Generate tree file and annotation file - Now the downward process are done in ACF
-  * First, edit the taxanomy file to match with the tree file format required by GraPhlAn. Below is part of the tree file I built. **NOTE** Taxonomies are separated via ``.``.
+ 
+ 
+ 5. **Generate tree file** 
+  Now the downward process are done in ACF
+  * First, edit the taxanomy file to match with the tree file format required by GraPhlAn. Below is part of the tree file I built. **NOTE** Taxonomies are separated via ``.``. Please see this [cultivar_tree](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_tree)
   
   ```
 Bacteria.Acidobacteria.Acidobacteria_Gp6.Acidobacteria_Gp6_order_incertae_sedis.Acidobacteria_Gp6_family_incertae_sedis.Gp6
@@ -71,7 +74,7 @@ Bacteria.Actinobacteria.Actinobacteria.Actinomycetales.Intrasporangiaceae.Intras
  * **NOTE** remember to change the corresponding taxa in node size file and otu_tax_combined_table
 
 6. **Creat annotation file**
- * This is the most time_consuming part. Make sure during this process, always use **tab** between elements.
+ * This is the most time_consuming part. Make sure during this process, always use **tab** between elements. Please see this [cultivar_annot_05](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_annot_05)
  
    i. title parameter
     
