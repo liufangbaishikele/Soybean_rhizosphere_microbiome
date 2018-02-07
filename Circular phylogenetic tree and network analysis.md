@@ -350,6 +350,7 @@ total_plotted_degrees   340
    * ``brantch_bracket_depth``  - is the ratio of bracket depth to the distance between two neigbour vertical nodes
    * ``annotation_font_size``
    * ``annotation_legend_font_size`` The will generate legend like the third column.
+   * ``annotation_background_offset`` will determine the distance between the outside node and the first ring. Here I set it to be 0.1
    ```
    Alphaproteobacteria     annotation	a:Alphaproteobacteria
    Betaproteobacteria	annotation	b:Betaproteobacteria
@@ -503,8 +504,8 @@ UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal 
   5. Ready to run ``graphlan_annot.py`` and ``graphlan.py``
   
   ```
-  graphlan_annotate.py --annot cultivar.annot_07 cultivar.tree cultivar_annot_07.tree 
-  graphlan.py cultivar_annot_07.tree cultivar_tree_07.png --dpi 300 --pad 1 --size 16
+  python graphlan_annotate.py --annot cultivar.annot_07 cultivar.tree cultivar_annot_07.tree 
+  python graphlan.py cultivar_annot_07.tree cultivar_tree_07.png --dpi 300 --pad 1 --size 16
   ```
   
   
