@@ -156,88 +156,35 @@ total_plotted_degrees   340
     * ``ring_label``
     * ``ring_label_color``
     
-    ** NOTE ** I have no idea why when I copy the following contents from excel to my annotation file, it always got decode problems.
-    Here are the error information
+   ** NOTE ** Whenever you got this error message ``Classes not implemented for external annotations``, it indicate that some of the taxa name does not match with your tree file or there are extra characters are introduced when generate the annotation file.
     
-    ```
-    Classes not implemented for external annotations
-Traceback (most recent call last):
-  File "/lustre/medusa/fliu21/anaconda2/bin/graphlan_annotate.py", line 56, in <module>
-    ctree.annotate( args['annot'], args['outtree'] if args['outtree'] else args['intree'] ) # ,
-  File "/lustre/medusa/fliu21/anaconda2/bin/src/graphlan_lib.py", line 320, in annotate
-    Phylo.write( self.tree, out_file, "phyloxml")
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/_io.py", line 83, in write
-    n = getattr(supported_formats[format], 'write')(trees, fp, **kwargs)
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 131, in write
-    return Writer(obj).write(file, encoding=encoding, indent=indent)
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 675, in __init__
-    self._tree = ElementTree.ElementTree(self.phyloxml(phyloxml))
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 688, in phyloxml
-    elem.append(self.phylogeny(tree))
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 652, in wrapped
-    elem.append(getattr(self, method)(item))
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 654, in wrapped
-    elem.text = _serialize(obj.value)
-  File "/lustre/medusa/fliu21/anaconda2/lib/python2.7/site-packages/Bio/Phylo/PhyloXMLIO.py", line 627, in _serialize
-    return unicode(value)
-UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1: ordinal not in range(128)
-
-    ```
-    The problems is that when I copy content from excel, their are some format that unix or python can not recognize
-    
-    ```
-    ring_internal_separator_thickness	1	2 
-    ring_width	1	0.8
-    ring_separator_color	1	#888888
-    ring_label	1	Ag_CV1
-    ring_label_color	1	#ce0404
-    ```
-    
-    When I head this part using ``head -38 cultivar.annot_04 | tail -l | od -c ``
-    
-    I found that at the end of the first line, it came out two numbers(302 240) that is not what I pasted into. See below:
-    
-    ```
-    r   i   n   g   _   i   n   t   e   r   n   a
-    l   _   s   e   p   a   r   a   t   o   r   _   t   h   i   c
-    k   n   e   s   s  \t   2  \t   2 302 240
-    ```
-    So, I checked and editted the pasted content. It should be fine now.
+   
   2. clade specific parameter in this format ``[clade_name] ring_option ring_level(integers)  parameter``
   
     * ``ring_alpha``
     * ``ring_height``
     * ``ring_color``
-  ** Here, the ring alpha value were calculated as average relative abundance within treatment and multiply 10** 
+    
+  ** Here, the ring alpha value were calculated as average relative abundance within treatment and multiply 25** 
   
   ** Note ** When you forgot to type in all the clade specific paramters and you set up more external ring levesl, during annotation, it will give me a warning that ``Classes not implemented for external annotations``
-  Make sure add all of the clade ring information.
+  
+  Make sure add all of the clade specific information.
   
   3. ** NOTE ** Graphlan are very sensitive to extra characters or spaces or format 
-    * ``head -n file | od -c `` to check is there are windows format that after pasting from excel
-    * Using ``Vim`` to highlight trailing spaces and tabs in txt file in linux.
+  
+   * ``head -n file | od -c `` to check is there are windows format that after pasting from excel
+   * Using ``Vim`` to highlight trailing spaces and tabs in txt file in linux.
       1. ``Vim cultivar.annot_04``
       2. ``:set hlsearch ``
       3. ``/\s\+$``
       4. ``:%s/\s\+$//``
-  
-  4. Add rings for agriculture and forest fresh & bulk soil samples
-    * Inside of R, subset ``r_filter_family_phyloseq`` object to fresh and bulk soil samples.
-    * Merge phyloseq based on Treat factor and creat ``bulkfreshsub_r_filter_family_phyloseq``. Sample_sums 
     
-    ```
-    Agriculture_Bulk Agriculture_Fresh       Forest_Bulk      Forest_Fresh 
-               12                 5                12                 5 
-    ```
-    * Combine OTU and taxonomy table to one table and write out as csv format
-    * Inside of excel, make sure otu# order match with that of rhizosphere one.
-    * Calculate alpha (average relative abundance within treatment * 10)
-    
-  5. Ready to run ``graphlan_annot.py`` and ``graphlan.py``
+  4. Ready to run ``graphlan_annot.py`` and ``graphlan.py``
   
   ```
-  python graphlan_annotate.py --annot cultivar.annot_07 cultivar.tree cultivar_annot_07.tree 
-  python graphlan.py cultivar_annot_07.tree cultivar_tree_07.png --dpi 300 --pad 1 --size 16
+  python graphlan_annotate.py --annot cultivar.annot cultivar.tree cultivar_annoted_tree 
+  python graphlan.py cultivar_annoted_tree cultivar_annoted_tree.png --dpi 300 --pad 1 --size 16
   ```
  
  
