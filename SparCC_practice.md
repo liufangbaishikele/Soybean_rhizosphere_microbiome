@@ -199,12 +199,55 @@ python PseudoPvals.py AgRhi_SparCC/basis_corr/AgRhi_cor_sparcc.txt AgRhi_SparCC/
 ------------------------------------------------------
 ## SparCC analysis on soybean genotype project
 ------------------------------------------------------
-* Navigate to working directory ``/lustre/haven/gamma/staton/projects/soybean_rhizosphere/05_final_run/16S_cultivar_proj/analysis/002_mothur_analysis/rarefied_shared_SparCC``
-* copy genus level OTU table created by mothur to this current SparCC directory 
-* Subset shared file to Ag_soil, Ag_Rhi, For_soil, For_Rhi.
-* Rarefy shared file to 19023 sequencing depth
-* Remove any taxa that with total reads smaller than 50.
-* Write out genus OTU table to local computer ``/Users/fangliu/Documents/2016_cultivar_project/R_analysis/SparCC_2nd``
+
+1. Prepare genus level OTU table and taxonomy on ACF
+
+  ``/lustre/haven/gamma/staton/projects/soybean_rhizosphere/05_final_run/16S_cultivar_proj/analysis/002_mothur_analysis/rarefied_shared_SparCC``
+  * copy genus level OTU table created by mothur to this current SparCC directory 
+  * Subset shared file to Ag_soil, Ag_Rhi, For_soil, For_Rhi.
+  * Rarefy shared file to 19023 sequencing depth
+  * Remove any genera that with total reads smaller than 50.
+  * Write out genus OTU table to local computer ``/Users/fangliu/Documents/2016_cultivar_project/R_analysis/SparCC_2nd``
+ 
+2. Intergrating OTU count table and taxonomy table with row names corresponding to genus name and write out to local computer.
+3. Format the csv file to below format.
+```
+Genus	                                     Ag_B_1     	Ag_B_10      	Ag_B_11 ...
+Bacteria_unclassified	                      3762	        4006	        4160
+Planctomycetaceae_unclassified	             480	         800	         921
+Spartobacteria_genera_incertae_sedis	       179	         209	         194
+Burkholderia	                                1	            12	          24
+.
+.
+.
+
+```
+4. Upload above csv file to ACF and substitude comma with tab.
+5. Running SparCC to calculate SparCC correlation matrix as well as p_value matrix. Below is the job script:
+```
+python SparCC.py Ag_Rhi/Ag_Rhi_genus_SparCC.txt  -i 20 --cor_file=Ag_Rhi/basis_corr/Ag_Rhi_genus_cor_sparcc.txt -a SparCC
+python MakeBootstraps.py  Ag_Rhi/Ag_Rhi_genus_SparCC.txt -n 200 --template=Ag_Rhi_genus_otu_count_permutation#.txt --path=Ag_Rhi/pvals/bootstrap_simulation/
+
+for ((i=0;i<=199;i++))
+do
+  echo $i
+  python SparCC.py Ag_Rhi/pvals/bootstrap_simulation/Ag_Rhi_genus_otu_count_permutation"$i".txt -i 20 --cor_file=Ag_Rhi/pvals/bootstrap_corr/Ag_Rhi_genus_bootstrap_permutation"$i"_corr.txt -a SparCC
+done
+
+python PseudoPvals.py Ag_Rhi/basis_corr/Ag_Rhi_genus_cor_sparcc.txt Ag_Rhi/pvals/bootstrap_corr/Ag_Rhi_genus_bootstrap_permutation#_corr.txt 200 -o Ag_Rhi/pvals/Ag_Rhi_genus_two_sided_pvalue.txt -t two_sided
+```
+**NOTE**:  
+
+  * During the above calculation process, SparCC correlation are averate based on 20 iterations.
+  * p_value matrix are calculate based on 200 bootstraping process. Basically, during the bootstraping process, it genearted 200 sets of simulated genus count matrix from original genus count matrix. By comparing the SparCC correlation matrix generated using 200 simulated datasets with that generated from our original dataset, it will give the p_value information.
+  
+  
+6. Convert SparCC correlation matrix (txt) and p_value matrix (txt) to csv file
+
+7. Transfer data from ACF to local computer and start network analysis in R using igraph package. In terms of igraph network analysis, refer to this [tutorial](http://kateto.net/networks-r-igraph)
+
+
+
 
 
 
