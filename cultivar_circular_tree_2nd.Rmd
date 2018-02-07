@@ -1,0 +1,123 @@
+---
+title: "Cultivar_circular_tree_2nd"
+author: "Fang Liu"
+date: "2/4/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load working environment and directory
+
+```{r}
+library(phyloseq)
+setwd("/Users/fangliu/Documents/2016_cultivar_project/R_analysis/circular_tree_2nd")
+```
+
+
+## Read into shared and taxonomy file
+
+```{r}
+cultivar_phyloseq<-import_mothur(mothur_shared_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.shared",mothur_constaxonomy_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy")
+colnames(tax_table(cultivar_phyloseq))<-c('Kingdom','Phylum','Class','Order','Family','Genus')
+cultivar_phyloseq
+
+CV_meta<-read.csv("cultivar_meta.csv",head=TRUE,row.names = 1)
+identical(rownames(CV_meta),sample_names(cultivar_phyloseq))
+dim(CV_meta)
+head(CV_meta)
+CV_meta_phyloseq<-sample_data(CV_meta)
+
+# cultivar_phyloseq
+cultivar_phyloseq<-merge_phyloseq(cultivar_phyloseq,CV_meta_phyloseq)
+cultivar_phyloseq
+
+# rarefaction
+rarefied_cultivar_phyloseq<-rarefy_even_depth(cultivar_phyloseq,sample.size = min(sample_sums(cultivar_phyloseq)),replace = FALSE,rngseed = 1013,trimOTUs = TRUE)
+sample_sums(rarefied_cultivar_phyloseq)[1:5]
+
+# subset top 200 genus for circular phylogenetic tree 
+top_200_genus<-labels( sort(taxa_sums(rarefied_cultivar_phyloseq),TRUE)[1:200])
+graphlan_phyloseq<-prune_taxa(top_200_genus,rarefied_cultivar_phyloseq)
+taxa_sums(graphlan_phyloseq)
+sample_sums(graphlan_phyloseq)
+
+# transform count to relative abundance
+r_graphlan_phyloseq<-transform_sample_counts(graphlan_phyloseq,function(x) x/sum(x))
+
+# merge samples based on treatment
+merge_r_graphlan_phyloseq<-merge_samples(r_graphlan_phyloseq,group="Treat",fun=mean)
+merge_r_graphlan_phyloseq # as documented, mean function is ignored for the OTU_table,so in fact the function is sum instead of mean.
+sample_sums(merge_r_graphlan_phyloseq) # equals to sample number of each treatment
+```
+
+## Write out the shared file and the taxonomy file for GraPhlAn analysis
+
+```{r}
+genus_graphlan_OTU<-otu_table(merge_r_graphlan_phyloseq)
+dim(genus_graphlan_OTU)
+genus_graphlan_OTU[1:5,1:5]
+genus_graphlan_taxonomy<-tax_table(merge_r_graphlan_phyloseq)
+dim(genus_graphlan_taxonomy)
+genus_graphlan_taxonomy[1:5,]
+#write.csv(genus_graphlan_taxonomy,file="genus_table_for_graphlan.csv")
+genus_graphlan_combine<-data.frame(t(genus_graphlan_OTU),genus_graphlan_taxonomy,tax_sum=taxa_sums(genus_graphlan_OTU))
+dim(genus_graphlan_combine)
+genus_graphlan_combine[1:5,]
+rownames(genus_graphlan_combine)<-genus_graphlan_combine$Genus
+#write.csv(genus_graphlan_combine,file="otu_tax_combine_for_graphlan.csv")
+```
+
+
+## Generate node size file
+
+
+```{r}
+
+#-----Genus------
+Genus_node_size<-data.frame(name=tax_table(merge_r_graphlan_phyloseq)[,6],size=taxa_sums(merge_r_graphlan_phyloseq))
+dim(Genus_node_size)
+Genus_node_size[1:5,]
+#write.csv(Genus_node_size,file="Genus_node_size.csv")
+
+#----Family------
+family_graphlan_phyloseq<-tax_glom(merge_r_graphlan_phyloseq,taxrank = rank_names(merge_r_graphlan_phyloseq)[5],NArm=TRUE) 
+Family_node_size<-data.frame(name=tax_table(family_graphlan_phyloseq)[,5],size=taxa_sums(family_graphlan_phyloseq))
+dim(Family_node_size)
+Family_node_size[1:5,]
+#write.csv(Family_node_size,file="Family_node_size.csv")
+
+#----Order-------
+order_graphlan_phyloseq<-tax_glom(merge_r_graphlan_phyloseq,taxrank = rank_names(merge_r_graphlan_phyloseq)[4],NArm = TRUE)
+Order_node_size<-data.frame(name=tax_table(order_graphlan_phyloseq)[,4],size=taxa_sums(order_graphlan_phyloseq))
+dim(Order_node_size)
+Order_node_size[1:5,]
+#write.csv(Order_node_size,file="Order_node_size.csv")
+
+#----Class----
+class_graphlan_phyloseq<-tax_glom(merge_r_graphlan_phyloseq,taxrank = rank_names(merge_r_graphlan_phyloseq)[3],NArm = TRUE)
+Class_node_size<-data.frame(name=tax_table(class_graphlan_phyloseq)[,3],size=taxa_sums(class_graphlan_phyloseq))
+dim(Class_node_size)
+Class_node_size[1:5,]
+#write.csv(Class_node_size,file="Class_node_size.csv")
+
+#----Phylum-----
+phylum_graphlan_phyloseq<-tax_glom(merge_r_graphlan_phyloseq,taxrank = rank_names(merge_r_graphlan_phyloseq)[2],NArm = TRUE)
+Phylum_node_size<-data.frame(name=tax_table(phylum_graphlan_phyloseq)[,2],size=taxa_sums(phylum_graphlan_phyloseq))
+dim(Phylum_node_size)
+Phylum_node_size[1:5,]
+#write.csv(Phylum_node_size,file="Phylum_node_size.csv")
+```
+
+
+## Phylum color visualization
+
+```{r}
+#unique(Ag_soil_vertex$Phylum) # 19
+phylum_list<-c('Bacteria_unclassified','Planctomycetes','Verrucomicrobia','Proteobacteria','Acidobacteria','Bacteroidetes','Actinobacteria','TM7','Gemmatimonadetes','Chlamydiae','Firmicutes','Chloroflexi','OD1','Armatimonadetes','Nitrospira','BRC1','WS3','Tenericutes','Spirochaetes')      
+
+labels<-c('#9b9696','#ffee32','#f2701a','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#8ae2cc','#316022','#85f785','#be85f7','#990101','#b105fc','#fc05ba','#fc0505','#210000','#bc883a')
+pie(rep(1,19),col=labels,labels = phylum_list,radius = 1.0)
+```
