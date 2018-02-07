@@ -27,7 +27,7 @@ ImportError: No module named Bio
   * Now installation are done and we are ready for build tree and produce annotation file.
   
 4. **R data pre-process**
-For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment. About detailed R code, please find from this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_circular_tree_2nd.Rmd)
+For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment. About detailed R code, please find from this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_circular_tree_2nd.Rmd). Please find the output excel files through this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/Excel_for_GraPhlAn.zip)
   * First, prep-process phylotype-based shared file and cons taxonomy file ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.shared`` and ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy``
   * As sub.sample command in mothur could not combine subseted shared file with cons taxonomy file. So the below preprocessing will be done in R.
   * Rarefy OTU table to minimum sequencing depth
