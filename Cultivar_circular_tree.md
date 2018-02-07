@@ -22,7 +22,7 @@ bash Anaconda3-4.4.0-Linux-x86_64.sh
     from Bio import Phylo
 ImportError: No module named Bio
   ```
-  * It indicate that biopython module is not installed. To check if this is the problem, run python command ``import Bio``
+  * It indicate that biopython module is not installed. To check if this is the problem, run python command ``import Bio``, it told me that I do not have biopython module. So install biopython through anaconda by ``conda install -c anaconda biopython``
   * Now if I type ``python graphlan.py`` it just output information of usage and too few arguments.
   * Now installation are done and we are ready for build tree and produce annotation file.
   
