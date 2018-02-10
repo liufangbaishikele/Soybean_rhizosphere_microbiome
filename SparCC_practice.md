@@ -19,8 +19,7 @@ rm 05f4d3f31d77.zip
 * I have installed Panda package in my ``anaconda2/bin`` directory, so I will set up the PATH to this 
 
 ```
-expo
-rt PATH=/lustre/medusa/fliu21/anaconda2/bin:$PATH
+export PATH=/lustre/medusa/fliu21/anaconda2/bin:$PATH
 ```
 * As python has already installed on beacon server, I just load the environment by
 ```
