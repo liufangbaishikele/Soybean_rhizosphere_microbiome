@@ -8,7 +8,7 @@ bash Anaconda3-4.4.0-Linux-x86_64.sh
 ``` 
 2. **Download GraPhlAn python-based packge from Bitbucket cloud**
 
-``wget https://bitbucket.org/nsegata/graphlan/downloads/``
+``https://bitbucket.org/nsegata/graphlan/get/e91e79a421f9.zip``
 ``unzip`` downloaded zip file using ``unzip file.zip
 ``
 3. **Test graphlan.py**
