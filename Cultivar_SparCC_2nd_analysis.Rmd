@@ -1,0 +1,222 @@
+---
+title: "Cultivat_SparCC2nd_analysis"
+author: "Fang Liu"
+date: "1/30/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## set up working environment and load libraries
+```{r}
+setwd("/Users/fangliu/Documents/2016_cultivar_project/R_analysis/SparCC_2nd")
+library(phyloseq)
+library(igraph)
+```
+
+-----------------------------------
+#        Ag_soil dataset
+-----------------------------------
+
+## prepare the dataset as input for SparCC
+
+```{r}
+Ag_soil_phyloseq<-import_mothur(mothur_shared_file ="Ag_soil_cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.shared",mothur_constaxonomy_file="cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy")
+colnames(tax_table(Ag_soil_phyloseq))=c('Kingdom','Phylum','Class','Order','Family','Genus')
+sample_sums(Ag_soil_phyloseq)
+Ag_soil_phyloseq
+dim(otu_table(Ag_soil_phyloseq))
+dim(tax_table(Ag_soil_phyloseq))
+Ag_soil_genus_SparCC<-data.frame(tax_table(Ag_soil_phyloseq)[,6],otu_table(Ag_soil_phyloseq))
+#write.csv(Ag_soil_genus_SparCC, file = "Ag_soil_genus_Sparcc.csv",row.names = TRUE)
+```
+
+## import SparCC and p_value matrix into R 
+
+```{r}
+# Read in SparCC correlation matrix
+Ag_soil_SparCC_cor<-read.csv("Ag_soil_genus_cor_sparcc.csv",header = TRUE,row.names = 1)
+Ag_soil_SparCC_cor<-as.matrix(Ag_soil_SparCC_cor)
+dim(Ag_soil_SparCC_cor)
+Ag_soil_SparCC_cor[1:5,1:5]
+# Read in corresponding p_value dataframe
+Ag_soil_SparCC_pvalue<-read.csv("Ag_soil_genus_two_sided_pvalue.csv",header = TRUE,row.names = 1)
+Ag_soil_SparCC_pvalue<-as.matrix(Ag_soil_SparCC_pvalue)
+dim(Ag_soil_SparCC_pvalue)
+Ag_soil_SparCC_pvalue[1:5,1:5]
+```
+
+
+## Generate vertices information and add relative abundance information to vertices and color information
+
+
+```{r}
+r_Ag_soil_phyloseq<-transform_sample_counts(Ag_soil_phyloseq,function(x) x/sum(x))
+
+Ag_soil_vertex<-data.frame(tax_table(r_Ag_soil_phyloseq),size=taxa_sums(r_Ag_soil_phyloseq)/length(sample_sums(r_Ag_soil_phyloseq))) # Here size are the average relative abundance of each genus across all samples within same treatment
+dim(Ag_soil_vertex)
+Ag_soil_vertex[1:5,]
+Ag_soil_vertex<-Ag_soil_vertex[,c(2,6,7)]
+head(Ag_soil_vertex)
+unique(Ag_soil_vertex$Phylum) # 19
+levels<-unique(Ag_soil_vertex$Phylum)
+labels<-c('#9b9696','#ffee32','#f2701a','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#8ae2cc','#316022','#85f785','#be85f7','#990101','#b105fc','#fc05ba','#fc0505','#210000','#bc883a')
+pie(rep(1,19),col=labels)
+Ag_soil_vertex$color<-factor(Ag_soil_vertex$Phylum,levels = levels,labels=labels)
+Ag_soil_vertex[1:5,]
+
+```
+
+
+## Creat links and have a look at edge adn vertex information
+
+```{r}
+# read SparCC correlation matrix and p_value matrix to igraph
+Ag_soil_net<-graph_from_adjacency_matrix(Ag_soil_SparCC_cor,weighted = TRUE)
+Ag_soil_net  ## 186 vertices and 34596 edges
+identical(V(Ag_soil_net)$name,row.names(Ag_soil_SparCC_cor))
+V(Ag_soil_net)$name==rownames(Ag_soil_SparCC_cor)
+V(Ag_soil_net)$name=rownames(Ag_soil_SparCC_cor)
+identical(V(Ag_soil_net)$name,row.names(Ag_soil_SparCC_cor))
+V(Ag_soil_net)$name[1:5]
+E(Ag_soil_net)$weight[1:5] # here the weight are just the SparCC coefficience
+
+# Add vertex information to the network
+V(Ag_soil_net)$color<-Ag_soil_vertex$color
+V(Ag_soil_net)$size<-Ag_soil_vertex$size
+
+# Add edge information (p_value) to the network
+E(Ag_soil_net)$p_value<-Ag_soil_SparCC_pvalue
+E(Ag_soil_net)$p_value
+
+## Add edge width to the network
+E(Ag_soil_net)$width<-E(Ag_soil_net)$weight*10
+E(Ag_soil_net)$width
+```
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+In order to simplify the network, including remove of loop and mutual edges. If using simplify function on Bulk_net, this will loose p_value and edge color information (which indicate if the interaction are negarive or positive)
+
+To solve this problem, I will write out the edge and vertices in dataframe format and read into these two dataframe and modify the edge information globally before use ``graph_from_data_frame`` to create network object.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+## write out edges and vertices in dataframe format, and edit on the network
+
+```{r}
+
+# -- generate edge dataframe from whole network---
+
+Ag_soil_edges<-as_data_frame(Ag_soil_net,what = "edges")
+#Ag_soil_edges
+dim(Ag_soil_edges) # 34596 rows and 5 columns
+head(Ag_soil_edges)
+# Here the weight indicate the strength of interaction (SparCC value), p_value is the significance of interactions nad width is formulated based on weight * 40.
+
+# -- generate vertices dataframe from whole network---
+
+Ag_soil_vertices<-as_data_frame(Ag_soil_net,what = "vertices")
+dim(Ag_soil_vertices)
+head(Ag_soil_vertices)
+Ag_soil_vertices<-data.frame(Ag_soil_vertices,vertex_color=Ag_soil_vertex$color,label=1:nrow (Ag_soil_vertices))
+head(Ag_soil_vertices)
+
+
+# remove edges that from and to the same nodes(selfloops)
+
+Ag_soil_edges<-Ag_soil_edges[which(Ag_soil_edges$from!=Ag_soil_edges$to),]
+dim(Ag_soil_edges) # 34410 rows and 5 columns
+head(Ag_soil_edges)
+
+# Creat a new network using the above vertices and edge data frame
+Ag_soil_net1 <- graph_from_data_frame(d=Ag_soil_edges, vertices=Ag_soil_vertices, directed=T)#here if I used directed=FALSE, I will lost my p_value information as well as weight information. 
+Ag_soil_net1 # directed, 186 nodes and 34410 edges.
+E(Ag_soil_net1)$weight
+Ag_soil_net2<-Ag_soil_net1
+#Ag_soil_net2<-delete.vertices(Ag_soil_net1,grep("_unclassified",V(Ag_soil_net1)$name))
+#Ag_soil_net2 #206 nodes and 42230 edges
+
+# convert directed network to undirected network
+
+Ag_soil_net3<-as.undirected(Ag_soil_net2 ,mode = 'mutual',edge.attr.comb = "mean") # as a result, weight, p_value and width of edges are all averaged for mutual edges.
+Ag_soil_net3 # 186 nodes and 17205 edges
+E(Ag_soil_net2)$weight[1:20]
+E(Ag_soil_net3)$weight[1:20]
+E(Ag_soil_net3)$p_value
+E(Ag_soil_net3)$width
+
+
+## simplify the network from Ag_soil_net3
+
+#1)  remove non_significant edges with alpha=0.05
+
+summary(E(Ag_soil_net3)$p_value<0.05) #TRUE 2984 and FALSE 14221
+
+Ag_soil_net4<-delete.edges(Ag_soil_net3,which(E(Ag_soil_net3)$p_value>=0.05))
+Ag_soil_net4 # the edges decreased from 17205 to 2984
+summary(degree(Ag_soil_net4)==0) # all of the nodes has connection to others
+
+#2) remove non-significant edges with alpha=0.001
+
+summary(E(Ag_soil_net3)$p_value<0.001) # TRUE 806, FALSE 16399
+Ag_soil_net5<-delete.edges(Ag_soil_net3,which(E(Ag_soil_net3)$p_value>=0.001))
+Ag_soil_net5 # 186 nodes and 806 edges
+
+#3) further simplify the network based on degree
+barplot(sort(degree(Ag_soil_net5)))
+summary(degree(Ag_soil_net5)>20) # 31 nodes with degree larger than 20
+Ag_soil_net6<-delete.vertices(Ag_soil_net5,which(degree(Ag_soil_net5)<=20))
+Ag_soil_net6 # 31 nodes and 292 edges
+
+```
+
+
+## Plot network
+
+```{r}
+plot(Ag_soil_net4,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net4)$width/4),vertex.color=V(Ag_soil_net4)$color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net4)$weight>0)],vertex.size=degree(Ag_soil_net4)/10,layout=layout_with_fr (Ag_soil_net4),main="Ag_soil_net4") # green edges means positive correlation and red edges mean negative correlation
+
+
+plot(Ag_soil_net5,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net5)$width/3),vertex.color=V(Ag_soil_net5)$color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net5)$weight>0)],vertex.size=degree(Ag_soil_net5)/2,layout=layout_with_dh (Ag_soil_net5),main="Ag_soil_net5")
+
+
+plot(Ag_soil_net6,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net6)$width/3),vertex.color=V(Ag_soil_net6)$color,vertex.frame.color="#555555",vertex.label=V(Ag_soil_net6)$label,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net6)$weight>0)],vertex.size=degree(Ag_soil_net6)/2,layout=layout_with_dh (Ag_soil_net6),main="Ag_soil_net6")
+
+# vertex.label.color=V(Ag_soil_net4)$color,vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=3
+```
+
+## Ag_Rhi dataset
+
+```{r}
+Ag_Rhi_phyloseq<-import_mothur(mothur_shared_file = "Ag_Rhi_cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.shared",mothur_constaxonomy_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy")
+colnames(tax_table(Ag_Rhi_phyloseq))=c('Kingdom','Phylum','Class','Order','Family','Genus')
+Ag_Rhi_phyloseq
+Ag_Rhi_genus_SparCC<-data.frame(tax_table(Ag_Rhi_phyloseq)[,6],otu_table(Ag_Rhi_phyloseq))
+#write.csv(Ag_Rhi_genus_SparCC,file="Ag_Rhi_genus_SparCC.csv",row.names = TRUE)
+```
+
+## For_soil dataset
+
+```{r}
+For_soil_phyloseq<-import_mothur(mothur_shared_file = "For_soil_cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.shared",mothur_constaxonomy_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy")
+For_soil_phyloseq
+colnames(tax_table(For_soil_phyloseq))=c('Kingdom','Phylum','Class','Order','Family','Genus')
+For_soil_phyloseq
+For_soil_genus_SparCC<-data.frame(tax_table(For_soil_phyloseq)[,6],otu_table(For_soil_phyloseq))
+#write.csv(For_soil_genus_SparCC,file="For_soil_genus_SparCC.csv",row.names = TRUE)
+```
+
+## For_Rhi
+
+```{r}
+For_Rhi_phyloseq<-import_mothur(mothur_shared_file = "For_Rhi_cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.shared",mothur_constaxonomy_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy")
+For_Rhi_phyloseq
+colnames(tax_table(For_Rhi_phyloseq))=c('Kingdom','Phylum','Class','Order','Family','Genus')
+For_Rhi_phyloseq
+For_Rhi_genus_SparCC<-data.frame(tax_table(For_Rhi_phyloseq)[,6],otu_table(For_Rhi_phyloseq))
+#write.csv(For_Rhi_genus_SparCC,file="For_Rhi_genus_SparCC.csv",row.names = TRUE)
+```
