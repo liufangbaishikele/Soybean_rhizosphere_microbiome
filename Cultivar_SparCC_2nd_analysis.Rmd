@@ -15,7 +15,24 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("/Users/fangliu/Documents/2016_cultivar_project/R_analysis/SparCC_2nd")
 library(phyloseq)
 library(igraph)
+library(plyr)
 ```
+
+## Read into a whole .shared and cons.taxonomy file to define label factor 
+## This step is used to generate labels for each genus, which could be used to merge with four groups of vertex dataframe based on Genus name.
+
+```{r}
+cultivar_phyloseq<-import_mothur(mothur_constaxonomy_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy")
+colnames(tax_table(cultivar_phyloseq))=c('Kingdom','Phylum','Class','Order','Family','Genus')
+cultivar_phyloseq
+dim(cultivar_phyloseq)
+length(unique(tax_table(cultivar_phyloseq)[,6])) # two same genus name chloroflexi_unclassified, OTU056 and Otu672
+cultivar_meta<-data.frame(Genus=unique(tax_table(cultivar_phyloseq)[,6]),label=c(1:812))
+dim(cultivar_meta)
+head(cultivar_meta)
+
+```
+
 
 -----------------------------------
 #        Ag_soil dataset
@@ -42,6 +59,7 @@ Ag_soil_SparCC_cor<-read.csv("Ag_soil_genus_cor_sparcc.csv",header = TRUE,row.na
 Ag_soil_SparCC_cor<-as.matrix(Ag_soil_SparCC_cor)
 dim(Ag_soil_SparCC_cor)
 Ag_soil_SparCC_cor[1:5,1:5]
+
 # Read in corresponding p_value dataframe
 Ag_soil_SparCC_pvalue<-read.csv("Ag_soil_genus_two_sided_pvalue.csv",header = TRUE,row.names = 1)
 Ag_soil_SparCC_pvalue<-as.matrix(Ag_soil_SparCC_pvalue)
@@ -64,10 +82,19 @@ head(Ag_soil_vertex)
 unique(Ag_soil_vertex$Phylum) # 19
 levels<-unique(Ag_soil_vertex$Phylum)
 labels<-c('#9b9696','#ffee32','#f2701a','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#8ae2cc','#316022','#85f785','#be85f7','#990101','#b105fc','#fc05ba','#fc0505','#210000','#bc883a')
-pie(rep(1,19),col=labels)
+
+tiff ('Phylum_color_pie_plot.tiff', units="in", width=10, height=8, res=300)
+pie(rep(1,19),col=labels,labels = levels,radius = 1.0)
+dev.off()
+
 Ag_soil_vertex$color<-factor(Ag_soil_vertex$Phylum,levels = levels,labels=labels)
+dim(Ag_soil_vertex)
 Ag_soil_vertex[1:5,]
 
+Ag_soil_vertex<-join (Ag_soil_vertex,cultivar_meta,by="Genus") # Originally, I used merge function, but it turned out to be problematic, because after merge it will The rows are by default lexicographically sorted on the common columns. To resulve this problem, I changed merge function to joint function.
+
+dim(Ag_soil_vertex)
+Ag_soil_vertex[1:5,]
 ```
 
 
@@ -77,16 +104,17 @@ Ag_soil_vertex[1:5,]
 # read SparCC correlation matrix and p_value matrix to igraph
 Ag_soil_net<-graph_from_adjacency_matrix(Ag_soil_SparCC_cor,weighted = TRUE)
 Ag_soil_net  ## 186 vertices and 34596 edges
-identical(V(Ag_soil_net)$name,row.names(Ag_soil_SparCC_cor))
-V(Ag_soil_net)$name==rownames(Ag_soil_SparCC_cor)
-V(Ag_soil_net)$name=rownames(Ag_soil_SparCC_cor)
-identical(V(Ag_soil_net)$name,row.names(Ag_soil_SparCC_cor))
+V(Ag_soil_net)$name==as.character(Ag_soil_vertex$Genus) # the 9th name is improted uncorrected as started with number
+V(Ag_soil_net)$name=as.character(Ag_soil_vertex$Genus)
+identical(V(Ag_soil_net)$name,as.character(Ag_soil_vertex$Genus))
 V(Ag_soil_net)$name[1:5]
 E(Ag_soil_net)$weight[1:5] # here the weight are just the SparCC coefficience
 
 # Add vertex information to the network
-V(Ag_soil_net)$color<-Ag_soil_vertex$color
+V(Ag_soil_net)$vertex_color<-as.character(Ag_soil_vertex$color)
 V(Ag_soil_net)$size<-Ag_soil_vertex$size
+V(Ag_soil_net)$label<-Ag_soil_vertex$label
+V(Ag_soil_net)$Phylum<-as.character(Ag_soil_vertex$Phylum)
 
 # Add edge information (p_value) to the network
 E(Ag_soil_net)$p_value<-Ag_soil_SparCC_pvalue
@@ -122,9 +150,6 @@ head(Ag_soil_edges)
 Ag_soil_vertices<-as_data_frame(Ag_soil_net,what = "vertices")
 dim(Ag_soil_vertices)
 head(Ag_soil_vertices)
-Ag_soil_vertices<-data.frame(Ag_soil_vertices,vertex_color=Ag_soil_vertex$color,label=1:nrow (Ag_soil_vertices))
-head(Ag_soil_vertices)
-
 
 # remove edges that from and to the same nodes(selfloops)
 
@@ -165,12 +190,14 @@ summary(degree(Ag_soil_net4)==0) # all of the nodes has connection to others
 summary(E(Ag_soil_net3)$p_value<0.001) # TRUE 806, FALSE 16399
 Ag_soil_net5<-delete.edges(Ag_soil_net3,which(E(Ag_soil_net3)$p_value>=0.001))
 Ag_soil_net5 # 186 nodes and 806 edges
+Ag_soil_net5<-delete.vertices(Ag_soil_net5,degree(Ag_soil_net5)==0)
 
 #3) further simplify the network based on degree
 barplot(sort(degree(Ag_soil_net5)))
 summary(degree(Ag_soil_net5)>20) # 31 nodes with degree larger than 20
 Ag_soil_net6<-delete.vertices(Ag_soil_net5,which(degree(Ag_soil_net5)<=20))
 Ag_soil_net6 # 31 nodes and 292 edges
+Ag_soil_net7<-Ag_soil_net6
 
 ```
 
@@ -178,15 +205,23 @@ Ag_soil_net6 # 31 nodes and 292 edges
 ## Plot network
 
 ```{r}
-plot(Ag_soil_net4,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net4)$width/4),vertex.color=V(Ag_soil_net4)$color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net4)$weight>0)],vertex.size=degree(Ag_soil_net4)/10,layout=layout_with_fr (Ag_soil_net4),main="Ag_soil_net4") # green edges means positive correlation and red edges mean negative correlation
 
+tiff('Ag_soil_net4.tiff', units="in", width=10, height=8, res=300)
 
-plot(Ag_soil_net5,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net5)$width/3),vertex.color=V(Ag_soil_net5)$color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net5)$weight>0)],vertex.size=degree(Ag_soil_net5)/2,layout=layout_with_dh (Ag_soil_net5),main="Ag_soil_net5")
+plot(Ag_soil_net4,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net4)$width/4),vertex.color=V(Ag_soil_net4)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net4)$weight>0)],vertex.size=degree(Ag_soil_net4)/10,layout=layout_with_fr (Ag_soil_net4),main="Ag_soil_net4") # green edges means positive correlation and red edges mean negative correlation
 
+dev.off()
 
-plot(Ag_soil_net6,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net6)$width/3),vertex.color=V(Ag_soil_net6)$color,vertex.frame.color="#555555",vertex.label=V(Ag_soil_net6)$label,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net6)$weight>0)],vertex.size=degree(Ag_soil_net6)/2,layout=layout_with_dh (Ag_soil_net6),main="Ag_soil_net6")
+#plot(Ag_soil_net5,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net5)$width/3),vertex.color=V(Ag_soil_net5)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net5)$weight>0)],vertex.size=degree(Ag_soil_net5)/2,layout=layout_with_dh (Ag_soil_net5),main="Ag_soil_net5")
 
-# vertex.label.color=V(Ag_soil_net4)$color,vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=3
+tiff('Ag_soil_net6.tiff', units="in", width=10, height=8, res=300)
+plot(Ag_soil_net6,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net6)$width/3),vertex.color=V(Ag_soil_net6)$vertex_color,vertex.frame.color="#555555",vertex.label=V(Ag_soil_net6)$label,vertex.label.color="black",vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net6)$weight>0)],vertex.size=degree(Ag_soil_net6)/2,layout=layout_with_dh (Ag_soil_net6),main="Ag_soil_net6")
+dev.off()
+
+tiff('Ag_soil_net7.tiff', units="in", width=10, height=8, res=300)
+plot(Ag_soil_net7,edge.arrow.size=0,edge.width=abs(E(Ag_soil_net7)$width/3),vertex.color=V(Ag_soil_net7)$vertex_color,vertex.frame.color="#555555",vertex.label=V(Ag_soil_net7)$label,vertex.label.color="black",vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_soil_net7)$weight>0)],vertex.size=degree(Ag_soil_net7)/2,layout=layout_with_dh (Ag_soil_net7),main="Ag_soil_net7")
+dev.off()
+
 ```
 
 ## Ag_Rhi dataset
@@ -196,8 +231,178 @@ Ag_Rhi_phyloseq<-import_mothur(mothur_shared_file = "Ag_Rhi_cultivar.trim.contig
 colnames(tax_table(Ag_Rhi_phyloseq))=c('Kingdom','Phylum','Class','Order','Family','Genus')
 Ag_Rhi_phyloseq
 Ag_Rhi_genus_SparCC<-data.frame(tax_table(Ag_Rhi_phyloseq)[,6],otu_table(Ag_Rhi_phyloseq))
+
 #write.csv(Ag_Rhi_genus_SparCC,file="Ag_Rhi_genus_SparCC.csv",row.names = TRUE)
 ```
+
+## import SparCC and p_value matrix into R 
+
+```{r}
+# Read in SparCC correlation matrix
+Ag_Rhi_SparCC_cor<-read.csv("Ag_Rhi_genus_cor_sparcc.csv",header = TRUE,row.names = 1)
+Ag_Rhi_SparCC_cor<-as.matrix(Ag_Rhi_SparCC_cor)
+dim(Ag_Rhi_SparCC_cor) # 310 genus retained
+Ag_Rhi_SparCC_cor[1:5,1:5]
+# Read in corresponding p_value dataframe
+Ag_Rhi_SparCC_pvalue<-read.csv("Ag_Rhi_genus_two_sided_pvalue.csv",header = TRUE,row.names = 1)
+Ag_Rhi_SparCC_pvalue<-as.matrix(Ag_Rhi_SparCC_pvalue)
+dim(Ag_Rhi_SparCC_pvalue)
+Ag_Rhi_SparCC_pvalue[1:5,1:5]
+```
+
+
+## Generate vertices information and add relative abundance information to vertices and color information
+
+
+```{r}
+r_Ag_Rhi_phyloseq<-transform_sample_counts(Ag_Rhi_phyloseq,function(x) x/sum(x))
+
+Ag_Rhi_vertex<-data.frame(tax_table(r_Ag_Rhi_phyloseq),size=taxa_sums(r_Ag_Rhi_phyloseq)/length(sample_sums(r_Ag_Rhi_phyloseq))) # Here size are the average relative abundance of each genus across all samples within same treatment
+dim(Ag_Rhi_vertex)
+Ag_Rhi_vertex[1:5,]
+Ag_Rhi_vertex<-Ag_Rhi_vertex[,c(2,6,7)]
+head(Ag_Rhi_vertex)
+unique(Ag_Rhi_vertex$Phylum) # 18
+levels<-unique(Ag_soil_vertex$Phylum)
+labels<-c('#9b9696','#ffee32','#f2701a','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#8ae2cc','#316022','#85f785','#be85f7','#990101','#b105fc','#fc05ba','#fc0505','#210000','#bc883a')
+Ag_Rhi_vertex$color<-factor(Ag_Rhi_vertex$Phylum,levels = levels,labels=labels) # 18 phylum
+dim(Ag_Rhi_vertex)
+Ag_Rhi_vertex[1:5,]
+Ag_Rhi_vertex<-join (Ag_Rhi_vertex,cultivar_meta,by="Genus")
+dim(Ag_Rhi_vertex)
+Ag_Rhi_vertex[1:5,]
+```
+
+
+## Creat links and have a look at edge adn vertex information
+
+```{r}
+# read SparCC correlation matrix and p_value matrix to igraph
+Ag_Rhi_net<-graph_from_adjacency_matrix(Ag_Rhi_SparCC_cor,weighted = TRUE)
+Ag_Rhi_net  ## 310 vertices and 96100 edges
+identical(V(Ag_Rhi_net)$name,Ag_Rhi_vertex$Genus)
+V(Ag_Rhi_net)$name==Ag_Rhi_vertex$Genus
+V(Ag_Rhi_net)$name=as.character(Ag_Rhi_vertex$Genus)
+identical(V(Ag_Rhi_net)$name,as.character(Ag_Rhi_vertex$Genus))
+V(Ag_Rhi_net)$name[1:5]
+E(Ag_Rhi_net)$weight[1:5] # here the weight are just the SparCC coefficience
+
+# Add vertex information to the network
+V(Ag_Rhi_net)$vertex_color<-as.character(Ag_Rhi_vertex$color)
+V(Ag_Rhi_net)$size<-Ag_Rhi_vertex$size
+V(Ag_Rhi_net)$label<-Ag_Rhi_vertex$label
+V(Ag_Rhi_net)$Phylum<-as.character(Ag_Rhi_vertex$Phylum)
+
+# Add edge information (p_value) to the network
+E(Ag_Rhi_net)$p_value<-Ag_Rhi_SparCC_pvalue
+E(Ag_Rhi_net)$p_value
+
+## Add edge width to the network
+E(Ag_Rhi_net)$width<-E(Ag_Rhi_net)$weight*10
+E(Ag_Rhi_net)$width
+```
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+In order to simplify the network, including remove of loop and mutual edges. If using simplify function on Bulk_net, this will loose p_value and edge color information (which indicate if the interaction are negarive or positive)
+
+To solve this problem, I will write out the edge and vertices in dataframe format and read into these two dataframe and modify the edge information globally before use ``graph_from_data_frame`` to create network object.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+## write out edges and vertices in dataframe format, and edit on the network
+
+```{r}
+
+# -- generate edge dataframe from whole network---
+
+Ag_Rhi_edges<-as_data_frame(Ag_Rhi_net,what = "edges")
+#Ag_Rhi_edges
+dim(Ag_Rhi_edges) # 96100 rows and 5 columns
+head(Ag_Rhi_edges)
+# Here the weight indicate the strength of interaction (SparCC value), p_value is the significance of interactions nad width is formulated based on weight * 40.
+
+# -- generate vertices dataframe from whole network---
+
+Ag_Rhi_vertices<-as_data_frame(Ag_Rhi_net,what = "vertices")
+dim(Ag_Rhi_vertices) # 310 genus across rows and 3 vertex attributes across colums
+head(Ag_Rhi_vertices)
+
+# remove edges that from and to the same nodes(selfloops)
+
+Ag_Rhi_edges<-Ag_Rhi_edges[which(Ag_Rhi_edges$from!=Ag_Rhi_edges$to),]
+dim(Ag_Rhi_edges) # 95790 rows and 5 columns
+head(Ag_Rhi_edges)
+
+# Creat a new network using the above vertices and edge data frame
+Ag_Rhi_net1 <- graph_from_data_frame(d=Ag_Rhi_edges, vertices=Ag_Rhi_vertices, directed=T)#here if I used directed=FALSE, I will lost my p_value information as well as weight information. 
+Ag_Rhi_net1 # directed, 310 nodes and 95790 edges.
+E(Ag_Rhi_net1)$weight
+Ag_Rhi_net2<-Ag_Rhi_net1
+#Ag_Rhi_net2<-delete.vertices(Ag_Rhi_net1,grep("_unclassified",V(Ag_Rhi_net1)$name))
+#Ag_Rhi_net2 #206 nodes and 42230 edges
+
+# convert directed network to undirected network
+
+Ag_Rhi_net3<-as.undirected(Ag_Rhi_net2 ,mode = 'mutual',edge.attr.comb = "mean") # as a result, weight, p_value and width of edges are all averaged for mutual edges.
+Ag_Rhi_net3 # 310 nodes and 47895 edges
+E(Ag_Rhi_net2)$weight[1:20]
+E(Ag_Rhi_net3)$weight[1:20]
+E(Ag_Rhi_net3)$p_value
+E(Ag_Rhi_net3)$width
+
+
+## simplify the network from Ag_Rhi_net3
+
+#1)  remove non_significant edges with alpha=0.05
+
+summary(E(Ag_Rhi_net3)$p_value<0.05) #TRUE 6672 and FALSE 41223
+Ag_Rhi_net4<-delete.edges(Ag_Rhi_net3,which(E(Ag_Rhi_net3)$p_value>=0.05))
+Ag_Rhi_net4 # the edges decreased from 47895 to 6672
+summary(degree(Ag_Rhi_net4)==0) # all of the nodes has connection to others
+
+#2) remove non-significant edges with alpha=0.001
+
+summary(E(Ag_Rhi_net3)$p_value<0.001) # TRUE 1824, FALSE 46071
+Ag_Rhi_net5<-delete.edges(Ag_Rhi_net3,which(E(Ag_Rhi_net3)$p_value>=0.001))
+Ag_Rhi_net5 # 310 nodes and 1824 edges
+summary(degree(Ag_Rhi_net5)==0)
+Ag_Rhi_net5<-delete.vertices(Ag_Rhi_net5,degree(Ag_Rhi_net5)==0)
+Ag_Rhi_net5 # 283 nodes and 1824 edges
+
+#3) further simplify the network based on degree
+barplot(sort(degree(Ag_Rhi_net5)))
+summary(degree(Ag_Rhi_net5)>20) # 61 nodes with degree larger than 20
+Ag_Rhi_net6<-delete.vertices(Ag_Rhi_net5,which(degree(Ag_Rhi_net5)<=20))
+Ag_Rhi_net6 # 61 nodes and 618 edges
+
+#3) reduce nodes number equal to Ag_soil_net6
+Ag_Rhi_net7<-delete.vertices(Ag_Rhi_net6,labels(sort(degree(Ag_Rhi_net6),FALSE)[c(1:30)]))#31 nodes and 303 edges
+```
+
+
+## Plot network
+
+```{r}
+
+tiff('Ag_Rhi_net4.tiff', units="in", width=10, height=8, res=300)
+plot(Ag_Rhi_net4,edge.arrow.size=0,edge.width=abs(E(Ag_Rhi_net4)$width/4),vertex.color=V(Ag_Rhi_net4)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_Rhi_net4)$weight>0)],vertex.size=degree(Ag_Rhi_net4)/10,layout=layout_with_fr (Ag_Rhi_net4),main="Ag_Rhi_net4") # green edges means positive correlation and red edges mean negative correlation
+dev.off()
+
+#plot(Ag_Rhi_net5,edge.arrow.size=0,edge.width=abs(E(Ag_Rhi_net5)$width/3),vertex.color=V(Ag_Rhi_net5)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_Rhi_net5)$weight>0)],vertex.size=degree(Ag_Rhi_net5)/2,layout=layout_with_dh (Ag_Rhi_net5),main="Ag_Rhi_net5")
+
+tiff('Ag_Rhi_net6.tiff', units="in", width=10, height=8, res=300)
+plot(Ag_Rhi_net6,edge.arrow.size=0,edge.width=abs(E(Ag_Rhi_net6)$width/3),vertex.color=V(Ag_Rhi_net6)$vertex_color,vertex.frame.color="#555555",vertex.label=V(Ag_Rhi_net6)$label,vertex.label.color="black",vertex.label.cex=.6,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_Rhi_net6)$weight>0)],vertex.size=degree(Ag_Rhi_net6)/2,layout=layout_with_dh (Ag_Rhi_net6),main="Ag_Rhi_net6")
+dev.off()
+
+tiff('Ag_Rhi_net7.tiff', units="in", width=10, height=8, res=300)
+plot(Ag_Rhi_net7,edge.arrow.size=0,edge.width=abs(E(Ag_Rhi_net7)$width/3),vertex.color=V(Ag_Rhi_net7)$vertex_color,vertex.frame.color="#555555",vertex.label=V(Ag_Rhi_net7)$label,vertex.label.color="black",vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(Ag_Rhi_net7)$weight>0)],vertex.size=degree(Ag_Rhi_net7)/2,layout=layout_with_dh (Ag_Rhi_net7),main="Ag_Rhi_net7")
+dev.off()
+```
+
+
+
+
 
 ## For_soil dataset
 
@@ -210,6 +415,178 @@ For_soil_genus_SparCC<-data.frame(tax_table(For_soil_phyloseq)[,6],otu_table(For
 #write.csv(For_soil_genus_SparCC,file="For_soil_genus_SparCC.csv",row.names = TRUE)
 ```
 
+
+## import SparCC and p_value matrix into R 
+
+```{r}
+# Read in SparCC correlation matrix
+For_soil_SparCC_cor<-read.csv("For_soil_genus_cor_sparcc.csv",header = TRUE,row.names = 1)
+For_soil_SparCC_cor<-as.matrix(For_soil_SparCC_cor)
+dim(For_soil_SparCC_cor)
+For_soil_SparCC_cor[1:5,1:5]
+# Read in corresponding p_value dataframe
+For_soil_SparCC_pvalue<-read.csv("For_soil_genus_two_sided_pvalue.csv",header = TRUE,row.names = 1)
+For_soil_SparCC_pvalue<-as.matrix(For_soil_SparCC_pvalue)
+dim(For_soil_SparCC_pvalue)
+For_soil_SparCC_pvalue[1:5,1:5]
+```
+
+
+## Generate vertices information and add relative abundance information to vertices and color information
+
+
+```{r}
+r_For_soil_phyloseq<-transform_sample_counts(For_soil_phyloseq,function(x) x/sum(x))
+
+For_soil_vertex<-data.frame(tax_table(r_For_soil_phyloseq),size=taxa_sums(r_For_soil_phyloseq)/length(sample_sums(r_For_soil_phyloseq))) # Here size are the average relative abundance of each genus across all samples within same treatment
+dim(For_soil_vertex)
+For_soil_vertex[1:5,]
+For_soil_vertex<-For_soil_vertex[,c(2,6,7)]
+head(For_soil_vertex)
+unique(For_soil_vertex$Phylum) # 15
+levels<-unique(Ag_soil_vertex$Phylum)
+labels<-c('#9b9696','#ffee32','#f2701a','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#8ae2cc','#316022','#85f785','#be85f7','#990101','#b105fc','#fc05ba','#fc0505','#210000','#bc883a')
+pie(rep(1,19),col=labels)
+For_soil_vertex$color<-factor(For_soil_vertex$Phylum,levels = levels,labels=labels)
+dim(For_soil_vertex)
+For_soil_vertex[1:5,]
+For_soil_vertex<-join (For_soil_vertex,cultivar_meta,by="Genus")
+dim(For_soil_vertex)
+For_soil_vertex[1:5,]
+```
+
+
+## Creat links and have a look at edge adn vertex information
+
+```{r}
+# read SparCC correlation matrix and p_value matrix to igraph
+For_soil_net<-graph_from_adjacency_matrix(For_soil_SparCC_cor,weighted = TRUE)
+For_soil_net  ## 112 vertices and 12544 edges
+identical(V(For_soil_net)$name,For_soil_vertex$Genus)
+V(For_soil_net)$name==For_soil_vertex$Genus
+V(For_soil_net)$name=as.character(For_soil_vertex$Genus)
+identical(V(For_soil_net)$name,as.character(For_soil_vertex$Genus))
+V(For_soil_net)$name[1:5]
+E(For_soil_net)$weight[1:5] # here the weight are just the SparCC coefficience
+
+# Add vertex information to the network
+V(For_soil_net)$vertex_color<-as.character(For_soil_vertex$color)
+V(For_soil_net)$size<-For_soil_vertex$size
+V(For_soil_net)$label<-For_soil_vertex$label
+V(For_soil_net)$Phylum<-as.character(For_soil_vertex$Phylum)
+
+# Add edge information (p_value) to the network
+E(For_soil_net)$p_value<-For_soil_SparCC_pvalue
+E(For_soil_net)$p_value
+
+## Add edge width to the network
+E(For_soil_net)$width<-E(For_soil_net)$weight*10
+E(For_soil_net)$width
+```
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+In order to simplify the network, including remove of loop and mutual edges. If using simplify function on Bulk_net, this will loose p_value and edge color information (which indicate if the interaction are negarive or positive)
+
+To solve this problem, I will write out the edge and vertices in dataframe format and read into these two dataframe and modify the edge information globally before use ``graph_from_data_frame`` to create network object.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+## write out edges and vertices in dataframe format, and edit on the network
+
+```{r}
+
+# -- generate edge dataframe from whole network---
+
+For_soil_edges<-as_data_frame(For_soil_net,what = "edges")
+#For_soil_edges
+dim(For_soil_edges) # 12544 rows and 5 columns
+head(For_soil_edges)
+# Here the weight indicate the strength of interaction (SparCC value), p_value is the significance of interactions nad width is formulated based on weight * 40.
+
+# -- generate vertices dataframe from whole network---
+
+For_soil_vertices<-as_data_frame(For_soil_net,what = "vertices")
+dim(For_soil_vertices)
+head(For_soil_vertices)
+
+
+
+# remove edges that from and to the same nodes(selfloops)
+
+For_soil_edges<-For_soil_edges[which(For_soil_edges$from!=For_soil_edges$to),]
+dim(For_soil_edges) # 12432rows and 5 columns
+head(For_soil_edges)
+
+# Creat a new network using the above vertices and edge data frame
+For_soil_net1 <- graph_from_data_frame(d=For_soil_edges, vertices=For_soil_vertices, directed=T)#here if I used directed=FALSE, I will lost my p_value information as well as weight information. 
+For_soil_net1 # directed, 112 nodes and 12432 edges.
+E(For_soil_net1)$weight
+For_soil_net2<-For_soil_net1
+#For_soil_net2<-delete.vertices(For_soil_net1,grep("_unclassified",V(For_soil_net1)$name))
+#For_soil_net2 #206 nodes and 42230 edges
+
+# convert directed network to undirected network
+
+For_soil_net3<-as.undirected(For_soil_net2 ,mode = 'mutual',edge.attr.comb = "mean") # as a result, weight, p_value and width of edges are all averaged for mutual edges.
+For_soil_net3 # 112 nodes and 6216 edges
+E(For_soil_net2)$weight[1:20]
+E(For_soil_net3)$weight[1:20]
+E(For_soil_net3)$p_value
+E(For_soil_net3)$width
+
+
+## simplify the network from For_soil_net3
+
+#1)  remove non_significant edges with alpha=0.05
+
+summary(E(For_soil_net3)$p_value<0.05) #TRUE 1242 and FALSE 4974
+
+For_soil_net4<-delete.edges(For_soil_net3,which(E(For_soil_net3)$p_value>=0.05))
+For_soil_net4 # the edges decreased from 6216 to 1242
+summary(degree(For_soil_net4)==0) # all of the nodes has connection to others
+
+#2) remove non-significant edges with alpha=0.001
+
+summary(E(For_soil_net3)$p_value<0.001) # TRUE 388, FALSE 5828
+For_soil_net5<-delete.edges(For_soil_net3,which(E(For_soil_net3)$p_value>=0.001))
+summary(degree(For_soil_net5)==0) # 24 got no connection
+For_soil_net5<-delete.vertices(For_soil_net5,degree(For_soil_net5)==0)
+For_soil_net5 # 88 nodes and 338 edges
+
+#3) further simplify the network based on degree
+barplot(sort(degree(For_soil_net5)))
+summary(degree(For_soil_net5)>20) # 31 nodes with degree larger than 20
+For_soil_net6<-delete.vertices(For_soil_net5,which(degree(For_soil_net5)<=20))
+For_soil_net6 # 7 nodes and 20 edges
+
+#4) reduce node # to 31 and compare with that of Ag_soil_net6
+For_soil_net7<-delete.vertices(For_soil_net5,labels(sort(degree(For_soil_net5),FALSE)[1:(88-31)]))
+For_soil_net7 #31 nodes and 195 edges
+```
+
+
+## Plot network
+
+```{r}
+
+tiff('For_soil_net4.tiff', units="in", width=10, height=8, res=300)
+plot(For_soil_net4,edge.arrow.size=0,edge.width=abs(E(For_soil_net4)$width/4),vertex.color=V(For_soil_net4)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(For_soil_net4)$weight>0)],vertex.size=degree(For_soil_net4)/10,layout=layout_with_fr (For_soil_net4),main="For_soil_net4") # green edges means positive correlation and red edges mean negative correlation
+dev.off()
+
+#plot(For_soil_net5,edge.arrow.size=0,edge.width=abs(E(For_soil_net5)$width/3),vertex.color=V(For_soil_net5)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(For_soil_net5)$weight>0)],vertex.size=degree(For_soil_net5)/2,layout=layout_with_dh (For_soil_net5),main="For_soil_net5")
+
+tiff('For_soil_net6.tiff', units="in", width=10, height=8, res=300)
+plot(For_soil_net6,edge.arrow.size=0,edge.width=abs(E(For_soil_net6)$width/3),vertex.color=V(For_soil_net6)$vertex_color,vertex.frame.color="#555555",vertex.label=V(For_soil_net6)$label,vertex.label.color="black",vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(For_soil_net6)$weight>0)],vertex.size=degree(For_soil_net6)*3,layout=layout_with_dh (For_soil_net6),main="For_soil_net6")
+dev.off()
+
+tiff('For_soil_net7.tiff', units="in", width=10, height=8, res=300)
+plot(For_soil_net7,edge.arrow.size=0,edge.width=abs(E(For_soil_net7)$width/3),vertex.color=V(For_soil_net7)$vertex_color,vertex.frame.color="#555555",vertex.label=V(For_soil_net7)$label,vertex.label.color="black",vertex.label.cex=.6,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(For_soil_net7)$weight>0)],vertex.size=degree(For_soil_net7)/2,layout=layout_with_dh (For_soil_net7),main="For_soil_net7")
+dev.off()
+```
+
+
+
 ## For_Rhi
 
 ```{r}
@@ -220,3 +597,226 @@ For_Rhi_phyloseq
 For_Rhi_genus_SparCC<-data.frame(tax_table(For_Rhi_phyloseq)[,6],otu_table(For_Rhi_phyloseq))
 #write.csv(For_Rhi_genus_SparCC,file="For_Rhi_genus_SparCC.csv",row.names = TRUE)
 ```
+
+## import SparCC and p_value matrix into R 
+
+```{r}
+# Read in SparCC correlation matrix
+For_Rhi_SparCC_cor<-read.csv("For_Rhi_genus_cor_sparcc.csv",header = TRUE,row.names = 1)
+For_Rhi_SparCC_cor<-as.matrix(For_Rhi_SparCC_cor)
+dim(For_Rhi_SparCC_cor) # 175 genus retained
+For_Rhi_SparCC_cor[1:5,1:5]
+# Read in corresponding p_value dataframe
+For_Rhi_SparCC_pvalue<-read.csv("For_Rhi_genus_two_sided_pvalue.csv",header = TRUE,row.names = 1)
+For_Rhi_SparCC_pvalue<-as.matrix(For_Rhi_SparCC_pvalue)
+dim(For_Rhi_SparCC_pvalue)
+For_Rhi_SparCC_pvalue[1:5,1:5]
+```
+
+
+## Generate vertices information and add relative abundance information to vertices and color information
+
+
+```{r}
+r_For_Rhi_phyloseq<-transform_sample_counts(For_Rhi_phyloseq,function(x) x/sum(x))
+
+For_Rhi_vertex<-data.frame(tax_table(r_For_Rhi_phyloseq),size=taxa_sums(r_For_Rhi_phyloseq)/length(sample_sums(r_For_Rhi_phyloseq))) # Here size are the average relative abundance of each genus across all samples within same treatment
+dim(For_Rhi_vertex) # 175 and 7
+For_Rhi_vertex[1:5,]
+For_Rhi_vertex<-For_Rhi_vertex[,c(2,6,7)]
+head(For_Rhi_vertex)
+unique(For_Rhi_vertex$Phylum) # 15
+levels<-unique(Ag_soil_vertex$Phylum)
+labels<-c('#9b9696','#ffee32','#f2701a','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#8ae2cc','#316022','#85f785','#be85f7','#990101','#b105fc','#fc05ba','#fc0505','#210000','#bc883a')
+For_Rhi_vertex$color<-factor(For_Rhi_vertex$Phylum,levels = levels,labels=labels) # 18 phylum
+dim(For_Rhi_vertex)
+For_Rhi_vertex[1:5,]
+For_Rhi_vertex<-join (For_Rhi_vertex,cultivar_meta,by="Genus")
+dim(For_Rhi_vertex)
+For_Rhi_vertex[1:5,]
+
+```
+
+
+## Creat links and have a look at edge adn vertex information
+
+```{r}
+# read SparCC correlation matrix and p_value matrix to igraph
+For_Rhi_net<-graph_from_adjacency_matrix(For_Rhi_SparCC_cor,weighted = TRUE)
+For_Rhi_net  ## 175 vertices and 30625 edges
+identical(V(For_Rhi_net)$name,row.names(For_Rhi_SparCC_cor))
+V(For_Rhi_net)$name==rownames(For_Rhi_SparCC_cor)
+V(For_Rhi_net)$name=rownames(For_Rhi_SparCC_cor)
+identical(V(For_Rhi_net)$name,row.names(For_Rhi_SparCC_cor))
+V(For_Rhi_net)$name[1:5]
+E(For_Rhi_net)$weight[1:5] # here the weight are just the SparCC coefficience
+
+# Add vertex information to the network
+V(For_Rhi_net)$vertex_color<-as.character(For_Rhi_vertex$color)
+V(For_Rhi_net)$size<-For_Rhi_vertex$size
+V(For_Rhi_net)$label<-For_Rhi_vertex$label
+V(For_Rhi_net)$Phylum<-as.character(For_Rhi_vertex$Phylum)
+
+# Add edge information (p_value) to the network
+E(For_Rhi_net)$p_value<-For_Rhi_SparCC_pvalue
+E(For_Rhi_net)$p_value
+
+## Add edge width to the network
+E(For_Rhi_net)$width<-E(For_Rhi_net)$weight*10
+E(For_Rhi_net)$width
+```
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+In order to simplify the network, including remove of loop and mutual edges. If using simplify function on Bulk_net, this will loose p_value and edge color information (which indicate if the interaction are negarive or positive)
+
+To solve this problem, I will write out the edge and vertices in dataframe format and read into these two dataframe and modify the edge information globally before use ``graph_from_data_frame`` to create network object.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+## write out edges and vertices in dataframe format, and edit on the network
+
+```{r}
+
+# -- generate edge dataframe from whole network---
+
+For_Rhi_edges<-as_data_frame(For_Rhi_net,what = "edges")
+#For_Rhi_edges
+dim(For_Rhi_edges) # 30625 rows and 5 columns
+head(For_Rhi_edges)
+# Here the weight indicate the strength of interaction (SparCC value), p_value is the significance of interactions nad width is formulated based on weight * 40.
+
+# -- generate vertices dataframe from whole network---
+
+For_Rhi_vertices<-as_data_frame(For_Rhi_net,what = "vertices")
+dim(For_Rhi_vertices) # 175 genus across rows and 3 vertex attributes across colums
+head(For_Rhi_vertices)
+
+
+
+# remove edges that from and to the same nodes(selfloops)
+
+For_Rhi_edges<-For_Rhi_edges[which(For_Rhi_edges$from!=For_Rhi_edges$to),]
+dim(For_Rhi_edges) # 30450 rows and 5 columns
+head(For_Rhi_edges)
+
+# Creat a new network using the above vertices and edge data frame
+For_Rhi_net1 <- graph_from_data_frame(d=For_Rhi_edges, vertices=For_Rhi_vertices, directed=T)#here if I used directed=FALSE, I will lost my p_value information as well as weight information. 
+For_Rhi_net1 # directed, 175 nodes and 30450 edges.
+E(For_Rhi_net1)$weight
+For_Rhi_net2<-For_Rhi_net1
+#For_Rhi_net2<-delete.vertices(For_Rhi_net1,grep("_unclassified",V(For_Rhi_net1)$name))
+#For_Rhi_net2 #206 nodes and 42230 edges
+
+# convert directed network to undirected network
+
+For_Rhi_net3<-as.undirected(For_Rhi_net2 ,mode = 'mutual',edge.attr.comb = "mean") # as a result, weight, p_value and width of edges are all averaged for mutual edges.
+For_Rhi_net3 # 175 nodes and 15225 edges
+E(For_Rhi_net2)$weight[1:20]
+E(For_Rhi_net3)$weight[1:20]
+E(For_Rhi_net3)$p_value[1:20]
+E(For_Rhi_net3)$width[1:20]
+
+
+## simplify the network from For_Rhi_net3
+
+#1)  remove non_significant edges with alpha=0.05
+
+summary(E(For_Rhi_net3)$p_value<0.05) #TRUE 2445 and FALSE 12780
+For_Rhi_net4<-delete.edges(For_Rhi_net3,which(E(For_Rhi_net3)$p_value>=0.05))
+For_Rhi_net4 # the edges decreased from 15225 to 2445
+summary(degree(For_Rhi_net4)==0) # all of the nodes has connection to others
+
+#2) remove non-significant edges with alpha=0.001
+
+summary(E(For_Rhi_net3)$p_value<0.001) # TRUE 779, FALSE 14446
+For_Rhi_net5<-delete.edges(For_Rhi_net3,which(E(For_Rhi_net3)$p_value>=0.001))
+For_Rhi_net5 # 175 nodes and 779 edges
+summary(degree(For_Rhi_net5)==0) # 25 nodes got no connnection with others
+For_Rhi_net5<-delete.vertices(For_Rhi_net5,degree(For_Rhi_net5)==0)
+For_Rhi_net5 # 150 nodes and 779 edges
+
+#3) further simplify the network based on degree
+barplot(sort(degree(For_Rhi_net5)))
+summary(degree(For_Rhi_net5)>20) # 20 nodes with degree larger than 20
+For_Rhi_net6<-delete.vertices(For_Rhi_net5,which(degree(For_Rhi_net5)<=20))
+For_Rhi_net6 # 20 nodes and 132 edges
+
+#4) reduce nodes to 31 to make it comparable to Ag_soil_net6
+For_Rhi_net7<-delete.vertices(For_Rhi_net5,labels(sort(degree(For_Rhi_net5),FALSE)[1:(150-31)]))
+For_Rhi_net7 # left with 31 nodes and 222 edges
+```
+
+
+## Plot network
+
+```{r}
+
+tiff('For_Rhi_net4.tiff', units="in", width=10, height=8, res=300)
+plot(For_Rhi_net4,edge.arrow.size=0,edge.width=abs(E(For_Rhi_net4)$width/4),vertex.color=V(For_Rhi_net4)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(For_Rhi_net4)$weight>0)],vertex.size=degree(For_Rhi_net4)/10,layout=layout_with_fr (For_Rhi_net4),main="For_Rhi_net4") # green edges means positive correlation and red edges mean negative correlation
+dev.off()
+
+#plot(For_Rhi_net5,edge.arrow.size=0,edge.width=abs(E(For_Rhi_net5)$width/3),vertex.color=V(For_Rhi_net5)$vertex_color,vertex.frame.color="#555555",vertex.label=NA,edge.color=c("#b73616","#1aa35e")[1+(E(For_Rhi_net5)$weight>0)],vertex.size=degree(For_Rhi_net5)/2,layout=layout_with_dh (For_Rhi_net5),main="For_Rhi_net5")
+
+tiff('For_Rhi_net6.tiff', units="in", width=10, height=8, res=300)
+plot(For_Rhi_net6,edge.arrow.size=0,edge.width=abs(E(For_Rhi_net6)$width/3),vertex.color=V(For_Rhi_net6)$vertex_color,vertex.frame.color="#555555",vertex.label=V(For_Rhi_net6)$label,vertex.label.color="black",vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(For_Rhi_net6)$weight>0)],vertex.size=degree(For_Rhi_net6)/2,layout=layout_with_dh (For_Rhi_net6),main="For_Rhi_net6")
+dev.off()
+
+tiff('For_Rhi_net7.tiff', units="in", width=10, height=8, res=300)
+plot(For_Rhi_net7,edge.arrow.size=0,edge.width=abs(E(For_Rhi_net7)$width/3),vertex.color=V(For_Rhi_net7)$vertex_color,vertex.frame.color="#555555",vertex.label=V(For_Rhi_net7)$label,vertex.label.color="black",vertex.label.cex=.8,vertex.label.font=2,vertex.label.dist=0,edge.color=c("#b73616","#1aa35e")[1+(E(For_Rhi_net7)$weight>0)],vertex.size=degree(For_Rhi_net7)/2,layout=layout_with_dh (For_Rhi_net7),main="For_Rhi_net7")
+dev.off()
+
+
+```
+
+
+##Union network of four treatment with different treatment colored with different color 
+
+```{r}
+
+E(Ag_soil_net6)$color<-"red"
+E(Ag_Rhi_net7)$color<-"blue"
+E(For_soil_net7)$color<-"green"
+E(For_Rhi_net7)$color<-"black"
+big_net<-union(Ag_soil_net6,Ag_Rhi_net7,For_soil_net7,For_Rhi_net7,byname = TRUE)
+big_net #95 nodes and 973 edges
+
+edge_color<-data.frame( AgS<-edge_attr(big_net,"color_1"),AgR<-edge_attr(big_net,"color_2"),ForS<-edge_attr(big_net,"color_3"),ForR<-edge_attr(big_net,"color_4"))
+dim(edge_color)  # 973 edges with four colors
+
+#write.csv(edge_color,file="big_net_edge_color.csv")
+#edit the color matrix in excel and read into R
+
+big_net_edge_color<-read.csv(file="big_net_edge_color_edit.csv",header = TRUE,row.names = 1)
+E(big_net)$color<-as.character(big_net_edge_color$color)
+
+## Using color mix from this link to mix color and find the color code for mixed color http://trycolors.com/
+
+vertex_label<-data.frame(V(big_net)$label_1,V(big_net)$label_2,V(big_net)$label_3,V(big_net)$label_4)
+#write.csv(vertex_label,file='big_net_label.csv')
+big_net_node_label<-read.csv(file="big_net_label_edit.csv",row.names = 1)
+head(big_net_node_label)
+V(big_net)$label<-big_net_node_label$label
+
+#Something is wrong with the label in For_Rhi_network
+```
+
+##Plot network
+
+```{r}
+
+tiff ('bit_net_dh.tiff', units="in", width=10, height=8, res=300)
+plot(big_net,edge.arrow.size=0,main="big net",vertex.size=6,edge.color=E(big_net)$color,vertex.label=V(big_net)$label,vertex.label.cex=0.5,vertex.label.font=2,layout=layout_with_dh(big_net))
+dev.off()
+
+tiff ('bit_net_fr.tiff', units="in", width=10, height=8, res=300)
+plot(big_net,edge.arrow.size=0,main="big net",vertex.size=6,edge.color=E(big_net)$color,vertex.label=V(big_net)$label,vertex.label.cex=0.5,vertex.label.font=2,layout=layout_with_fr(big_net))
+dev.off()
+```
+
+
+
+
+
+
+
