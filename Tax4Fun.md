@@ -1,9 +1,10 @@
 ## Tax4Fun used to do function and pathway annotation based on 16S sequencing data
 
-----------------------------------------------------
+---
 
 Find the documentation [here](http://tax4fun.gobics.de/)
-----------------------------------------------------
+
+---
 
 * **Important notes before using Tax4Fun**
 
