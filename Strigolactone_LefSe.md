@@ -79,6 +79,16 @@ $%s/"//g
 
   * y=1 (parameter is used to set whether the test is performed in one against one or in one again all setting. default is one against all y = 0)
   
+   ```
+   (for multiclass tasks) set whether the test is performed in a one-against-one ( 1 - more strict!) or in a one-against-all setting ( 0 - less strict) (default 0)
+   ```
+   
+   Inside of the paper: here are some description of this parameter:
+   
+   ```
+   LEfSe allows ordinal classes with more than two levels to be analyzed in two different stringencies. The first requires significant taxa to differ between every pair of class values ; the discovered biomarkers must accurately distinguish all individual classes - strict version. Alternatively, LEfSe can determine significant taxa differing in at least one class value(s) (non-strict version).
+   ```
+  
     1. 
     ```
     run_lefse.py   strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.in_1 strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.1.subsample.1.pick.1.lefse.res_1_l2 -l 2 -b 100 -t strigolactone_genus_lefse -y 1
