@@ -17,6 +17,7 @@ mv yonatanf-sparcc-05f4d3f31d77/ SparCC_bitbucket
 rm 05f4d3f31d77.zip
 ```
 * I have installed Panda package in my ``anaconda2/bin`` directory, so I will set up the PATH to this 
+* numpy is needed too
 
 ```
 export PATH=/lustre/medusa/fliu21/anaconda2/bin:$PATH
