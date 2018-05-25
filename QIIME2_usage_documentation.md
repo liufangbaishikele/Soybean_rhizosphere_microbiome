@@ -402,6 +402,8 @@ Visualizations, you must specify an output directory through use of the
 Analysis of 2017 AgOCU and AgPSC sequence using qiime2
 ------------------------------------------------------
 
+This documentation were documented for analysis in this folder ``/lustre/haven/gamma/staton/projects/soybean_rhizosphere/05_final_run/qiime2_pair_end``
+
 
 **Prepare dataset with only two samples fro 2017 sequencing**
 
