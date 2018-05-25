@@ -734,9 +734,11 @@ categorize_by_function.py -i metagenome_prediction.biom -c KEGG_Pathways -l 3 -o
 
 ---
 title: "Qiime_output_analysis"
+
 author: "Fang Liu"
+
 date: "1/12/2018"
-output: html_document
+
 ---
 
 ```{r setup, include=FALSE}
