@@ -3,6 +3,8 @@
 
 # Soybean rhizosphere microbiome-16S read analysis  #
 
+For this run, the library were prepared using Lundberg protocal in my committee lab.
+
 *First MiSeq run*
 
 - The first run yields 5,312,110 reads, with 3,223,228 belongs to cultivar project and 1,309,647 belongs to strigolactone project. On average, 71.6% of the quality score is higher than 30.  After further demultiplexing, we got 4,541,875 reads left.
