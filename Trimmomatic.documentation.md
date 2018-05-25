@@ -1,4 +1,4 @@
-# Demultiplexed and trimmed reads are further trimmed using trimmomatic software using SLIDINGWINDOW:4:15
+### Demultiplexed and trimmed reads are further trimmed using trimmomatic software using SLIDINGWINDOW:4:15
 
 **trimmomatic job file**
 
