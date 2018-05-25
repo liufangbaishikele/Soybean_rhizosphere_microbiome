@@ -732,8 +732,48 @@ categorize_by_function.py -i metagenome_prediction.biom -c KEGG_Pathways -l 3 -o
 ```
 8. Output look in R
 
+---
+title: "Qiime_output_analysis"
+author: "Fang Liu"
+date: "1/12/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
+
+## R Markdown
+
+```{r}
+setwd("/Users/fangliu/Desktop/qiime2")
+library(biomformat)
+
+# --- 1---
+Ag_trial_table_dada2<-read_biom("Ag_trial_table_dada2.biom")
+dim(as.matrix(biom_data(Ag_trial_table_dada2)))
+Ag_trial_table_dada2_count_sum<-c(sum(as.matrix(biom_data(Ag_trial_table_dada2))[,1]),sum(as.matrix(biom_data(Ag_trial_table_dada2))[,2]))
+Ag_trial_table_dada2_count_sum
+
+Ag_trial_closeRef_99_table_dada2<-read_biom("Ag_trial_closeRef_99_table_dada2.biom")
+dim(as.matrix(biom_data(Ag_trial_closeRef_99_table_dada2)))
+Ag_trial_closeRef_99_table_dada2_count_sum<-c(sum(as.matrix(biom_data(Ag_trial_closeRef_99_table_dada2))[,1]),sum(as.matrix(biom_data(Ag_trial_closeRef_99_table_dada2))[,2]))
+Ag_trial_closeRef_99_table_dada2_count_sum
+
+ratio<-Ag_trial_closeRef_99_table_dada2_count_sum/Ag_trial_table_dada2_count_sum
+ratio # It means only 16% and 15% of reads could found the seqs from greengene reference
+
+
+Ag_trial_closeRef_99_table_dada2_KO_count<-read_biom("Ag_trial_closeRef_99_table_dada2_KO_count.biom")
+
+Ag_trial_closeRef_99_table_dada2_KO_KEGG_L3<-read_biom("Ag_trial_closeRef_99_table_dada2_KO_KEGG_L3.biom")
+
+
+biom_data(Ag_trial_closeRef_99_table_dada2_KO_count)
+biom_data(Ag_trial_closeRef_99_table_dada2_KO_KEGG_L3)
+
 ```
+
   
  
 
