@@ -30,7 +30,7 @@ ImportError: No module named Bio
   
 4. **R data pre-process**
 
-For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment. About detailed R code, please find from this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_circular_tree_2nd.Rmd). Please find the output excel files through this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/Excel_for_GraPhlAn.zip)
+For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment. About detailed R code, please find from this [link](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/Circular_taxonomic_tree/Input_and_output_guided_example_GraPhlAn/Annotation_prep_in_R.Rmd). Please find the output excel files through this [link](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/Circular_taxonomic_tree/Input_and_output_guided_example_GraPhlAn/Excel_for_GraPhlAn.zip)
   * First, prep-process phylotype-based shared file and cons taxonomy file ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.shared`` and ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy``
   * As sub.sample command in mothur could not combine subseted shared file with cons taxonomy file. So the below preprocessing will be done in R.
   * Rarefy OTU table to minimum sequencing depth
@@ -54,7 +54,7 @@ For this circular phylogenetic tree, I will use not only taxanomy information bu
  5. **Generate tree file** 
   Now the downward process are done in ACF
   
-  * First, edit the taxanomy file to match with the tree file format required by GraPhlAn. Below is part of the tree file I built. **NOTE** Taxonomies are separated via ``.``. Please see this [cultivar_tree](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_tree)
+  * First, edit the taxanomy file to match with the tree file format required by GraPhlAn. Below is part of the tree file I built. **NOTE** Taxonomies are separated via ``.``. Please see this [cultivar_tree](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/Circular_taxonomic_tree/Input_and_output_guided_example_GraPhlAn/Cultivar_tree.txt)
   
   ```
 Bacteria.Acidobacteria.Acidobacteria_Gp6.Acidobacteria_Gp6_order_incertae_sedis.Acidobacteria_Gp6_family_incertae_sedis.Gp6
@@ -79,7 +79,7 @@ Bacteria.Actinobacteria.Actinobacteria.Actinomycetales.Intrasporangiaceae.Intras
  * **NOTE** remember to change the corresponding taxa in node size file and otu_tax_combined_table
 
 6. **Creat annotation file**
- * This is the most time_consuming part. Make sure during this process, always use **tab** between elements. Please see this [cultivar_annot_05](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_annot_05)
+ * This is the most time_consuming part. Make sure during this process, always use **tab** between elements. Please see this [cultivar_annot](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/Circular_taxonomic_tree/Input_and_output_guided_example_GraPhlAn/cultivar_annot.txt)
  
    i. title parameter
     
