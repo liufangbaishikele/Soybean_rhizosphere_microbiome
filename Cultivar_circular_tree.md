@@ -11,6 +11,7 @@ bash Anaconda3-4.4.0-Linux-x86_64.sh
 ``https://bitbucket.org/nsegata/graphlan/get/e91e79a421f9.zip``
 ``unzip`` downloaded zip file using ``unzip file.zip
 ``
+
 3. **Test graphlan.py**
   * After download and unzip installation package, navigate to the directory including graphlan.py
   * Test command by running ``python graphlan.py --help``. It poped out error information
