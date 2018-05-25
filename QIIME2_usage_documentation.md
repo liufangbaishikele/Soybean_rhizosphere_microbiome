@@ -728,6 +728,10 @@ IOError: [Errno 2] No such file or directory: '/nics/d/home/fliu21/anaconda2/lib
 ```
 categorize_by_function.py -i metagenome_prediction.biom -c KEGG_Pathways -l 3 -o metagenome_prediction_L3.biom
 ```
+8. Output look in R
+
+```
+```
   
  
 
