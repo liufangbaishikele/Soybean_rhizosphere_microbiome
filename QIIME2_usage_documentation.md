@@ -545,6 +545,7 @@ qiime feature-table tabulate-seqs \
 5. **Train greengene reference to generate customized feature classifers**
 
 * Download the greengene dada from this [link](ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz)
+
 * Unzip the ``tar.gz`` file using ``tar -xzvf gg_13_8_otus.tar.gz``
 * Running qiime command to customize reference
 
