@@ -26,15 +26,25 @@
 
     ```
     
- 4. Lefse output filtering based on analysis purpose
+ 4. Lefse output filtering based on analysis purpose. Please found the lefse output [here]()
  
      ```
+     # Only keep taxa that are significant different
      grep "CT" strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.pick.0.03.subsample.0.03.lefse_res_LDA2 > Control_vs_D14_RNAi_LDA2
     grep "D14_RNAi" strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.pick.0.03.subsample.0.03.lefse_res_LDA2 >> Control_vs_D14_RNAi_LDA2
-    grep 'Otu.....' Control_vs_D14_RNAi_LDA2 > Control_vs_D14_RNAi_LDA2_OTU
-    grep -v 'Otu.....' Control_vs_D14_RNAi_LDA2 > Control_vs_D14_RNAi_LDA2_non_OTUs
-    grep -v "unclassified" Control_vs_D14_RNAi_LDA2_non_OTUs > Control_vs_D14_RNAi_LDA2_non_OTU_classified
-    sort -k1,1 -k2,2 -k3,3 -k4,4 -k5,5 -k6,6 Control_vs_D14_RNAi_LDA2_non_OTU_classified > Control_vs_D14_RNAi_LDA2_non_OTU_classified_sort
+    
+    # Only keep OTU level difference 
     grep -E -v 'Otu.....\.' Control_vs_D14_RNAi_LDA2 | sort -k1,1 -k2,2 -k3,3 -k4,4 -k5,5 -k6,6 > Control_vs_D14_RNAi_LDA2_up
+    
+    # Subset taxa above OTU level
+    grep -v 'Otu.....' Control_vs_D14_RNAi_LDA2 > Control_vs_D14_RNAi_LDA2_non_OTUs
+    
+    # To include only those classified
+    grep -v "unclassified" Control_vs_D14_RNAi_LDA2_non_OTUs > Control_vs_D14_RNAi_LDA2_non_OTU_classified
+    sed 's/\t/,/g' Control_vs_D14_RNAi_LDA2_non_OTU_classified > Control_vs_D14_RNAi_LDA2_non_OTU_classified.csv
+    
+    # sorted for easier visualization when exported to excel
+    sort -k1,1 -k2,2 -k3,3 -k4,4 -k5,5 -k6,6 Control_vs_D14_RNAi_LDA2_non_OTU_classified > Control_vs_D14_RNAi_LDA2_non_OTU_classified_sort
+    
     lefse-plot_res.py Control_vs_D14_RNAi_LDA2_non_OTU_classified_sort Control_vs_D14_RNAi_LDA2_non_OTU_classified_sort.png --title 'Control vs D14_RNAi  lefse LDA>2' --title_font_size 15 --class_legend_font_size 10 --max_feature_len 50 --dpi 300
      ```
