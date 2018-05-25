@@ -1,0 +1,1688 @@
+---
+title: "2017_cultivar_proj"
+author: "Fang Liu"
+date: "8/15/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Install required libraries
+
+```{r echo=FALSE}
+#install.packages("extrafont")
+library(extrafont)
+#install.packages('vegan')
+library(vegan)
+#source('http://bioconductor.org/biocLite.R')
+#biocLite('phyloseq')
+library(phyloseq)
+#install.packages('ggplot2')
+library(ggplot2)
+#install.packages('reshape2')
+library(reshape2)
+#install.packages('dplyr')
+library(dplyr)
+#install.packages('plyr')
+library(plyr)
+#source('http://bioconductor.org/biocLite.R')
+#biocLite('metagenomeSeq')
+library('metagenomeSeq')
+#install.packages("MInt")
+library(MInt)
+# R package with built in files stored in "/Library/Frameworks/R.framework/Versions/3.4/Resources/library/MInt/extdata/x.txt"
+
+#install.packages("igraph")
+library(igraph)
+# call functions from a package explicitly using '::'
+#detach(package:igraph)
+
+# install.package("Hmisc")
+library(Hmisc)
+#install.packages("directlabels")
+library(directlabels)
+```
+
+## Set working directory
+
+```{r}
+setwd('/Users/fangliu/Documents/2016_cultivar_project/R_analysis')
+getwd()
+```
+
+## Upload mothur .shared and taxonomy file
+
+```{r}
+CV_phyloseq<-import_mothur(mothur_shared_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared",mothur_constaxonomy_file = "cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.cons.taxonomy")
+
+CV_phyloseq # 175957 OTUs and 138 samples
+sum(sample_sums(CV_phyloseq)) # 9946720
+
+CV_phyloseq<-prune_samples(sample_names(CV_phyloseq)[1:136],CV_phyloseq) # remove PCR blank samples
+CV_phyloseq #175957 OTUs and 138 samples
+sum(sample_sums(CV_phyloseq)) # 9945986 reads
+
+length(sample_names(CV_phyloseq)) # 136
+sampleID<-sample_names(CV_phyloseq)
+#write.csv(sampleID,file='sampleID',row.names = FALSE)
+CV_meta<-read.csv("cultivar_meta.csv",head=TRUE,row.names = 1)
+#CV_meta<-cbind(CV_meta,Treat=paste(CV_meta$Soil_type,CV_meta$Treatment,sep="_"))
+CV_meta<-data.frame(CV_meta,Read_depth=sample_sums(CV_phyloseq))
+identical(rownames(CV_meta),sample_names(CV_phyloseq))
+dim(CV_meta)
+head(CV_meta)
+CV_meta_phyloseq<-sample_data(CV_meta)
+
+# cultivar_phyloseq
+cultivar_phyloseq<-merge_phyloseq(CV_phyloseq,CV_meta_phyloseq)
+cultivar_phyloseq
+rank_names(cultivar_phyloseq)
+colnames(tax_table(cultivar_phyloseq))<-c('Kingdom','Phylum','Class','Order','Family','Genus')
+rank_names(cultivar_phyloseq)
+
+# Bar plot of read depth
+Read_depth<-sample_sums(cultivar_phyloseq)
+summary(Read_depth)
+tiff('Sequencing depth barplot.tiff', units="in", width=16, height=8, res=300)
+ggplot(data=CV_meta, aes(x=sample_ID,y=Read_depth))+geom_bar(stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"))
+dev.off()
+
+# r_phyloseq (using relative abundance)
+
+r_cultivar_phyloseq<-transform_sample_counts(cultivar_phyloseq,function(x) x/sum(x))
+sample_sums(r_cultivar_phyloseq)[1:5]
+
+# rarefied_cultivar_phyloseq
+rarefied_cultivar_phyloseq<-rarefy_even_depth(cultivar_phyloseq,sample.size = min(sample_sums(cultivar_phyloseq)),rngseed = 1013,replace = FALSE,trimOTUs = TRUE,verbose = TRUE)
+# min(sample_sums(cultivar_phyloseq)) is 19023
+rarefied_cultivar_phyloseq #76864 (76864/175957=43.7% left) OTUs across 136 samples, with 6 taxonomic ranks
+
+## r_rarefied_cultivar_phyloseq
+r_rarefied_cultivar_phyloseq<-transform_sample_counts(rarefied_cultivar_phyloseq,function(x) x/sum(x))
+r_rarefied_cultivar_phyloseq
+
+# cultivar2_phyloseq (any OTU that appeared less than 6 times among 136 samples were removed)
+
+cultivar2_phyloseq<-filter_taxa(cultivar_phyloseq,function(x) length(which(x>0))>6,prune = TRUE)
+cultivar2_phyloseq # 19333 OTUs (19333/174957=11.05%)
+min(sample_sums(cultivar2_phyloseq)) # 18165
+
+#rarefied_cultivar2_phyloseq
+
+rarefied_cultivar2_phyloseq<-rarefy_even_depth(cultivar2_phyloseq,sample.size = min(sample_sums(cultivar2_phyloseq)),rngseed = 1013,replace = FALSE,trimOTUs = TRUE,verbose = TRUE)
+rarefied_cultivar2_phyloseq # 19099 OTUs and 136 samples
+r_rarefied_cultivar2_phyloseq<-transform_sample_counts(rarefied_cultivar2_phyloseq,function(x) x/sum(x))
+
+# rarefied_50000_cultivar_phyloseq
+
+dim(otu_table(cultivar_phyloseq))
+less50000_samples<-as.matrix(otu_table(cultivar_phyloseq))[,sample_sums(cultivar_phyloseq)<50000]
+more50000_phyloseq<-rarefy_even_depth(cultivar_phyloseq,sample.size = 50000,rngseed = 1013,replace = FALSE,trimOTUs = FALSE,verbose = TRUE)
+identical(sample_names(more50000_phyloseq),names(which(sample_sums(cultivar_phyloseq)>=50000)))
+rarefied_50000_cultivar_otu<-cbind(less50000_samples,as.matrix(otu_table(more50000_phyloseq)))
+rarefied_50000_cultivar_otu_phyloseq<-otu_table(rarefied_50000_cultivar_otu,taxa_are_rows = TRUE)
+rarefied_50000_cultivar_phyloseq<-merge_phyloseq(rarefied_50000_cultivar_otu_phyloseq,CV_meta_phyloseq,tax_table(cultivar_phyloseq))
+rarefied_50000_cultivar_phyloseq
+rarefied_50000_cultivar_phyloseq<-filter_taxa(rarefied_50000_cultivar_phyloseq,function(x) sum(x)>0,TRUE)
+rarefied_50000_cultivar_phyloseq # 133045 taxa and 136 samples
+
+sample_sums(rarefied_50000_cultivar_phyloseq)
+
+# Rhi_rarefied_cultivar_phyloseq
+
+Rhi_rarefied_cultivar_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Compartment=="Rhizosphere") # 76864 OTUs across 102 samples
+Rhi_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(Rhi_rarefied_cultivar_phyloseq)>0,Rhi_rarefied_cultivar_phyloseq)
+Rhi_rarefied_cultivar_phyloseq #64063 taxa across 102 samples
+
+r_Rhi_rarefied_cultivar_phyloseq<-transform_sample_counts(Rhi_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+
+
+# Bulk_rarefied_cultivar_phyloseq
+
+Bulk_rarefied_cultivar_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Compartment=="Bulk"|Compartment=="Fresh") # 76864 OTUs across 34 samples
+Bulk_rarefied_cultivar_phyloseq
+Bulk_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(Bulk_rarefied_cultivar_phyloseq)>0,Bulk_rarefied_cultivar_phyloseq)
+Bulk_rarefied_cultivar_phyloseq #29975 taxa across 34 samples
+
+r_Bulk_rarefied_cultivar_phyloseq<-transform_sample_counts(Bulk_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+
+# Ag_rarefied_cultivar_phyloseq
+Ag_rarefied_cultivar_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Soil_type=="Agriculture")
+Ag_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(Ag_rarefied_cultivar_phyloseq)>0,Ag_rarefied_cultivar_phyloseq)
+Ag_rarefied_cultivar_phyloseq
+r_Ag_rarefied_cultivar_phyloseq<-transform_sample_counts(Ag_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+r_Ag_rarefied_cultivar_phyloseq
+
+# For_rarefied_cultivar_phyloseq
+For_rarefied_cultivar_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Soil_type=="Forest")
+For_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(For_rarefied_cultivar_phyloseq)>0,For_rarefied_cultivar_phyloseq)
+For_rarefied_cultivar_phyloseq
+r_For_rarefied_cultivar_phyloseq<-transform_sample_counts(For_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+r_For_rarefied_cultivar_phyloseq
+
+#Rhi_rarefied_cultivar2_phyloseq
+
+Rhi_rarefied_cultivar2_phyloseq<-subset_samples(rarefied_cultivar2_phyloseq,Compartment=="Rhizosphere") # 19099 OTUs across 102 samples
+Rhi_rarefied_cultivar2_phyloseq<-prune_taxa(taxa_sums(Rhi_rarefied_cultivar2_phyloseq)>0,Rhi_rarefied_cultivar2_phyloseq)
+Rhi_rarefied_cultivar2_phyloseq #18352 taxa across 102 samples
+
+r_Rhi_rarefied_cultivar2_phyloseq<-transform_sample_counts(Rhi_rarefied_cultivar2_phyloseq,function(x) x/sum(x))
+
+# Ag_Rhi_rarefied_cultivar_phyloseq
+Ag_Rhi_rarefied_cultivar_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Compartment=="Rhizosphere"&Soil_type=="Agriculture")
+Ag_Rhi_rarefied_cultivar_phyloseq # 76864 OTUs across 51 samples
+Ag_Rhi_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(Ag_Rhi_rarefied_cultivar_phyloseq)>0,Ag_Rhi_rarefied_cultivar_phyloseq)
+Ag_Rhi_rarefied_cultivar_phyloseq # 37096 OTUs across 51 samples
+
+# Ag_Rhi_rarefied_cultivar2_phyloseq
+Ag_Rhi_rarefied_cultivar2_phyloseq<-subset_samples(rarefied_cultivar2_phyloseq,Compartment=="Rhizosphere"&Soil_type=="Agriculture")
+Ag_Rhi_rarefied_cultivar2_phyloseq # 19099 OTUs across 51 samples
+Ag_Rhi_rarefied_cultivar2_phyloseq<-prune_taxa(taxa_sums(Ag_Rhi_rarefied_cultivar2_phyloseq)>0,Ag_Rhi_rarefied_cultivar2_phyloseq)
+Ag_Rhi_rarefied_cultivar2_phyloseq # 11583 OTUs across 51 samples
+
+# r_Ag_Rhi_rarefied_cultivar_phyloseq
+r_Ag_Rhi_rarefied_cultivar_phyloseq<-transform_sample_counts(Ag_Rhi_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+
+# r_Ag_Rhi_rarefied_cultivar2_phyloseq
+r_Ag_Rhi_rarefied_cultivar2_phyloseq<-transform_sample_counts(Ag_Rhi_rarefied_cultivar2_phyloseq,function(x) x/sum(x))
+
+# Ag_CV1_4_6_rarefied_cultivar_phyloseq
+Ag_CV1_4_6_rarefied_cultivar_phyloseq<-subset_samples(Ag_Rhi_rarefied_cultivar_phyloseq,Treatment=="CV1"|Treatment=="CV4"|Treatment=="CV6")
+sample_names(Ag_CV1_4_6_rarefied_cultivar_phyloseq) 
+Ag_CV1_4_6_rarefied_cultivar_phyloseq# 37096 OTUs across 27 samples
+Ag_CV1_4_6_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(Ag_CV1_4_6_rarefied_cultivar_phyloseq)>0,Ag_CV1_4_6_rarefied_cultivar_phyloseq)
+Ag_CV1_4_6_rarefied_cultivar_phyloseq # 25003 OTUs across 27 samples
+
+# Ag_CV1_4_6_rarefied_cultivar2_phyloseq
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq<-subset_samples(Ag_Rhi_rarefied_cultivar2_phyloseq,Treatment=="CV1"|Treatment=="CV4"|Treatment=="CV6")
+sample_names(Ag_CV1_4_6_rarefied_cultivar2_phyloseq) 
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq# 11583 OTUs across 27 samples
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq<-prune_taxa(taxa_sums(Ag_CV1_4_6_rarefied_cultivar2_phyloseq)>0,Ag_CV1_4_6_rarefied_cultivar2_phyloseq)
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq # 10577 OTUs across 27 samples
+
+
+# For_Rhi_rarefied_cultivar_phyloseq
+For_Rhi_rarefied_cultivar_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Compartment=="Rhizosphere"&Soil_type=="Forest")
+For_Rhi_rarefied_cultivar_phyloseq # 76864 OTUs across 51 samples
+For_Rhi_rarefied_cultivar_phyloseq<-prune_taxa(taxa_sums(For_Rhi_rarefied_cultivar_phyloseq)>0,For_Rhi_rarefied_cultivar_phyloseq)
+For_Rhi_rarefied_cultivar_phyloseq # 29579 OTUs across 51 samples
+
+r_For_Rhi_rarefied_cultivar_phyloseq<-transform_sample_counts(For_Rhi_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+
+
+# For_Rhi_rarefied_cultivar2_phyloseq
+
+For_Rhi_rarefied_cultivar2_phyloseq<-subset_samples(rarefied_cultivar2_phyloseq,Compartment=="Rhizosphere"&Soil_type=="Forest")
+For_Rhi_rarefied_cultivar2_phyloseq # 19099 OTUs across 51 samples
+For_Rhi_rarefied_cultivar2_phyloseq<-prune_taxa(taxa_sums(For_Rhi_rarefied_cultivar2_phyloseq)>0,For_Rhi_rarefied_cultivar2_phyloseq)
+For_Rhi_rarefied_cultivar2_phyloseq # 9106 OTUs across 51 samples
+
+r_For_Rhi_rarefied_cultivar2_phyloseq<-transform_sample_counts(For_Rhi_rarefied_cultivar2_phyloseq,function(x) x/sum(x))
+
+
+# genera_cultivar_phyloseq
+genera_rarefied_cultivar_phyloseq<-tax_glom(rarefied_cultivar_phyloseq,taxrank = rank_names(rarefied_cultivar_phyloseq)[6],NArm=TRUE) 
+genera_rarefied_cultivar_phyloseq  # 642 genus in 136 samples
+
+genera_rarefied_cultivar_phyloseq<-filter_taxa(genera_rarefied_cultivar_phyloseq,function(x) sum(x)>50,TRUE) 
+genera_rarefied_cultivar_phyloseq  # 347 genus
+
+# r_genera_cultivar_phyloseq
+r_genera_rarefied_cultivar_phyloseq<-transform_sample_counts(genera_rarefied_cultivar_phyloseq,function(x)x/sum(x))
+r_genera_rarefied_cultivar_phyloseq
+
+
+# family_cultivar_phyloseq
+family_rarefied_cultivar_phyloseq<-tax_glom(rarefied_cultivar_phyloseq,taxrank = rank_names(rarefied_cultivar_phyloseq)[5],NArm=TRUE) 
+family_rarefied_cultivar_phyloseq  # 244 family in 136 samples
+
+family_rarefied_cultivar_phyloseq<-filter_taxa(family_rarefied_cultivar_phyloseq,function(x) sum(x)>50,TRUE) 
+family_rarefied_cultivar_phyloseq  #  176 family
+
+# r_family_cultivar_phylose
+r_family_rarefied_cultivar_phyloseq<-transform_sample_counts(family_rarefied_cultivar_phyloseq,function(x)x/sum(x))
+r_family_rarefied_cultivar_phyloseq
+
+# order_cultivar_phyloseq
+order_rarefied_cultivar_phyloseq<-tax_glom(rarefied_cultivar_phyloseq,taxrank = rank_names(rarefied_cultivar_phyloseq)[4],NArm=TRUE) 
+order_rarefied_cultivar_phyloseq  # 122 order in 136 samples
+
+order_rarefied_cultivar_phyloseq<-filter_taxa(order_rarefied_cultivar_phyloseq,function(x) sum(x)>50,TRUE) 
+order_rarefied_cultivar_phyloseq  # 97 order left
+
+# r_order_cultivar_phylose
+r_order_rarefied_cultivar_phyloseq<-transform_sample_counts(order_rarefied_cultivar_phyloseq,function(x)x/sum(x))
+r_order_rarefied_cultivar_phyloseq
+
+# class_cultivar_phyloseq
+class_rarefied_cultivar_phyloseq<-tax_glom(rarefied_cultivar_phyloseq,taxrank = rank_names(rarefied_cultivar_phyloseq)[3],NArm=TRUE) 
+class_rarefied_cultivar_phyloseq  # 75 class in 136 samples
+
+class_rarefied_cultivar_phyloseq<-filter_taxa(class_rarefied_cultivar_phyloseq,function(x) sum(x)>50,TRUE) 
+class_rarefied_cultivar_phyloseq  # 63 left 
+
+# r_class_cultivar_phylose
+r_class_rarefied_cultivar_phyloseq<-transform_sample_counts(class_rarefied_cultivar_phyloseq,function(x)x/sum(x))
+r_class_rarefied_cultivar_phyloseq
+
+
+# phylum_cultivar_phyloseq
+phylum_rarefied_cultivar_phyloseq<-tax_glom(rarefied_cultivar_phyloseq,taxrank = rank_names(rarefied_cultivar_phyloseq)[2],NArm=TRUE) 
+phylum_rarefied_cultivar_phyloseq  # 25  phylum in 136 samples
+
+phylum_rarefied_cultivar_phyloseq<-filter_taxa(phylum_rarefied_cultivar_phyloseq,function(x) sum(x)>50,TRUE) 
+phylum_rarefied_cultivar_phyloseq  # 20 phylum
+
+# r_phylum_cultivar_phylose
+r_phylum_rarefied_cultivar_phyloseq<-transform_sample_counts(phylum_rarefied_cultivar_phyloseq,function(x)x/sum(x))
+r_phylum_rarefied_cultivar_phyloseq
+
+```
+
+## Diversity index
+
+```{r}
+Diversity<-data.frame(Chaos<-estimate_richness(rarefied_cultivar_phyloseq,split=TRUE,measures = NULL),sample_data(rarefied_cultivar_phyloseq))
+Diversity
+identical(rownames(Diversity),sample_names(rarefied_cultivar_phyloseq))
+
+tiff('Shannon diversity with fresh and bulk combined to soil.tiff', units="in", width=7, height=5, res=300)
+ggplot(Diversity,aes(x=Treat,y=Shannon,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'),name="Treatment")+labs(title="Shannon Diversity",x="Treatment",y="Shannon Index")+theme(legend.position="none",panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text.y=element_text(size=12,family="Arial"),axis.text.x = element_text(family="Arial",size=12,angle=60,hjust = 1),
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = 1),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# have a quick look at the color I used
+
+pie(rep (1,16),col=c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))
+
+tiff('Simpson diversity with fresh and bulk combined to soil.tiff', units="in", width=7, height=5, res=300)
+ggplot(Diversity,aes(x=Treat,y=Simpson,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'),name="Treatment")+labs(title="Simpson Diversity",x="Treatment",y="Simpson Index")+theme(legend.position="none",panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text.y=element_text(size=12,family="Arial"),axis.text.x = element_text(family="Arial",size=12,angle=60,hjust = 1),
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = 1),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+#tiff('Inverse Simpson diversity .tiff', units="in", width=7, height=5, res=300)
+#ggplot(Diversity,aes(x=Treat,y=InvSimpson,fill=Treat))+geom_boxplot(size=0.5)+
+#geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Inverse Simpson Diversity",x="Treatment",y="InvSimpson Index ")+theme(plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),
+#    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+#dev.off()
+
+mod_full<-lm(Shannon~Soil_type*Compartment,data=Diversity)
+anova(mod_full)
+
+TukeyHSD(aov(Shannon~Soil_type*Compartment,data=Diversity),"Compartment",ordered=FALSE)
+
+# Agriculture soil - comparison between soil and cultivars
+TukeyHSD(aov(Shannon~Treat,data = Diversity[1:68,]),"Treat",ordered = FALSE)
+
+# Forest soil - comparison between soil and cultivars
+TukeyHSD(aov(Shannon~Treat,data = Diversity[69:136,]),"Treat",ordered = FALSE)
+
+mod_Rhi<-lm(Shannon~Soil_type*Treatment,data=Diversity[Diversity$Compartment=="Rhizosphere",])
+anova(mod_Rhi )
+
+Ag_mod2<-lm(Shannon~Treatment,data=Diversity[Diversity$Compartment=="Rhizosphere"&Diversity$Soil_type=="Agriculture",])
+anova(Ag_mod2)
+Ag_aov<-aov(Shannon~Treatment,data=Diversity[Diversity$Compartment=="Rhizosphere"&Diversity$Soil_type=="Agriculture",])
+summary(Ag_aov)
+TukeyHSD(Ag_aov)
+
+Forest_mod2<-lm(Shannon~Treatment,data=Diversity[Diversity$Compartment=="Rhizosphere"&Diversity$Soil_type=="Forest",])
+anova(Forest_mod2)
+For_aov<-aov(Shannon~Treatment,data=Diversity[Diversity$Compartment=="Rhizosphere"&Diversity$Soil_type=="Forest",])
+summary(For_aov)
+TukeyHSD(For_aov)
+
+## Correlation between Shannon diversity and network average density 
+#---------Top 50 network--------
+df<-data.frame(Shannon=aggregate(Shannon~Class,data=Diversity,mean),net6_edge_density=c(0.4947,0.1188,0.1361,0.068,0.1554,0.0842,0.7649,0.2490,0.0774,0.1069,0.1961,0.0976,0.0667,0.6302))
+rownames(df)<-Shannon$Class
+lm<-lm(net6_edge_density~df$Shannon.Shannon,data=df)
+summary(lm)
+#Coefficients:
+#                   Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)        -0.90948    0.60889  -1.494   0.1611  
+#df$Shannon.Shannon  0.18128    0.09631   1.882   0.0843 .
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.2083 on 12 degrees of freedom
+#Multiple R-squared:  0.228,	Adjusted R-squared:  0.1636 
+#F-statistic: 3.543 on 1 and 12 DF,  p-value: 0.08426
+tiff('Correlation between network edge6 density and microbial community diversity.tiff', units="in", width=8, height=6, res=300)
+ggplot(df,aes(Shannon.Shannon,net6_edge_density,label=rownames(df)))+geom_point()+ylim(0,0.8)+geom_text(family="Arial",size=3)+annotate(geom="text",x=5.7,y=0.6,label="Y = -0.91 + 0.18X \n AdjR2=0.16, p=0.08",family="Arial",size=4 )+geom_smooth(method = "lm",se=FALSE,color="black",size=0.5) +ggtitle("\n Correlation between microbiome diversity and \n and network edge density - Top50")+xlab("Shannon diversity")+ylab("Network edge density")+ theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=12),axis.text.y = element_text(family="Arial",size=16),axis.title.x = element_text(family="Arial",size=18,face="bold"),axis.title.y = element_text(family="Arial",size=18,face="bold"))
+dev.off()
+
+#--------Global network based correlation ----------------
+
+df2<-data.frame(Shannon=aggregate(Shannon~Class,data=Diversity,mean),net4_edge_density=c(0.0158,0.0076,0.0081,0.0064,0.0093,0.0073,0.0235, 0.0088,0.0073,0.0068,0.0077,0.0075,0.0074,0.0149))
+rownames(df2)<-Shannon$Class
+lm2<-lm(net4_edge_density~Shannon.Shannon,data=df2)
+summary(lm2)
+
+tiff('Correlation between network edge4 density and microbial community diversity.tiff', units="in", width=8, height=6, res=300)
+ggplot(df2,aes(Shannon.Shannon,net4_edge_density,label=rownames(df2)))+geom_point()+ylim(0,0.03)+geom_text(family="Arial",size=3)+annotate(geom="text",x=5.7,y=0.0175,label="Y = -0.018 + 0.0045X \n AdjR2=0.26, p=0.036",family="Arial",size=4 )+geom_smooth(method = "lm",se=FALSE,color="black",size=0.5) +ggtitle("\n Correlation between microbiome diversity and \n and network edge density - Global network")+xlab("Shannon diversity")+ylab("Network edge density")+ theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=12),axis.text.y = element_text(family="Arial",size=16),axis.title.x = element_text(family="Arial",size=18,face="bold"),axis.title.y = element_text(family="Arial",size=18,face="bold"))
+dev.off()
+```
+
+
+
+
+## Permanova test (permutational analysis of variance based on disdance matrix)
+
+
+```{r}
+
+## r_rarefied_cultivar_phyloseq (in fact the results are exactly the same when using rarefied_cultivar_phyloseq instead of using r_rarefied_cultivar_phyloseq)
+
+#1) Soil type, compartment, collection time and read depth
+
+set.seed(1013)
+#adonis2(t(otu_table(r_rarefied_cultivar_phyloseq))~Compartment+Soil_type+Read_depth,data=CV_meta,permutations=999,by="margin")
+
+adonis2(t(otu_table(r_rarefied_cultivar_phyloseq))~Soil_type+Compartment+Read_depth,data=CV_meta,permutations=999,by="margin")
+
+adonis2(t(otu_table(r_rarefied_cultivar_phyloseq))~Soil_type+Compartment+Read_depth+Soil_type:Compartment,data=CV_meta,permutations=999,by='margin')
+
+#-------r_rarefied_cultivar2_phyloseq---------------- 
+
+#---Rhizosphere effects 
+
+# r_Ag_rarefied_cultivar_phyloseq
+adonis2(t(otu_table(r_Ag_rarefied_cultivar_phyloseq))~Compartment,data=data.frame(sample_data(r_Ag_rarefied_cultivar_phyloseq)),permutations=999,by="margin")
+# 28.16% variance, F=12.74 df=2/65
+
+
+# r_For_rarefied_cultivar_phyloseq
+adonis2(t(otu_table(r_For_rarefied_cultivar_phyloseq))~Compartment,data=data.frame(sample_data(r_For_rarefied_cultivar_phyloseq)),permutations=999,by="margin")
+# 38.48% variance, F=20.33  df=2/65
+
+## r_Rhi_rarefied_cultivar_phyloseq
+
+#1) Soil_type, cultivars and Read_depth
+
+set.seed(1013)
+adonis2(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Soil_type+Treatment+Read_depth,data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by='margin')
+
+adonis2(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Soil_type*Treatment+Read_depth,data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by='margin')
+
+
+#2) Time
+
+adonis2(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Soil_type+Treatment+Read_depth+Time,data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by='margin')
+
+#------Soil_type impacts on Rhizosphere VS Bulk--------
+
+set.seed(1013)
+adonis2(t(otu_table(r_Bulk_rarefied_cultivar_phyloseq))~Soil_type,data=data.frame(sample_data(r_Bulk_rarefied_cultivar_phyloseq)),permutations=999,by='margin') #% 81.37%
+
+set.seed(1013)
+adonis2(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Soil_type,data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by='margin') # 70.61%
+
+
+## r_Ag_Rhi_rarefied_cultivar_phyloseq
+
+#1) Cultivars and Read_depth
+
+
+adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by="margin")
+
+adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment+Read_depth,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by="margin")
+
+#2) Cultivars, Read_depth and Time 
+
+adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment+Read_depth+Time,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)
+
+adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment+Time,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by='margin')
+
+
+cap_treatment<-capscale(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment+Condition(Time),data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+anova(cap_treatment)
+
+cap_time<-capscale(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Time+Condition(Treatment),data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+anova(cap_time)
+
+
+## r_For_Rhi_rarefied_cultivar_phyloseq
+
+adonis2(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment+Read_depth,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by="margin")
+
+
+adonis2(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment+Read_depth+Time,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)
+
+adonis2(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment+Read_depth+Time,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by='margin')
+
+
+# ------- Host genotypes impacts on Ag_Rhi VS Forest_Rhi
+
+set.seed(1013)
+adonis2(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)
+Variantion<-adonis2(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)$SumOfSqs[1]/sum(adonis2(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)$SumOfSqs)
+Variantion #21.32%
+
+set.seed(1013)
+adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)
+
+Variantion<-adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)$SumOfSqs[1]/sum(adonis2(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),permutations=999,by=NULL)$SumOfSqs)
+Variantion  #23.07%
+
+#r_Ag_CV1_4_6_rarefied_cultivar_phyloseq
+r_Ag_CV1_4_6_rarefied_cultivar_phyloseq<-transform_sample_counts(Ag_CV1_4_6_rarefied_cultivar_phyloseq,function(x) x/sum(x))
+adonis2(t(otu_table(r_Ag_CV1_4_6_rarefied_cultivar_phyloseq))~Treatment+Time,data = data.frame(sample_data(r_Ag_CV1_4_6_rarefied_cultivar_phyloseq)),permutations = 999,by="margin")
+
+
+#r_Ag_CV1_rarefied_cultivar_phyloseq
+
+#1) Time is also significant
+r_Ag_CV1_rarefied_cultivar_phyloseq<-subset_samples(r_Ag_Rhi_rarefied_cultivar_phyloseq,Treatment=="CV1")
+r_Ag_CV1_rarefied_cultivar_phyloseq<-filter_taxa(r_Ag_CV1_rarefied_cultivar_phyloseq,function(x) sum(x)>0,TRUE)
+adonis2(t(otu_table(r_Ag_CV1_rarefied_cultivar_phyloseq))~Time+Read_depth,data = data.frame(sample_data(r_Ag_CV1_rarefied_cultivar_phyloseq)),permutations = 999,by="margin")
+
+# 08-08 samples
+rarefied_cultivar_08_08_phyloseq<-subset_samples(rarefied_cultivar_phyloseq,Time=="08_08"&Compartment=="Rhizosphere")
+
+r_rarefied_cultivar_08_08_phyloseq<-subset_samples(r_rarefied_cultivar_phyloseq,Time=="08_08"&Compartment=="Rhizosphere")
+r_rarefied_cultivar_08_08_phyloseq<-filter_taxa(r_rarefied_cultivar_08_08_phyloseq,function(x) sum(x)>0,TRUE)
+sample_names(r_rarefied_cultivar_08_08_phyloseq)
+
+adonis2(t(otu_table(r_rarefied_cultivar_08_08_phyloseq))~Treatment,data=data.frame(sample_data(r_rarefied_cultivar_08_08_phyloseq)), permutations = 999,by="margin")
+
+#PCoA plot using samples from the same collecting time
+
+rarefied_cultivar_08_08_phyloseq_bray<-vegdist(t(otu_table(r_rarefied_cultivar_08_08_phyloseq)),method="bray",binary = FALSE)
+rarefied_cultivar_08_08_phyloseq_PCoA<-ordinate(rarefied_cultivar_08_08_phyloseq,method = "PCoA", rarefied_cultivar_08_08_phyloseq_bray)
+
+
+tiff('PCoA rarefied_cultivar_08_08.tiff', units="in", width=7, height=5, res=300)
+plot_ordination(rarefied_cultivar_08_08_phyloseq,rarefied_cultivar_08_08_phyloseq_PCoA,type="samples",color="Treatment")+
+  geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("Soybean rhizosphere microbiome collected on 08_08_2016")+labs(x="PCoA1 [32%]",y="PCoA2 [14.9%]") +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+dev.off()
+```
+
+
+## heatmap using only LDA2_OTU_ID
+
+
+```{r}
+LDA2_OTU_ID<-read.csv(file="uniq_LDA2_OTUID_Ag_and_For.csv",header = TRUE) # 1766 OTUs
+LDA_rarefied_cultivar_phyloseq<-prune_taxa(as.character(LDA2_OTU_ID$OUT_ID),rarefied_cultivar_phyloseq)
+plot_heatmap(LDA_rarefied_cultivar_phyloseq, sample.label="sample_ID",taxa.label = "Genus")
+```
+
+
+## Constrained analysis of principle coordinate  Partial distance_based redundance analysis
+## ------------------CAP----------------------
+
+```{r}
+# r_rarefied_cultivar_phyloseq
+
+rarefied_cultivar_cap_compartment<-capscale(t(otu_table(r_rarefied_cultivar_phyloseq))~Compartment+Condition(Soil_type+Read_depth+Time),data=CV_meta,distance = 'bray',dfun = vegdist)
+rarefied_cultivar_cap_compartment
+anova(rarefied_cultivar_cap_compartment)
+
+rarefied_cultivar_cap_soil<-capscale(t(otu_table(r_rarefied_cultivar_phyloseq))~Soil_type+Condition(Treatment+Read_depth+Time),data=CV_meta,distance = 'bray',dfun = vegdist)
+rarefied_cultivar_cap_soil
+anova(rarefied_cultivar_cap_soil)
+
+rarefied_cultivar_cap_treatment<-capscale(t(otu_table(r_rarefied_cultivar_phyloseq))~Treatment+Condition(Soil_type+Read_depth+Time),data=CV_meta,distance = 'bray',dfun = vegdist)
+rarefied_cultivar_cap_treatment
+anova(rarefied_cultivar_cap_treatment)
+
+
+# r_Rhi_rarefied_cultivar_phyloseq
+
+Rhi_rarefied_cultivar_cap_soil<-capscale(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Soil_type+Condition(Treatment+Read_depth+Time),data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)) ,distance = 'bray',dfun = vegdist)
+Rhi_rarefied_cultivar_cap_soil
+anova(Rhi_rarefied_cultivar_cap_soil)
+
+
+Rhi_rarefied_cultivar_cap_treatment<-capscale(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Treatment+Condition(Soil_type+Read_depth+Time),data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)) ,distance = 'bray',dfun = vegdist)
+Rhi_rarefied_cultivar_cap_treatment
+anova(Rhi_rarefied_cultivar_cap_treatment)
+
+Rhi_rarefied_cultivar_cap_time<-capscale(t(otu_table(r_Rhi_rarefied_cultivar_phyloseq))~Time+Condition(Soil_type+Read_depth+Treatment),data=data.frame(sample_data(r_Rhi_rarefied_cultivar_phyloseq)) ,distance = 'bray',dfun = vegdist)
+Rhi_rarefied_cultivar_cap_time
+anova(Rhi_rarefied_cultivar_cap_time)
+
+# r_Ag_Rhi_rarefied_cultivar_phyloseq
+
+Ag_Rhi_rarefied_cultivar_cap_treatment_p<-capscale(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment+Condition(Read_depth+Time),data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+Ag_Rhi_rarefied_cultivar_cap_treatment_p
+anova(Ag_Rhi_rarefied_cultivar_cap_treatment_p)
+
+Ag_Rhi_rarefied_cultivar_cap_treatment<-capscale(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+Ag_Rhi_rarefied_cultivar_cap_treatment
+anova(Ag_Rhi_rarefied_cultivar_cap_treatment)
+
+Ag_Rhi_rarefied_cultivar_cap_time_p<-capscale(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Time+Condition(Treatment+Read_depth),data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+Ag_Rhi_rarefied_cultivar_cap_time_p
+anova(Ag_Rhi_rarefied_cultivar_cap_time_p)
+
+Ag_Rhi_rarefied_cultivar_cap_time<-capscale(t(otu_table(r_Ag_Rhi_rarefied_cultivar_phyloseq))~Time,data=data.frame(sample_data(r_Ag_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+Ag_Rhi_rarefied_cultivar_cap_time
+anova(Ag_Rhi_rarefied_cultivar_cap_time)
+
+
+
+# r_For_Rhi_rarefied_cultivar_phyloseq
+
+For_Rhi_rarefied_cultivar_cap_treatment_p<-capscale(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment+Condition(Read_depth+Time),data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+For_Rhi_rarefied_cultivar_cap_treatment_p
+anova(For_Rhi_rarefied_cultivar_cap_treatment_p)
+
+For_Rhi_rarefied_cultivar_cap_treatment<-capscale(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Treatment,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+For_Rhi_rarefied_cultivar_cap_treatment
+anova(For_Rhi_rarefied_cultivar_cap_treatment)
+
+For_Rhi_rarefied_cultivar_cap_time_p<-capscale(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Time+Condition(Treatment+Read_depth),data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+For_Rhi_rarefied_cultivar_cap_time_p
+anova(For_Rhi_rarefied_cultivar_cap_time_p)
+
+For_Rhi_rarefied_cultivar_cap_time<-capscale(t(otu_table(r_For_Rhi_rarefied_cultivar_phyloseq))~Time,data=data.frame(sample_data(r_For_Rhi_rarefied_cultivar_phyloseq)),distance = 'bray',dfun = vegdist)
+For_Rhi_rarefied_cultivar_cap_time
+anova(For_Rhi_rarefied_cultivar_cap_time)
+
+```
+
+
+
+## PCoA plot
+
+
+```{r}
+#cultivar_phyloseq
+
+cultivar_phyloseq_bray<-vegdist(t(otu_table(cultivar_phyloseq)),method="bray",binary = FALSE)
+cultivar_phyloseq_PCoA<-ordinate(cultivar_phyloseq,method = "PCoA", cultivar_phyloseq_bray)
+
+plot_ordination(cultivar_phyloseq,cultivar_phyloseq_PCoA,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("Soybean rhizosphere microbiome of cultivar phyloseq")+labs(x="PCoA1 [57.6%]",y="PCoA2 [8.8%]") +theme(plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+# rarefied_phyloseq
+
+rarefied_cultivar_phyloseq_bray<-vegdist(t(otu_table(rarefied_cultivar_phyloseq)),method="bray",binary = FALSE)
+rarefied_cultivar_phyloseq_PCoA<-ordinate(rarefied_cultivar_phyloseq,method = "PCoA", rarefied_cultivar_phyloseq_bray)
+ls(rarefied_cultivar_phyloseq_PCoA)
+rarefied_cultivar_phyloseq_PCoA$trace 
+#The amount of variance explained is equal to the trace of the matrix (sum of the diagonals of the decomposed correlation matrix).- http://www2.sas.com/proceedings/sugi30/203-30.pdf
+
+tiff('PCoA rarefied_cultivar_19023.tiff', units="in", width=7, height=5, res=300)
+#ggtitle("PCoA of soybean rhizosphere and bulk microbiome - rarefied_19023")+
+plot_ordination(rarefied_cultivar_phyloseq,rarefied_cultivar_phyloseq_PCoA,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+labs(x="PCoA1 [64.6%]",y="PCoA2 [7.1%]") +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# rarefied_50000_cultivar_phyloseq
+
+rarefied_50000_cultivar_phyloseq_bray<-vegdist(t(otu_table(rarefied_50000_cultivar_phyloseq)),method="bray",binary = FALSE)
+rarefied_50000_cultivar_phyloseq_PCoA<-ordinate(rarefied_50000_cultivar_phyloseq,method = "PCoA", rarefied_50000_cultivar_phyloseq_bray)
+ls(rarefied_50000_cultivar_phyloseq_PCoA)
+rarefied_50000_cultivar_phyloseq_PCoA$trace 
+#The amount of variance explained is equal to the trace of the matrix (sum of the diagonals of the decomposed correlation matrix).- http://www2.sas.com/proceedings/sugi30/203-30.pdf
+
+tiff('PCoA rarefied_cultivar_50000.tiff', units="in", width=7, height=5, res=300)
+#+ ggtitle("PCoA of soybean rhizosphere and bulk microbiome_rarefied_50000")
+plot_ordination(rarefied_50000_cultivar_phyloseq,rarefied_50000_cultivar_phyloseq_PCoA,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+labs(x="PCoA1 [65.5%]",y="PCoA2 [7.2%]") +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+#P$layers<-P$layers[-1] (when using hollow shapes to avoid double layers)
+
+# rarefied_cultivar2_phyloseq
+
+rarefied_cultivar2_phyloseq_bray<-vegdist(t(otu_table(rarefied_cultivar2_phyloseq)),method="bray",binary = FALSE)
+rarefied_cultivar2_phyloseq_PCoA<-ordinate(rarefied_cultivar2_phyloseq,method = "PCoA", rarefied_cultivar2_phyloseq_bray)
+ls(rarefied_cultivar2_phyloseq_PCoA)
+rarefied_cultivar2_phyloseq_PCoA$trace 
+#The amount of variance explained is equal to the trace of the matrix (sum of the diagonals of the decomposed correlation matrix).- http://www2.sas.com/proceedings/sugi30/203-30.pdf
+
+
+tiff('PCoA rarefied_cultivar_19023_rare_remove.tiff', units="in", width=7, height=5, res=300)
+#ggtitle("PCoA of soybean rhizosphere and bulk microbiome - rarefied_18138") +
+plot_ordination(rarefied_cultivar2_phyloseq,rarefied_cultivar2_phyloseq_PCoA,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ labs(x="PCoA1 [66.4%]",y="PCoA2 [7.2%]") +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# Ag_CV1_4_6_rarefied_cultivar_phyloseq
+
+Ag_CV1_4_6_rarefied_cultivar_phyloseq_bray<-vegdist(t(otu_table(Ag_CV1_4_6_rarefied_cultivar_phyloseq)),method="bray",binary = FALSE)
+Ag_CV1_4_6_rarefied_cultivar_phyloseq_PCoA<-ordinate(Ag_CV1_4_6_rarefied_cultivar_phyloseq,method = "PCoA", Ag_CV1_4_6_rarefied_cultivar_phyloseq_bray)
+ls(Ag_CV1_4_6_rarefied_cultivar_phyloseq_PCoA)
+Ag_CV1_4_6_rarefied_cultivar_phyloseq_PCoA$trace 
+#The amount of variance explained is equal to the trace of the matrix (sum of the diagonals of the decomposed correlation matrix).- http://www2.sas.com/proceedings/sugi30/203-30.pdf
+
+
+tiff('PCoA Ag_CV1_4_6_rarefied_cultivar_axes2_and_3.tiff', units="in", width=7, height=5, res=300)
+#+ ggtitle("PCoA of soybean rhizosphere and bulk microbiome - Ag_CV1_4_6_rarefied_19023") 
+plot_ordination(Ag_CV1_4_6_rarefied_cultivar_phyloseq,axes=c(2,3),Ag_CV1_4_6_rarefied_cultivar_phyloseq_PCoA,type="samples",color="Time",shape = "Treatment")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16,4))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+labs(x="PCoA1 [10.5%]",y="PCoA2 [8.9]")+ theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+tiff('PCoA Ag_CV1_4_6_rarefied_cultivar_axes1_and_2.tiff', units="in", width=7, height=5, res=300)
+#+ ggtitle("PCoA of soybean rhizosphere and bulk microbiome - Ag_CV1_4_6_rarefied_19023") 
+plot_ordination(Ag_CV1_4_6_rarefied_cultivar_phyloseq,axes=c(1,2),Ag_CV1_4_6_rarefied_cultivar_phyloseq_PCoA,type="samples",color="Time",shape = "Treatment")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16,4))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+labs(x="PCoA1 [19.4%]",y="PCoA2 [10.5%]")+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# Ag_CV1_4_6_rarefied_cultivar2_phyloseq
+
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq_bray<-vegdist(t(otu_table(Ag_CV1_4_6_rarefied_cultivar2_phyloseq)),method="bray",binary = FALSE)
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq_PCoA<-ordinate(Ag_CV1_4_6_rarefied_cultivar2_phyloseq,method = "PCoA", Ag_CV1_4_6_rarefied_cultivar2_phyloseq_bray)
+ls(Ag_CV1_4_6_rarefied_cultivar2_phyloseq_PCoA)
+Ag_CV1_4_6_rarefied_cultivar2_phyloseq_PCoA$trace 
+#The amount of variance explained is equal to the trace of the matrix (sum of the diagonals of the decomposed correlation matrix).- http://www2.sas.com/proceedings/sugi30/203-30.pdf
+
+plot_ordination(Ag_CV1_4_6_rarefied_cultivar2_phyloseq,Ag_CV1_4_6_rarefied_cultivar2_phyloseq_PCoA,type="samples",color="Time",shape = "Treatment")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16,4))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("PCoA of soybean rhizosphere - Ag_CV1_4_6_rarefied_cultivar2") +labs(x="PCoA1 [20.7%]",y="PCoA2 [10.9%]") + theme(plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+
+
+# Rhi_rarefied_cultivar_phyloseq
+
+Rhi_rarefied_cultivar_phyloseq_bray<-vegdist(t(otu_table(Rhi_rarefied_cultivar_phyloseq)),method="bray",binary = FALSE)
+Rhi_rarefied_cultivar_phyloseq_PCoA<-ordinate(Rhi_rarefied_cultivar_phyloseq,method = "PCoA", Rhi_rarefied_cultivar_phyloseq_bray)
+
+plot_ordination(Rhi_rarefied_cultivar_phyloseq,Rhi_rarefied_cultivar_phyloseq_PCoA,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b"))+ ggtitle("Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis")+labs(x='PCoA1 [70.9%]',y='PCoA2 [4.2%]') +theme(plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+
+# Rhi_rarefied_cultivar2_phyloseq
+
+Rhi_rarefied_cultivar2_phyloseq_bray<-vegdist(t(otu_table(Rhi_rarefied_cultivar2_phyloseq)),method="bray",binary = FALSE)
+Rhi_rarefied_cultivar2_phyloseq_PCoA<-ordinate(Rhi_rarefied_cultivar2_phyloseq,method = "PCoA", Rhi_rarefied_cultivar2_phyloseq_bray)
+
+plot_ordination(Rhi_rarefied_cultivar2_phyloseq,Rhi_rarefied_cultivar2_phyloseq_PCoA,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b"))+ ggtitle("Rhi_rarefied_cultivar2_phyloseq_weighted Bray-Curtis")+labs(x="PCoA1 [72.8%]",y="PCoA2 [4.3%]") +theme(plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+
+
+# For_Rhi_rarefied_cultivar_phyloseq
+
+For_Rhi_rarefied_cultivar_phyloseq_bray<-vegdist(t(otu_table(For_Rhi_rarefied_cultivar_phyloseq)),method="bray",binary = FALSE)
+For_Rhi_rarefied_cultivar_phyloseq_PCoA<-ordinate(For_Rhi_rarefied_cultivar_phyloseq,method = "PCoA", For_Rhi_rarefied_cultivar_phyloseq_bray)
+
+ls(For_Rhi_rarefied_cultivar_phyloseq_PCoA)
+For_Rhi_rarefied_cultivar_phyloseq_PCoA$trace #2.91
+
+tiff('PCoA_For_Rhi_cultivar.tiff', units="in", width=7, height=5, res=300)
+#+ggtitle(" \n For_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis \n")
+plot_ordination(For_Rhi_rarefied_cultivar_phyloseq,For_Rhi_rarefied_cultivar_phyloseq_PCoA,type="samples",color="Treatment") +ggtitle("For Rhizosphere PCoA")+
+  geom_point(size=4)+ scale_color_manual(values = c("#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b"))+labs(x="PCoA1 [17.6%]",y="PCoA2 [9.4%]") +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+# For_Rhi_rarefied_cultivar2_phyloseq
+
+For_Rhi_rarefied_cultivar2_phyloseq_bray<-vegdist(t(otu_table(For_Rhi_rarefied_cultivar2_phyloseq)),method="bray",binary = FALSE)
+For_Rhi_rarefied_cultivar2_phyloseq_PCoA<-ordinate(For_Rhi_rarefied_cultivar2_phyloseq,method = "PCoA", For_Rhi_rarefied_cultivar2_phyloseq_bray)
+
+ls(For_Rhi_rarefied_cultivar2_phyloseq_PCoA)
+For_Rhi_rarefied_cultivar2_phyloseq_PCoA$trace #2.67
+
+plot_ordination(For_Rhi_rarefied_cultivar2_phyloseq,For_Rhi_rarefied_cultivar2_phyloseq_PCoA,type="samples",color="Treatment")+
+  geom_point(size=4)+ scale_color_manual(values = c("#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b"))+ggtitle("For_Rhi_rarefied_cultivar2_phyloseq_weighted Bray-Curtis")+labs(x="PCoA1 [17.6%]",y="PCoA2 [9.4%]") +theme(plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=10,b=0,l=0,r=0)),axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin = margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+
+
+# Ag_Rhi_rarefied_cultivar_phyloseq
+
+Ag_Rhi_rarefied_cultivar_phyloseq_bray<-vegdist(t(otu_table(Ag_Rhi_rarefied_cultivar_phyloseq)),method="bray",binary = FALSE)
+Ag_Rhi_rarefied_cultivar_phyloseq_PCoA<-ordinate(Ag_Rhi_rarefied_cultivar_phyloseq,method = "PCoA", Ag_Rhi_rarefied_cultivar_phyloseq_bray)
+
+ls(Ag_Rhi_rarefied_cultivar_phyloseq_PCoA)
+Ag_Rhi_rarefied_cultivar_phyloseq_PCoA$trace #4.875
+
+tiff('PCoA_Ag_Rhi_cultivar.tiff', units="in", width=7, height=5, res=300)
+#+ggtitle( "\n Ag_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis\n ")
+plot_ordination(Ag_Rhi_rarefied_cultivar_phyloseq,Ag_Rhi_rarefied_cultivar_phyloseq_PCoA,type="samples",color="Treatment")+ggtitle("Ag Rhizosphere PCoA")+
+  geom_point(size=4)+ scale_color_manual(values = c("#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b"))+labs(x="PCoA1 [14.6%]",y="PCoA2 [8.7%]")+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,family = "Arial",margin = margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,family = "Arial",margin = margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1),"cm"))
+dev.off()
+```
+
+
+## CAP plot
+
+
+```{r}
+
+#rarefied_cultivar_phyloseq
+rarefied_cultivar_phyloseq_cap<-ordinate(rarefied_cultivar_phyloseq,'CAP','bray',~Soil_type+Treatment)
+
+plot_ordination(rarefied_cultivar_phyloseq,rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment",shape = "Soil_type")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("CAP plot of soybean rhizosphere and bulk microbiome \n ~Soil_type+Treatment") +theme(plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+
+
+# Forest rhizosphere CAP
+
+#1) Treatment
+For_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(For_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Treatment)
+ls(For_Rhi_rarefied_cultivar_phyloseq_cap)
+For_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+tiff('CAP_For_Rhi_cultivar.tiff', units="in", width=7, height=5, res=300)
+#+ggtitle("Forest soil ~ Treatment \n CAP plot of soybean rhizosphere microbiome")
+plot_ordination(For_Rhi_rarefied_cultivar_phyloseq,For_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment")+ggtitle("For Rhizosphere CAP")+geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c")) +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin=margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,face="bold",family = "Arial",margin=margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1),"cm"))
+dev.off()
+
+anova(For_Rhi_rarefied_cultivar_phyloseq_cap)
+
+#2) Time
+For_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(For_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Time)
+ls(For_Rhi_rarefied_cultivar_phyloseq_cap)
+For_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+plot_ordination(For_Rhi_rarefied_cultivar_phyloseq,For_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment",label = "Time")+
+  geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("For_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis CAP plot Axis1 and Axis2") +theme(title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+#3) Treatment +Time
+#For_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(For_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Treatment+Time)
+#ls(For_Rhi_rarefied_cultivar_phyloseq_cap)
+#For_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+#plot_ordination(For_Rhi_rarefied_cultivar_phyloseq,For_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment",label = "Time")+
+#  geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("For_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis CAP plot Axis1 and Axis2") +theme(title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+#    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+# Agriculture rhizosphere CAP
+
+#1) Treatment
+Ag_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(Ag_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Treatment)
+ls(Ag_Rhi_rarefied_cultivar_phyloseq_cap)
+Ag_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+tiff('CAP_Ag_Rhi_cultivar.tiff', units="in", width=7, height=5, res=300)
+#+ ggtitle("Agriculture soil ~ Treatment \n CAP plot of soybean rhizosphere microbiome ")
+plot_ordination(Ag_Rhi_rarefied_cultivar_phyloseq,Ag_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment")+ggtitle("Ag Rhizosphere CAP")+
+  geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c")) +theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin=margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,face="bold",family = "Arial",margin=margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+#2) Time
+Ag_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(Ag_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Time)
+ls(Ag_Rhi_rarefied_cultivar_phyloseq_cap)
+Ag_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+plot_ordination(Ag_Rhi_rarefied_cultivar_phyloseq,Ag_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Time",label = "Treatment")+
+  geom_point(size=4)+scale_color_manual(values = c("#8569D5", "#00CDCD", "orange","#DA5724", "#508578", "#CD9BCD",
+   "#AD6F3B", "#673770","#D14285", "#652926", "#C84248"))+ ggtitle("Ag_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis CAP plot Axis1 and Axis2") +theme(title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+#3) pure Treatment 
+Ag_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(Ag_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Treatment+Condition(Time))
+#ls(Ag_Rhi_rarefied_cultivar_phyloseq_cap)
+#Ag_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+plot_ordination(Ag_Rhi_rarefied_cultivar_phyloseq,Ag_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment",label = "Time")+
+geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("Ag_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis CAP plot Axis1 and Axis2") +theme(title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+#4) pure Time
+Ag_Rhi_rarefied_cultivar_phyloseq_cap<-ordinate(Ag_Rhi_rarefied_cultivar_phyloseq,'CAP','bray',~Time+Condition(Treatment))
+#ls(Ag_Rhi_rarefied_cultivar_phyloseq_cap)
+#Ag_Rhi_rarefied_cultivar_phyloseq_cap$adjust
+
+plot_ordination(Ag_Rhi_rarefied_cultivar_phyloseq,Ag_Rhi_rarefied_cultivar_phyloseq_cap,type="samples",color="Treatment",label = "Time")+
+geom_point(size=4)+scale_color_manual(values = c("#838B8B","#e83535","#10cc8e","#0A0A0A","#020de2","#ab0ef9","#75891b","#f9830c"))+ ggtitle("Ag_Rhi_rarefied_cultivar_phyloseq_weighted Bray-Curtis CAP plot Axis1 and Axis2") +theme(title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+
+```
+
+
+## rarefaction plot
+
+
+```{r}
+long_cultivar_otu<-as.data.frame(otu_table(cultivar_phyloseq))
+dim(long_cultivar_otu)
+short_cultivar_otu<-t(long_cultivar_otu)
+dim(short_cultivar_otu)
+
+# rarefaction with minimum read depth
+
+cultivar_otu_rarefy<-rarefy(short_cultivar_otu,sample=seq(0,min(sample_sums(cultivar_phyloseq)),by=100))
+dim(cultivar_otu_rarefy)
+rownames(cultivar_otu_rarefy)<-rownames(short_cultivar_otu)
+cultivar_otu_rarefy[1:10,1:10]
+cultivar_otu_rarefy<-data.frame(subsample=seq(0,min(sample_sums(cultivar_phyloseq)),by=100),t(cultivar_otu_rarefy))
+cultivar_otu_rarefy[1:10,1:10]
+melt_cultivar_otu_rarefy<-melt(cultivar_otu_rarefy,id.vars = 'subsample')
+head(melt_cultivar_otu_rarefy)
+write.csv(melt_cultivar_otu_rarefy,file="melt_cultivar_otu_rarefy.csv")
+melt_cultivar_otu_rarefy<-read.csv(file="melt_cultivar_otu_rarefy.csv")
+
+tiff('Rarefaction plot with minimum depth.tiff', units="in", width=16, height=8, res=600)
+ggplot(melt_cultivar_otu_rarefy,aes(x=subsample,y=value,colour=variable))+geom_line(aes(x=subsample,y=value,group=variable),size=0.4)+
+geom_dl(aes(label = variable), method = list(dl.combine( "last.points"), cex = 0.2))+ylab("Bactria OTU numbers")+xlab("Sequencing depth")+theme(panel.background = element_rect(fill="white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=5,family = "Arial")),legend.position="none")+ggtitle("Rarefaction curve with minimum read depth")
+dev.off()
+
+# rarefaction with maximum read depth
+# This rarefaction table is generated from mothur using raw OTU table and rarefied with interval of 100
+rarefaction_df<-read.csv('cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.0.03.pick.groups.rarefaction.csv',header = TRUE)
+head(rarefaction_df)
+rarefaction_df<-rarefaction_df[c(1,which(rarefaction_df$numsampled%%100==0)),]
+rarefaction_df_up<-rarefaction_df[,-c(grep("lci|hci",colnames(rarefaction_df),perl=TRUE))]
+head(rarefaction_df_up)
+
+melt_cultivar_otu_rarefy_max<-melt(rarefaction_df_up,id.vars = 'numsampled')
+head(melt_cultivar_otu_rarefy_max)
+
+tiff('Rarefaction plot with maximum depth.tiff', units="in", width=16, height=8, res=600)
+ggplot(melt_cultivar_otu_rarefy_max,aes(x=numsampled,y=value,colour=variable))+geom_line(aes(x=numsampled,y=value,group=variable),size=0.4)+
+geom_dl(aes(label = variable), method = list(dl.combine("last.points"), cex = 0.2))+ylab("Bactria OTU numbers")+xlab("Sequencing depth")+theme(panel.background = element_rect(fill="white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), title=(element_text(size=15,family = "Arial",face="bold")),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=5,family = "Arial")),legend.position="none")+ggtitle("Rarefaction curve with minimum read depth")
+dev.off()
+```
+
+
+## Stacked barplot at Phylum level
+
+
+```{r}
+## prepare dataset
+
+phylum_cultivar_phyloseq<-tax_glom(rarefied_cultivar_phyloseq,taxrank = rank_names(rarefied_cultivar_phyloseq)[2],NArm=TRUE) 
+r_phylum_cultivar_phyloseq<-transform_sample_counts(phylum_cultivar_phyloseq,function(x) x/sum(x))
+filter_r_phylum_cultivar_phyloseq<- filter_taxa(r_phylum_cultivar_phyloseq, function(x) sum(x>0.01)>0.2*length(x),prune = TRUE)
+filter_r_phylum_cultivar_phyloseq
+sample_sums(filter_r_phylum_cultivar_phyloseq)
+tax_table(filter_r_phylum_cultivar_phyloseq)[,2]
+Others<-1-sample_sums(filter_r_phylum_cultivar_phyloseq)
+phylum_cultivar<-rbind(otu_table(filter_r_phylum_cultivar_phyloseq),Others)
+phylum_cultivar[,1:10]
+rownames(phylum_cultivar)<-c(tax_table(filter_r_phylum_cultivar_phyloseq)[,2],"Others")
+phylum_cultivar
+phylum_cultivar<-data.frame(Treat=as.factor(CV_meta$Treat),t(phylum_cultivar))
+phylum_cultivar<-phylum_cultivar%>% group_by(Treat) %>%
+  summarise_all(funs(mean))
+phylum_cultivar
+rowSums(phylum_cultivar[,2:13])
+phylum_cultivar_melt<-melt(phylum_cultivar)
+colnames(phylum_cultivar_melt)<-c('Treat','Phylum','Relative_abundance')
+phylum_cultivar_melt
+
+
+tiff('Microbial community composition at Phylum level.tiff', units="in", width=7, height=5, res=300)
+
+## plot barplot
+color<-c("#8569D5", "#00CDCD", "orange","#DA5724", "#508578", "#CD9BCD",
+   "#AD6F3B", "#673770","#D14285", "#652926", "#C84248","#CBD588"
+  )
+
+ggplot(phylum_cultivar_melt, aes(x =Treat , y = Relative_abundance,fill=Phylum))+geom_bar(stat='identity',colour="grey",size=0.1)+labs(x="Treatment",y="Relative Abundance")+scale_fill_manual(values=color)+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), title=(element_text(size=15,family = "Arial",face="bold")),axis.text.x = element_text(angle=60,hjust = 1),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=11,family="Arial"),
+    axis.title.x=element_text(size = 15,face="bold",family = "Arial",margin=margin(t=10,b=0,l=0,r=0)),axis.title.y=element_text(size = 15,face="bold",family = "Arial",margin=margin(t=0,b=0,l=0,r=10)),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")))
+
+dev.off()
+```
+
+
+
+
+## Heatmap
+
+```{r}
+# rarefied_cultivar_phyloseq
+
+prune_rarefied_cultivar_phyloseq<- prune_taxa(names(sort(taxa_sums(rarefied_cultivar_phyloseq),TRUE)[1:200]), rarefied_cultivar_phyloseq)
+prune_rarefied_cultivar_phyloseq
+plot_heatmap(prune_rarefied_cultivar_phyloseq, sample.label="sample_ID",sample.order = sample_names(rarefied_cultivar_phyloseq)[c(1:12,64:68,13:63,69:80,132:136,81:131)],taxa.label = "Phylum")
+
+#rarefied_cultivar_phyloseq_Protoebacteria
+rarefied_cultivar_phyloseq_Protoebacteria<-subset_taxa(rarefied_cultivar_phyloseq,Phylum=="Proteobacteria")
+
+prune_rarefied_cultivar_phyloseq_Proteobacteria<- prune_taxa(names(sort(taxa_sums(rarefied_cultivar_phyloseq_Protoebacteria),TRUE)[1:100]), rarefied_cultivar_phyloseq_Protoebacteria)
+prune_rarefied_cultivar_phyloseq_Proteobacteria
+plot_heatmap(prune_rarefied_cultivar_phyloseq_Proteobacteria, sample.label="sample_ID",sample.order = sample_names(rarefied_cultivar_phyloseq_Protoebacteria)[c(1:12,64:68,13:63,69:80,132:136,81:131)],taxa.label = "Genus")
+
+```
+
+
+
+## Boxplot for differential abundant genus, family, order,class and phylum
+
+
+
+```{r}
+# Pseudoxanthomonas genus
+Pseudoxanthomonas_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Pseudoxanthomonas",]
+Pseudoxanthomonas_genus_ab<-data.frame(Pseudoxanthomonas=t(Pseudoxanthomonas_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Pseudoxanthomonas_genus_ab)<-c('Pseudoxanthomonas','Treat')
+Pseudoxanthomonas_genus_ab
+
+tiff('Relative abundance of Pseudoxanthomonas genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Pseudoxanthomonas_genus_ab,aes(x=Treat,y=Pseudoxanthomonas,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Pseudoxanthomonas \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Opitutus genus
+Opitutus_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Opitutus",]
+Opitutus_genus_ab<-data.frame(Opitutus=t(Opitutus_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Opitutus_genus_ab)<-c('Opitutus','Treat')
+Opitutus_genus_ab
+
+tiff('Relative abundance of Opitutus genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Opitutus_genus_ab,aes(x=Treat,y=Opitutus,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Opitutus \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Staphylococcus genus
+# Singulisphaera genus
+Singulisphaera_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Singulisphaera",]
+Singulisphaera_genus_ab<-data.frame(Singulisphaera=t(Singulisphaera_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Singulisphaera_genus_ab)<-c('Singulisphaera','Treat')
+Singulisphaera_genus_ab
+
+tiff('Relative abundance of Singulisphaera genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Singulisphaera_genus_ab,aes(x=Treat,y=Singulisphaera,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Singulisphaera \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Lysobacter genus
+Lysobacter_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Lysobacter",]
+Lysobacter_genus_ab<-data.frame(Lysobacter=t(Lysobacter_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Lysobacter_genus_ab)<-c('Lysobacter','Treat')
+Lysobacter_genus_ab
+
+tiff('Relative abundance of Lysobacter genus.tiff', units="in", width=5, height=5, res=300)
+
+ggplot(Lysobacter_genus_ab,aes(x=Treat,y=Lysobacter,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Lysobacter \n",x="Treat",y=" Relative abundance ")+theme(plot.title=(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Gemmatimonas genus
+Gemmatimonas_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gemmatimonas",]
+Gemmatimonas_genus_ab<-data.frame(Gemmatimonas=t(Gemmatimonas_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gemmatimonas_genus_ab)<-c('Gemmatimonas','Treat')
+Gemmatimonas_genus_ab
+
+tiff('Relative abundance of Gemmatimonas genus.tiff', units="in", width=5, height=5, res=300)
+
+ggplot(Gemmatimonas_genus_ab,aes(x=Treat,y=Gemmatimonas,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gemmatimonas \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Gemmata genus
+Gemmata_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gemmata",]
+Gemmata_genus_ab<-data.frame(Gemmata=t(Gemmata_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gemmata_genus_ab)<-c('Gemmata','Treat')
+Gemmata_genus_ab
+
+tiff('Relative abundance of Gemmata genus.tiff', units="in", width=5, height=5, res=300)
+
+ggplot(Gemmata_genus_ab,aes(x=Treat,y=Gemmata,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gemmata \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Agromyces genus
+Agromyces_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Agromyces",]
+Agromyces_genus_ab<-data.frame(Agromyces=t(Agromyces_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Agromyces_genus_ab)<-c('Agromyces','Treat')
+Agromyces_genus_ab
+
+tiff('Relative abundance of Agromyces genus.tiff', units="in", width=5, height=5, res=300)
+
+ggplot(Agromyces_genus_ab,aes(x=Treat,y=Agromyces,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Agromyces \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Nocardioides genus
+Nocardioides_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Nocardioides",]
+Nocardioides_genus_ab<-data.frame(Nocardioides=t(Nocardioides_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Nocardioides_genus_ab)<-c('Nocardioides','Treat')
+Nocardioides_genus_ab
+
+tiff('Relative abundance of Nocardioides genus.tiff', units="in", width=5, height=5, res=300)
+
+ggplot(Nocardioides_genus_ab,aes(x=Treat,y=Nocardioides,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Nocardioides \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Sphingomonas genus
+Sphingomonas_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Sphingomonas",]
+Sphingomonas_genus_ab<-data.frame(Sphingomonas=t(Sphingomonas_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Sphingomonas_genus_ab)<-c('Sphingomonas','Treat')
+Sphingomonas_genus_ab
+
+tiff('Relative abundance of Sphingomonas genus.tiff', units="in", width=5, height=5, res=300)
+
+ggplot(Sphingomonas_genus_ab,aes(x=Treat,y=Sphingomonas,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Sphingomonas \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Dyella genus
+Dyella_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Dyella",]
+Dyella_genus_ab<-data.frame(Dyella=t(Dyella_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Dyella_genus_ab)<-c('Dyella','Treat')
+Dyella_genus_ab
+
+tiff('Relative abundance of Dyella genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Dyella_genus_ab,aes(x=Treat,y=Dyella,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Dyella \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Phenylobacterium genus
+Phenylobacterium_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Phenylobacterium",]
+Phenylobacterium_genus_ab<-data.frame(Phenylobacterium=t(Phenylobacterium_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Phenylobacterium_genus_ab)<-c('Phenylobacterium','Treat')
+Phenylobacterium_genus_ab
+
+tiff('Relative abundance of Phenylobacterium genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Phenylobacterium_genus_ab,aes(x=Treat,y=Phenylobacterium,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Phenylobacterium \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Flavisolibacter genus
+Flavisolibacter_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Flavisolibacter",]
+Flavisolibacter_genus_ab<-data.frame(Flavisolibacter=t(Flavisolibacter_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Flavisolibacter_genus_ab)<-c('Flavisolibacter','Treat')
+Flavisolibacter_genus_ab
+
+tiff('Relative abundance of Flavisolibacter genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Flavisolibacter_genus_ab,aes(x=Treat,y=Flavisolibacter,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Flavisolibacter \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Streptomyces genus
+Streptomyces_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Streptomyces",]
+Streptomyces_genus_ab<-data.frame(Streptomyces=t(Streptomyces_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Streptomyces_genus_ab)<-c('Streptomyces','Treat')
+Streptomyces_genus_ab
+
+tiff('Relative abundance of Streptomyces genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Streptomyces_genus_ab,aes(x=Treat,y=Streptomyces,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Streptomyces \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Bradyrhizobium genus
+Bradyrhizobium_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Bradyrhizobium",]
+Bradyrhizobium_genus_ab<-data.frame(Bradyrhizobium=t(Bradyrhizobium_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Bradyrhizobium_genus_ab)<-c('Bradyrhizobium','Treat')
+Bradyrhizobium_genus_ab
+
+tiff('Relative abundance of Bradyrhizobium genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Bradyrhizobium_genus_ab,aes(x=Treat,y=Bradyrhizobium,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Bradyrhizobium \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Massilia genus
+# Pasteuria genus
+Pasteuria_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Pasteuria",]
+Pasteuria_genus_ab<-data.frame(Pasteuria=t(Pasteuria_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Pasteuria_genus_ab)<-c('Pasteuria','Treat')
+Pasteuria_genus_ab
+
+tiff('Relative abundance of Pasteuria genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Pasteuria_genus_ab,aes(x=Treat,y=Pasteuria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Pasteuria \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Ohtaekwangia genus
+Ohtaekwangia_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Ohtaekwangia",]
+Ohtaekwangia_genus_ab<-data.frame(Ohtaekwangia=t(Ohtaekwangia_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Ohtaekwangia_genus_ab)<-c('Ohtaekwangia','Treat')
+Ohtaekwangia_genus_ab
+
+tiff('Relative abundance of Ohtaekwangia genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Ohtaekwangia_genus_ab,aes(x=Treat,y=Ohtaekwangia,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Ohtaekwangia \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+
+# Mucilaginibacter genus
+Mucilaginibacter_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Mucilaginibacter",]
+Mucilaginibacter_genus_ab<-data.frame(Mucilaginibacter=t(Mucilaginibacter_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Mucilaginibacter_genus_ab)<-c('Mucilaginibacter','Treat')
+Mucilaginibacter_genus_ab
+
+tiff('Relative abundance of Mucilaginibacter genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Mucilaginibacter_genus_ab,aes(x=Treat,y=Mucilaginibacter,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Mucilaginibacter \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Mycobacterium genus
+Mycobacterium_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Mycobacterium",]
+Mycobacterium_genus_ab<-data.frame(Mycobacterium=t(Mycobacterium_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Mycobacterium_genus_ab)<-c('Mycobacterium','Treat')
+Mycobacterium_genus_ab
+
+tiff('Relative abundance of Mycobacterium genus.tiff', units="in", width=5, height=5, res=300)
+
+
+ggplot(Mycobacterium_genus_ab,aes(x=Treat,y=Mycobacterium,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Mycobacterium \n",x="Treat",y=" Relative abundance ")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Pseudomonas genus
+
+Pseudomonas_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Pseudomonas",]
+Pseudomonas_genus_ab<-data.frame(Pseudomonas=t(Pseudomonas_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Pseudomonas_genus_ab)<-c('Pseudomonas','Treat')
+Pseudomonas_genus_ab
+
+tiff('Relative abundance of Pseudomonas genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Pseudomonas_genus_ab,aes(x=Treat,y=Pseudomonas,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Pseudomonas \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Amaricoccus genus
+
+Amaricoccus_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Amaricoccus",]
+Amaricoccus_genus_ab<-data.frame(Amaricoccus=t(Amaricoccus_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Amaricoccus_genus_ab)<-c('Amaricoccus','Treat')
+Amaricoccus_genus_ab
+
+tiff('Relative abundance of Amaricoccus genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Amaricoccus_genus_ab,aes(x=Treat,y=Amaricoccus,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Amaricoccus \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Pantoea genus
+Pantoea_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Pantoea",]
+Pantoea_genus_ab<-data.frame(Pantoea=t(Pantoea_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Pantoea_genus_ab)<-c('Pantoea','Treat')
+Pantoea_genus_ab
+
+tiff('Relative abundance of Pantoea genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Pantoea_genus_ab,aes(x=Treat,y=Pantoea,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Pantoea \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Glycomyces genus
+Glycomyces_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Glycomyces",]
+Glycomyces_genus_ab<-data.frame(Glycomyces=t(Glycomyces_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Glycomyces_genus_ab)<-c('Glycomyces','Treat')
+Glycomyces_genus_ab
+
+tiff('Relative abundance of Glycomyces genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Glycomyces_genus_ab,aes(x=Treat,y=Glycomyces,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Glycomyces \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Burkholderia genus
+Burkholderia_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Burkholderia",]
+Burkholderia_genus_ab<-data.frame(Burkholderia=t(Burkholderia_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Burkholderia_genus_ab)<-c('Burkholderia','Treat')
+Burkholderia_genus_ab
+
+tiff('Relative abundance of Burkholderia genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Burkholderia_genus_ab,aes(x=Treat,y=Burkholderia,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Burkholderia \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Gp3 genus
+Gp3_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gp3",]
+Gp3_genus_ab<-data.frame(Gp3=t(Gp3_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gp3_genus_ab)<-c('Gp3','Treat')
+Gp3_genus_ab
+
+tiff('Relative abundance of Gp3 genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gp3_genus_ab,aes(x=Treat,y=Gp3,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gp3 \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Gp6 genus
+Gp6_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gp6",]
+Gp6_genus_ab<-data.frame(Gp6=t(Gp6_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gp6_genus_ab)<-c('Gp6','Treat')
+Gp6_genus_ab
+
+tiff('Relative abundance of Gp6 genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gp6_genus_ab,aes(x=Treat,y=Gp6,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gp6 \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Gp16 genus
+Gp16_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gp16",]
+Gp16_genus_ab<-data.frame(Gp16=t(Gp16_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gp16_genus_ab)<-c('Gp16','Treat')
+Gp16_genus_ab
+
+tiff('Relative abundance of Gp16 genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gp16_genus_ab,aes(x=Treat,y=Gp16,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gp16 \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Gp1 genus
+Gp1_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gp1",]
+Gp1_genus_ab<-data.frame(Gp1=t(Gp1_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gp1_genus_ab)<-c('Gp1','Treat')
+Gp1_genus_ab
+
+tiff('Relative abundance of Gp1 genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gp1_genus_ab,aes(x=Treat,y=Gp1,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gp1 \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Gp2 genus
+Gp2_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gp2",]
+Gp2_genus_ab<-data.frame(Gp2=t(Gp2_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gp2_genus_ab)<-c('Gp2','Treat')
+Gp2_genus_ab
+
+tiff('Relative abundance of Gp2 genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gp2_genus_ab,aes(x=Treat,y=Gp2,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gp2 \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Gp4 genus
+Gp4_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Gp4",]
+Gp4_genus_ab<-data.frame(Gp4=t(Gp4_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gp4_genus_ab)<-c('Gp4','Treat')
+Gp4_genus_ab
+
+tiff('Relative abundance of Gp4 genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gp4_genus_ab,aes(x=Treat,y=Gp4,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gp4 \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# TM7_genus_incertae_sedis genus
+TM7_genus_incertae_sedis_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="TM7_genus_incertae_sedis",]
+TM7_genus_incertae_sedis_genus_ab<-data.frame(TM7_genus_incertae_sedis=t(TM7_genus_incertae_sedis_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(TM7_genus_incertae_sedis_genus_ab)<-c('TM7_genus_incertae_sedis','Treat')
+TM7_genus_incertae_sedis_genus_ab
+
+tiff('Relative abundance of TM7_genus_incertae_sedis genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(TM7_genus_incertae_sedis_genus_ab,aes(x=Treat,y=TM7_genus_incertae_sedis,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="TM7_genus_incertae_sedis \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Kribbella genus
+Kribbella_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Kribbella",]
+Kribbella_genus_ab<-data.frame(Kribbella=t(Kribbella_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Kribbella_genus_ab)<-c('Kribbella','Treat')
+Kribbella_genus_ab
+
+tiff('Relative abundance of Kribbella genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Kribbella_genus_ab,aes(x=Treat,y=Kribbella,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Kribbella \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Planctomyces genus
+Planctomyces_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Planctomyces",]
+Planctomyces_genus_ab<-data.frame(Planctomyces=t(Planctomyces_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Planctomyces_genus_ab)<-c('Planctomyces','Treat')
+Planctomyces_genus_ab
+
+tiff('Relative abundance of Planctomyces genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Planctomyces_genus_ab,aes(x=Treat,y=Planctomyces,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Planctomyces \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Ktedonobacter genus
+Ktedonobacter_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Ktedonobacter",]
+Ktedonobacter_genus_ab<-data.frame(Ktedonobacter=t(Ktedonobacter_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Ktedonobacter_genus_ab)<-c('Ktedonobacter','Treat')
+Ktedonobacter_genus_ab
+
+tiff('Relative abundance of Ktedonobacter genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Ktedonobacter_genus_ab,aes(x=Treat,y=Ktedonobacter,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Ktedonobacter \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Spartobacteria_genera_incertae_sedis genus
+Spartobacteria_genera_incertae_sedis_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Spartobacteria_genera_incertae_sedis",]
+Spartobacteria_genera_incertae_sedis_genus_ab<-data.frame(Spartobacteria_genera_incertae_sedis=t(Spartobacteria_genera_incertae_sedis_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Spartobacteria_genera_incertae_sedis_genus_ab)<-c('Spartobacteria_genera_incertae_sedis','Treat')
+Spartobacteria_genera_incertae_sedis_genus_ab
+
+tiff('Relative abundance of Spartobacteria_genera_incertae_sedis genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Spartobacteria_genera_incertae_sedis_genus_ab,aes(x=Treat,y=Spartobacteria_genera_incertae_sedis,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Spartobacteria_genera_incertae_sedis \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Enterobacter genus
+Enterobacter_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Enterobacter",]
+Enterobacter_genus_ab<-data.frame(Enterobacter=t(Enterobacter_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Enterobacter_genus_ab)<-c('Enterobacter','Treat')
+Enterobacter_genus_ab
+
+tiff('Relative abundance of Enterobacter genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Enterobacter_genus_ab,aes(x=Treat,y=Enterobacter,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Enterobacter \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Nocardioides genus
+Nocardioides_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Nocardioides",]
+Nocardioides_genus_ab<-data.frame(Nocardioides=t(Nocardioides_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Nocardioides_genus_ab)<-c('Nocardioides','Treat')
+Nocardioides_genus_ab
+
+tiff('Relative abundance of Nocardioides genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Nocardioides_genus_ab,aes(x=Treat,y=Nocardioides,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Nocardioides \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Enterobacter genus
+Enterobacter_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Enterobacter",]
+Enterobacter_genus_ab<-data.frame(Enterobacter=t(Enterobacter_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Enterobacter_genus_ab)<-c('Enterobacter','Treat')
+Enterobacter_genus_ab
+
+tiff('Relative abundance of Enterobacter genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Enterobacter_genus_ab,aes(x=Treat,y=Enterobacter,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Enterobacter \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Novosphingobium genus
+Novosphingobium_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Novosphingobium",]
+Novosphingobium_genus_ab<-data.frame(Novosphingobium=t(Novosphingobium_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Novosphingobium_genus_ab)<-c('Novosphingobium','Treat')
+Novosphingobium_genus_ab
+
+tiff('Relative abundance of Novosphingobium genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Novosphingobium_genus_ab,aes(x=Treat,y=Novosphingobium,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Novosphingobium \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+
+#Bacillus genus
+Bacillus_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Bacillus",]
+Bacillus_genus_ab<-data.frame(Bacillus=t(Bacillus_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Bacillus_genus_ab)<-c('Bacillus','Treat')
+Bacillus_genus_ab
+
+tiff('Relative abundance of Bacillus genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Bacillus_genus_ab,aes(x=Treat,y=Bacillus,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Bacillus \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+#Rhizobium genus
+Rhizobium_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Rhizobium",]
+Rhizobium_genus_ab<-data.frame(Rhizobium=t(Rhizobium_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Rhizobium_genus_ab)<-c('Rhizobium','Treat')
+Rhizobium_genus_ab
+
+tiff('Relative abundance of Rhizobium genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Rhizobium_genus_ab,aes(x=Treat,y=Rhizobium,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Rhizobium \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Stenotrophomonas genus
+
+Stenotrophomonas_genus_ab<-otu_table(r_genera_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_genera_rarefied_cultivar_phyloseq))$Genus=="Stenotrophomonas",]
+Stenotrophomonas_genus_ab<-data.frame(Stenotrophomonas=t(Stenotrophomonas_genus_ab),Treat=sample_data(r_genera_rarefied_cultivar_phyloseq)$Treat)
+colnames(Stenotrophomonas_genus_ab)<-c('Stenotrophomonas','Treat')
+Stenotrophomonas_genus_ab
+
+
+tiff('Relative abundance of Stenotrophomonas genus.tiff', units="in", width=5, height=5, res=300)
+ggplot(Stenotrophomonas_genus_ab,aes(x=Treat,y=Stenotrophomonas,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Stenotrophomona \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+#Bacteroidetes phylum
+Bacteroidetes_phylum_ab<-otu_table(r_phylum_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_phylum_rarefied_cultivar_phyloseq))$Phylum=="Bacteroidetes",]
+Bacteroidetes_phylum_ab<-data.frame(Bacteroidetes=t(Bacteroidetes_phylum_ab),Treat=sample_data(r_phylum_rarefied_cultivar_phyloseq)$Treat)
+colnames(Bacteroidetes_phylum_ab)<-c('Bacteroidetes','Treat')
+Bacteroidetes_phylum_ab
+
+
+tiff('Relative abundance of Bacteroidetes phylum.tiff', units="in", width=5, height=5, res=300)
+ggplot(Bacteroidetes_phylum_ab,aes(x=Treat,y=Bacteroidetes,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Bacteroidetes \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Actinobacteria phylum
+Actinobacteria_phylum_ab<-otu_table(r_phylum_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_phylum_rarefied_cultivar_phyloseq))$Phylum=="Actinobacteria",]
+Actinobacteria_phylum_ab<-data.frame(Actinobacteria=t(Actinobacteria_phylum_ab),Treat=sample_data(r_phylum_rarefied_cultivar_phyloseq)$Treat)
+colnames(Actinobacteria_phylum_ab)<-c('Actinobacteria','Treat')
+Actinobacteria_phylum_ab
+
+
+
+tiff('Relative abundance of Actinobacteria phylum.tiff', units="in", width=5, height=5, res=300)
+ggplot(Actinobacteria_phylum_ab,aes(x=Treat,y=Actinobacteria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Actinobacteria \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Acidobacteria phylum
+Acidobacteria_phylum_ab<-otu_table(r_phylum_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_phylum_rarefied_cultivar_phyloseq))$Phylum=="Acidobacteria",]
+Acidobacteria_phylum_ab<-data.frame(Acidobacteria=t(Acidobacteria_phylum_ab),Treat=sample_data(r_phylum_rarefied_cultivar_phyloseq)$Treat)
+colnames(Acidobacteria_phylum_ab)<-c('Acidobacteria','Treat')
+Acidobacteria_phylum_ab
+
+
+tiff('Relative abundance of Acidobacteria phylum.tiff', units="in", width=5, height=5, res=300)
+ggplot(Acidobacteria_phylum_ab,aes(x=Treat,y=Acidobacteria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Acidobacteria \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+
+# Proteobacteria phylum
+Proteobacteria_phylum_ab<-otu_table(r_phylum_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_phylum_rarefied_cultivar_phyloseq))$Phylum=="Proteobacteria",]
+Proteobacteria_phylum_ab<-data.frame(Acidobacteria=t(Proteobacteria_phylum_ab),Treat=sample_data(r_phylum_rarefied_cultivar_phyloseq)$Treat)
+colnames(Proteobacteria_phylum_ab)<-c('Proteobacteria','Treat')
+Proteobacteria_phylum_ab
+
+
+tiff('Relative abundance of Proteobacteria phylum.tiff', units="in", width=5, height=5, res=300)
+ggplot(Proteobacteria_phylum_ab,aes(x=Treat,y=Proteobacteria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Proteobacteria \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Verrucomicrobia phylum
+Verrucomicrobia_phylum_ab<-otu_table(r_phylum_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_phylum_rarefied_cultivar_phyloseq))$Phylum=="Verrucomicrobia",]
+Verrucomicrobia_phylum_ab<-data.frame(Acidobacteria=t(Verrucomicrobia_phylum_ab),Treat=sample_data(r_phylum_rarefied_cultivar_phyloseq)$Treat)
+colnames(Verrucomicrobia_phylum_ab)<-c('Verrucomicrobia','Treat')
+Verrucomicrobia_phylum_ab
+
+
+tiff('Relative abundance of Verrucomicrobia phylum.tiff', units="in", width=5, height=5, res=300)
+ggplot(Verrucomicrobia_phylum_ab,aes(x=Treat,y=Verrucomicrobia,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Verrucomicrobia \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Firmicutes phylum
+Firmicutes_phylum_ab<-otu_table(r_phylum_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_phylum_rarefied_cultivar_phyloseq))$Phylum=="Firmicutes",]
+Firmicutes_phylum_ab<-data.frame(Firmicutes=t(Firmicutes_phylum_ab),Treat=sample_data(r_phylum_rarefied_cultivar_phyloseq)$Treat)
+colnames(Firmicutes_phylum_ab)<-c('Firmicutes','Treat')
+Firmicutes_phylum_ab
+
+
+tiff('Relative abundance of Firmicutes phylum.tiff', units="in", width=5, height=5, res=300)
+ggplot(Firmicutes_phylum_ab,aes(x=Treat,y=Firmicutes,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Firmicutes \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Alphaproteobacteria class
+
+Alphaproteobacteria_class_ab<-otu_table(r_class_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_class_rarefied_cultivar_phyloseq))$Class=="Alphaproteobacteria",]
+Alphaproteobacteria_class_ab<-data.frame(Alphaproteobacteria=t(Alphaproteobacteria_class_ab),Treat=sample_data(r_class_rarefied_cultivar_phyloseq)$Treat)
+colnames(Alphaproteobacteria_class_ab)<-c('Alphaproteobacteria','Treat')
+Alphaproteobacteria_class_ab
+
+
+tiff('Relative abundance of Alphaproteobacteria class.tiff', units="in", width=5, height=5, res=300)
+ggplot(Alphaproteobacteria_class_ab,aes(x=Treat,y=Alphaproteobacteria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Alphaproteobacteria \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Gammaproteobacteria class
+
+Gammaproteobacteria_class_ab<-otu_table(r_class_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_class_rarefied_cultivar_phyloseq))$Class=="Gammaproteobacteria",]
+Gammaproteobacteria_class_ab<-data.frame(Gammaproteobacteria=t(Gammaproteobacteria_class_ab),Treat=sample_data(r_class_rarefied_cultivar_phyloseq)$Treat)
+colnames(Gammaproteobacteria_class_ab)<-c('Gammaproteobacteria','Treat')
+Gammaproteobacteria_class_ab
+
+
+tiff('Relative abundance of Gammaproteobacteria class.tiff', units="in", width=5, height=5, res=300)
+ggplot(Gammaproteobacteria_class_ab,aes(x=Treat,y=Gammaproteobacteria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Gammaproteobacteria \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Betaproteobacteria class
+
+Betaproteobacteria_class_ab<-otu_table(r_class_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_class_rarefied_cultivar_phyloseq))$Class=="Betaproteobacteria",]
+Betaproteobacteria_class_ab<-data.frame(Betaproteobacteria=t(Betaproteobacteria_class_ab),Treat=sample_data(r_class_rarefied_cultivar_phyloseq)$Treat)
+colnames(Betaproteobacteria_class_ab)<-c('Betaproteobacteria','Treat')
+Betaproteobacteria_class_ab
+
+
+tiff('Relative abundance of Betaproteobacteria class.tiff', units="in", width=5, height=5, res=300)
+ggplot(Betaproteobacteria_class_ab,aes(x=Treat,y=Betaproteobacteria,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Betaproteobacteria \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+# Enterobacteriaceae family
+
+Enterobacteriaceae_family_ab<-otu_table(r_family_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_family_rarefied_cultivar_phyloseq))$Family=="Enterobacteriaceae",]
+
+Enterobacteriaceae_family_ab<-data.frame(Enterobacteriaceae=t(Enterobacteriaceae_family_ab),Treat=sample_data(r_family_rarefied_cultivar_phyloseq)$Treat)
+colnames(Enterobacteriaceae_family_ab)<-c('Enterobacteriaceae','Treat')
+Enterobacteriaceae_family_ab
+
+
+tiff('Relative abundance of Enterobacteriaceae family.tiff', units="in", width=5, height=5, res=300)
+ggplot(Enterobacteriaceae_family_ab,aes(x=Treat,y=Enterobacteriaceae,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Enterobacteriaceae \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+
+dev.off()
+
+# Chitinophagaceae family
+
+Chitinophagaceae_family_ab<-otu_table(r_family_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_family_rarefied_cultivar_phyloseq))$Family=="Chitinophagaceae",]
+
+Chitinophagaceae_family_ab<-data.frame(Chitinophagaceae=t(Chitinophagaceae_family_ab),Treat=sample_data(r_family_rarefied_cultivar_phyloseq)$Treat)
+colnames(Chitinophagaceae_family_ab)<-c('Chitinophagaceae','Treat')
+Chitinophagaceae_family_ab
+
+
+tiff('Relative abundance of Chitinophagaceae family.tiff', units="in", width=5, height=5, res=300)
+ggplot(Chitinophagaceae_family_ab,aes(x=Treat,y=Chitinophagaceae,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Chitinophagaceae \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+
+dev.off()
+
+# Enterobacteriaceae family
+
+Enterobacteriaceae_family_ab<-otu_table(r_family_rarefied_cultivar_phyloseq)[data.frame(tax_table(r_family_rarefied_cultivar_phyloseq))$Family=="Enterobacteriaceae",]
+
+Enterobacteriaceae_family_ab<-data.frame(Enterobacteriaceae=t(Enterobacteriaceae_family_ab),Treat=sample_data(r_family_rarefied_cultivar_phyloseq)$Treat)
+colnames(Enterobacteriaceae_family_ab)<-c('Enterobacteriaceae','Treat')
+Enterobacteriaceae_family_ab
+
+
+tiff('Relative abundance of Enterobacteriaceae family.tiff', units="in", width=5, height=5, res=300)
+ggplot(Enterobacteriaceae_family_ab,aes(x=Treat,y=Enterobacteriaceae,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(0.2),aes(fill=Treat))+scale_fill_manual(values = c('#fc6000','#78b517','#ce0404','#ce5103','#cec002','#61ce01','#00c7ce','#000ace','#620581','#108ca5','#c300ce','#565648','#056835','#f71d78','#1dd6f7','#f25252'))+labs(title="Enterobacteriaceae \n",x="Treat",y="Relative abundance")+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family = "Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.text.x = element_text(family="Arial",size=10,angle=60,hjust = 1),legend.position = "none",
+    axis.title=element_text(size = 15,face="bold",family = "Arial",vjust = -0.5),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+
+dev.off()
+
+
+```
+
+
