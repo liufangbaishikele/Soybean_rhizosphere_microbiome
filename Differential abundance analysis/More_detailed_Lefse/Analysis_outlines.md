@@ -26,7 +26,7 @@
 
     ```
     
- 4. Lefse output filtering based on analysis purpose. Please found the lefse output [here]()
+ 4. Lefse output filtering based on analysis purpose. Please found the lefse output [here](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/Differential%20abundance%20analysis/More_detailed_Lefse/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.pick.0.03.subsample.0.03.lefse_res_LDA2)
  
      ```
      # Only keep taxa that are significant different
