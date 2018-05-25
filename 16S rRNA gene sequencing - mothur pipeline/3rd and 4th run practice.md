@@ -1,6 +1,6 @@
 #                                      Cultivar project - 16S 3rd run and 4th run
 
-
+The samples were fresh and bulk soil samples from East Tennessee Research and Education center - Plant science center (Ag soil) and University of Tennessee's Plateau Research & Education Center (For). 
 
 ## 3rd_run
 
