@@ -1,3 +1,4 @@
+```
 make.contigs(inputdir=/nics/d/home/fliu21/16S_cultivar_proj/raw_fastq,outputdir=/nics/d/home/fliu21/16S_cultivar_proj/analysis/002_mothur_analysis/,file=cultivar.file,oligos=cultivar.oligo,processors=16)
 
 summary.seqs(inputdir=/nics/d/home/fliu21/16S_cultivar_proj/analysis/002_mothur_analysis/,fasta=cultivar.trim.contigs.fasta,processors=16)
@@ -46,5 +47,5 @@ cluster.split(fasta=cultivar.trim.contigs.good.unique.good.filter.unique.preclus
 make.shared(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,label=0.03)
 
 classify.otu(list=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list,count=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,taxonomy=cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy,label=0.03)
-
+```
 
