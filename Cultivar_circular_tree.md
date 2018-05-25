@@ -25,9 +25,11 @@ ImportError: No module named Bio
   ```
   * It indicate that biopython module is not installed. To check if this is the problem, run python command ``import Bio``, it told me that I do not have biopython module. So install biopython through anaconda by ``conda install -c anaconda biopython``
   * Now if I type ``python graphlan.py`` it just output information of usage and too few arguments. 
+  
   * Now installation are done and we are ready for build tree and produce annotation file.
   
 4. **R data pre-process**
+
 For this circular phylogenetic tree, I will use not only taxanomy information but also genus level relative abunance information for each treatment. About detailed R code, please find from this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_circular_tree_2nd.Rmd). Please find the output excel files through this [link](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/Excel_for_GraPhlAn.zip)
   * First, prep-process phylotype-based shared file and cons taxonomy file ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.shared`` and ``cultivar.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.tx.1.cons.taxonomy``
   * As sub.sample command in mothur could not combine subseted shared file with cons taxonomy file. So the below preprocessing will be done in R.
@@ -51,6 +53,7 @@ For this circular phylogenetic tree, I will use not only taxanomy information bu
  
  5. **Generate tree file** 
   Now the downward process are done in ACF
+  
   * First, edit the taxanomy file to match with the tree file format required by GraPhlAn. Below is part of the tree file I built. **NOTE** Taxonomies are separated via ``.``. Please see this [cultivar_tree](https://github.com/liufangbaishikele/Soybean-rhizosphere-microbiome--16S-analysis/blob/master/cultivar_tree)
   
   ```
@@ -72,6 +75,7 @@ Bacteria.Actinobacteria.Actinobacteria.Actinomycetales.Intrasporangiaceae.Intras
    * ``Bacteria.Chloroflexi.Chloroflexi.Herpetosiphonales.Herpetosiphonaceae.Herpetosiphon`` to ``Bacteria.Chloroflexi.Chloroflexi_c.Herpetosiphonales.Herpetosiphonaceae.Herpetosiphon``
    * ``Bacteria.Nitrospira.Nitrospira.Nitrospirales.Nitrospiraceae.Nitrospira`` to ``Bacteria.Nitrospira_k.Nitrospira_c.Nitrospirales.Nitrospiraceae.Nitrospira_g``
    * ``Bacteria.Proteobacteria.Proteobacteria_unclassified.Proteobacteria_unclassified.Proteobacteria_unclassified.Proteobacteria_unclassified`` to ``Bacteria.Proteobacteria.Proteobacteria_unclassified_c.Proteobacteria_unclassified_o.Proteobacteria_unclassified_f.Proteobacteria_unclassified_g``
+   
  * **NOTE** remember to change the corresponding taxa in node size file and otu_tax_combined_table
 
 6. **Creat annotation file**
