@@ -612,6 +612,7 @@ The output is a biom file, which is not readable using vim.
   
   
   * Please found more detailed documentation from this [link](http://biom-format.org/documentation/adding_metadata.html)
+      The example data could be found from ``biom-format/examples``, which were documented in [github](https://github.com/biocore/biom-format) 
   * Copy OTU biom, taxonomy.tsv and metadata.tsv to the same folder 
   * **Remember** to change the header of taxonomy.tsv with #OTUID taxonomy  confidence
   * Double check sampleID from sample_metadata table and that inside of biom, make sure they match with each other and in right order
