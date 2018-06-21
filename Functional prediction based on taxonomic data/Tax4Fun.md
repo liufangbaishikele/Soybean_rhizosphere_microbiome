@@ -25,5 +25,6 @@ Find the documentation [here](http://tax4fun.gobics.de/)
       
  3. Use the genus_based .shared file and taxonomy file
  
-  * s
+  * More details comes in
+  
 
