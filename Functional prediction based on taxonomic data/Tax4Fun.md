@@ -23,8 +23,17 @@ Find the documentation [here](http://tax4fun.gobics.de/)
       
      2. Error in read.table(file = file, header = header, sep = sep, quote = quote) : duplicate 'row.names' are not allowed - This one also make sense for me. Because this Tax4Fun software mainly use the taxonomy information and integrating to the precalculated pathway or KEGG orthologs. So OTU table does not make much sense. It will be good use genus level .shared and taxonomy file after rarefaction and remove rare genus with genus sum smaller than 50.
       
- 3. Use the genus_based .shared file and taxonomy file
+ 3. Use the genus_based .shared file and taxonomy file, which could be generated using phylotype based clustering. Label=1 means at genus level.
  
-  * More details comes in
+ ```
+  Phylotype(taxonomy=##.taxonomy) 
+  make.shared=(list=##.list,count=##.count_table,label=1)
+  classify.otu(list=##.list,count=##.count_table,taxonomy=##.taxonomy,label=1)
+ ```
+ 4. Optional- if you want to do a rarefaction based on a specific sequencing depth and the same time want to keep otu table and taxonomy table consistent (corresponding otu labels). ``sub.sample`` command could be used using list and count table as well as taxonomy table.
+ 
+ ```
+ 
+ ```
   
 
