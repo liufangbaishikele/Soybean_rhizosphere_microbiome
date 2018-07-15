@@ -33,7 +33,22 @@ Find the documentation [here](http://tax4fun.gobics.de/)
  4. Optional- if you want to do a rarefaction based on a specific sequencing depth and the same time want to keep otu table and taxonomy table consistent (corresponding otu labels). ``sub.sample`` command could be used using list and count table as well as taxonomy table.
  
  ```
- 
+sub.sample(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.tx.list,taxonomy=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.taxonomy,count=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,label=1,size=21776)
+
+make.shared(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.tx.1.subsample.list,count=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.count_table,label=1)
+
+classify.otu(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.tx.1.subsample.list,count=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.count_table,taxonomy=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.taxonomy,label=1)
  ```
-  
+5. Prepare input file in below format for Tax4Fun
+
+```
+AR3	BZ1	CL1	DF1	EB020	
+0	  0	  0	  1	  0	Bacteria;Acidobacteria;Acidobacteria;Acidobacteriales;Acidobacteriaceae (Subgroup 1);uncultured;
+0 	0	  0	  2	  0	Bacteria;Acidobacteria;Acidobacteria;Subgroup 2;
+0	  0	  0	  0	  2	Bacteria;Acidobacteria;Acidobacteria;Subgroup 4;Family Incertae Sedis;Blastocatella;
+0	  0	  2	  1	  0	Bacteria;Acidobacteria;Acidobacteria;Subgroup 6;
+0	  0	  0	  1	  0	Bacteria;Acidobacteria;Holophagae;Subgroup 7;
+1	  0	  0	  0	  0	Bacteria;Actinobacteria;Actinobacteria;Corynebacteriales;Mycobacteriaceae;Mycobacterium;
+```
+6. 
 
