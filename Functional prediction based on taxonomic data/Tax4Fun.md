@@ -54,5 +54,17 @@ AR3	BZ1	CL1	DF1	EB020
 ```
 6. Save the tab delimited ``.txt`` file into local computer and rename the file name to ``.csv``. I do not know why, but this is the way it works for the command of ``importSilvaNgsData``
 
-**Download required SILVA **
+**Download required [SILVA Reference data](http://tax4fun.gobics.de/Tax4Fun/ReferenceData/SILVA115.zip) ,no matter which version and unzip the file and put it into the same folder you put your input data**
+
+**Start analysis inside of R **
+
+```
+OTU<-importSilvaNgsData(inputFiles = "Combined_otu_and_tax_for_Tax4Fun.csv")
+str(OTU)
+colnames(OTU$otuTable)<-OTU$sampleNames
+function_profile<-Tax4Fun(OTU,"SILVA115",fctProfiling = TRUE,refProfile ="UProC",normCopyNo = TRUE)
+str(function_profile)
+```
+
+
 
