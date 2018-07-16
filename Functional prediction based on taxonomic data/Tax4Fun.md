@@ -39,7 +39,7 @@ make.shared(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precl
 
 classify.otu(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.tx.1.subsample.list,count=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.count_table,taxonomy=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.taxonomy,label=1)
  ```
-5. Prepare input file in below format for Tax4Fun
+5. Prepare input file by combing OTU table with taxonomy information in below format for Tax4Fun, which is a tab deliminited file.
 
 ```
 AR3	BZ1	CL1	DF1	EB020	
@@ -50,5 +50,6 @@ AR3	BZ1	CL1	DF1	EB020
 0	  0	  0	  1	  0	Bacteria;Acidobacteria;Holophagae;Subgroup 7;
 1	  0	  0	  0	  0	Bacteria;Actinobacteria;Actinobacteria;Corynebacteriales;Mycobacteriaceae;Mycobacterium;
 ```
-6. 
+6. Save the tab delimited ``.txt`` file into local computer and change file name to ``.csv`` 
+7. 
 
