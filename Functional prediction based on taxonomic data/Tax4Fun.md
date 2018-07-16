@@ -3,7 +3,8 @@
 ---
 
 Find the documentation [here](http://tax4fun.gobics.de/)
-Download the [Readme_Tax4Fun.pdf] (http://tax4fun.gobics.de/RPackage/Readme_Tax4Fun.pdf) file for detailed procesure for this analysis. 
+
+Download the [Readme_Tax4Fun.pdf](http://tax4fun.gobics.de/RPackage/Readme_Tax4Fun.pdf) file for detailed procesure for this analysis. 
 
 ---
 
