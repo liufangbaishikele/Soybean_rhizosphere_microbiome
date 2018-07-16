@@ -3,6 +3,7 @@
 ---
 
 Find the documentation [here](http://tax4fun.gobics.de/)
+Download the [Readme_Tax4Fun.pdf] (http://tax4fun.gobics.de/RPackage/Readme_Tax4Fun.pdf) file for detailed procesure for this analysis. 
 
 ---
 
@@ -39,7 +40,7 @@ make.shared(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precl
 
 classify.otu(list=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.tx.1.subsample.list,count=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.count_table,taxonomy=strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.taxonomy,label=1)
  ```
-5. Prepare input file by combing OTU table with taxonomy information in below format for Tax4Fun, which is a tab deliminited file.
+5. Prepare input file by combing OTU table with taxonomy information in excel into below format for Tax4Fun, and save it in ``.txt`` format.
 
 ```
 AR3	BZ1	CL1	DF1	EB020	
@@ -50,6 +51,7 @@ AR3	BZ1	CL1	DF1	EB020
 0	  0	  0	  1	  0	Bacteria;Acidobacteria;Holophagae;Subgroup 7;
 1	  0	  0	  0	  0	Bacteria;Actinobacteria;Actinobacteria;Corynebacteriales;Mycobacteriaceae;Mycobacterium;
 ```
-6. Save the tab delimited ``.txt`` file into local computer and change file name to ``.csv`` 
-7. 
+6. Save the tab delimited ``.txt`` file into local computer and rename the file name to ``.csv``. I do not know why, but this is the way it works for the command of ``importSilvaNgsData``
+
+**Download required SILVA **
 
