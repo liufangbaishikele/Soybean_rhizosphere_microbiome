@@ -23,5 +23,6 @@ Genus based analysis
 
     1. The OTU table were converted to phylotypes based on taxonomy information 
     2. Any genus with sum smaller than 50 were removed before Lefse analysis
+----
 
   
