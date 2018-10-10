@@ -2,6 +2,11 @@
 ----------------
 ## Intall and get familiar with QIIME
 -----------------
+
+Working directory in staton server
+```
+/staton/projects/soybean_rhizosphere/2017_strigolactone/002_qiime
+```
 ## Upload qiime to env
 
 Module load qiime from ACF by ``module load qiime2/2017.11``
