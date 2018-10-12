@@ -1,5 +1,5 @@
 
-##                                     2016 Strigolactone 16S rRNA results
+##                                     2016 Strigolactone - 16S rRNA results
   
  
 ---
