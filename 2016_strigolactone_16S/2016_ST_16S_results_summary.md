@@ -14,4 +14,6 @@
 
 3. **Remove all singleton before downward analysis**
 
-4. ****
+4. **Rarefaction at minimum sequencing depth across samples** After rarefaction, got 21430 OTUs left across 47 samples.
+
+5. ****
