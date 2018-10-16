@@ -28,22 +28,22 @@
 
 **Instrument required**
 
-* 1mL tips
-* 200uL tips 
+* 1mL tips  ---  11 boxes
+* 200uL tips  --- 2 boxes
 * Centrifuge with 96 well plate adaptors.
 * Petri-dish for adding solution to 96 well plates using multi-channel pipettee.
-
+* Votexer when add samples to 96 well plates.
+* Foil seal tapes
 
 
 **DNA extraction plan**
 
-* Stop point
+**Stop points**
 
 1. After Add soil sample to 96 well plates.
 
 2. After add C4 solution.
 
-3
 
 
 
