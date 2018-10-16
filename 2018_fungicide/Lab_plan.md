@@ -28,8 +28,8 @@
 
 **Instrument required**
 
-* 1mL tips  ---  11 boxes
-* 200uL tips  --- 2 boxes
+* 1mL tips  ---  11 boxes ``Catalog number: 02-707-407`` Order 5 Packages
+* 200uL tips  --- 2 boxes  ``Catalog number: 02-707-410`` Order 2 boxes
 * Centrifuge with 96 well plate adaptors.
 * Petri-dish for adding solution to 96 well plates using multi-channel pipettee.
 * Votexer when add samples to 96 well plates.
