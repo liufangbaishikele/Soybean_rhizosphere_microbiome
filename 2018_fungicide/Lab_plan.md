@@ -16,8 +16,26 @@
 
 * Can we use Power soil kit for Endosphere DNA extraction? If not, what does your lab use?
 
+* I remembered that I broke one of our multi-channel pipette, I was wondering do we have that fixed? 
+
+* About the centrifuge, do we have adaptor for 96 well plates too? 
+
+
+
+**Reagent  needed**
+
+1. 100% Ethanol  --- 120ml
+
+
 **DNA extraction plan**
 
+* Stop point
+
+1. After Add soil sample to 96 well plates.
+
+2. After add C4 solution.
+
+3
 
 
 
