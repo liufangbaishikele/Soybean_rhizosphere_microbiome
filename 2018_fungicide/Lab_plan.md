@@ -1,6 +1,6 @@
 ## DNA extraction plan for fungicide project
 
-**Questions to ask Sarah**
+**Questions for Sarah**
 
 * Do you think the kit will still be usable after expired for 1 month? Can I do a test do you think? Do you have V3_V4 primer for this testing? 
 
@@ -16,6 +16,7 @@
 
 * Can we use Power soil kit for Endosphere DNA extraction? If not, what does your lab use?
 
+**DNA extraction plan**
 
 
 
