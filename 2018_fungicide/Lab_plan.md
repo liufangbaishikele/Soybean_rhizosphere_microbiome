@@ -33,7 +33,7 @@
 * Centrifuge with 96 well plate adaptors.
 * Petri-dish for adding solution to 96 well plates using multi-channel pipettee.
 * Votexer when add samples to 96 well plates.
-* Foil seal tapes
+* Adhesive seal tape for 96 well plates. ``Catalog number: AB-0626``
 
 
 **DNA extraction plan**
