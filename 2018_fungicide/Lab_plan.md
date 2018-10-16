@@ -24,7 +24,15 @@
 
 **Reagent  needed**
 
-1. 100% Ethanol  --- 120ml
+* 100% Ethanol  --- 120ml
+
+**Instrument required**
+
+* 1mL tips
+* 200uL tips 
+* Centrifuge with 96 well plate adaptors.
+* Petri-dish for adding solution to 96 well plates using multi-channel pipettee.
+
 
 
 **DNA extraction plan**
