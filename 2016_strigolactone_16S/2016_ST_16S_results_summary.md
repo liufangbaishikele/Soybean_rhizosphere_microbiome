@@ -25,7 +25,10 @@
 
 **Phylotype based process in mothur in order to link to LefSe analysis**
 
-
+* After subsample of the taxonomy, count_table and list files
+* Subsample_taxonomy will be used to generate the list file using phylotype command
+* This updated subsample.tx.list will be used to do remove.rare command
+* Then the subsample.tx.pick.list will be used to generate the .shared and .constaxonomy file
 
 
 ### 16S mothur output summary - Based on 48 samples
