@@ -21,7 +21,7 @@
 
 * To reduce the sequencing depth bias between samples, all samples were rarefied to minimum sequencing depth - 26187 reads per sample
 * After this rarefaction process, 30281 OTU left.
-* As singleton are tend to be caused by sequencing error, we will remove all singletons in R. After remove all the singletons, got 13255 OTUs left across 36 samples.
+* As singleton are tend to be caused by sequencing error, we will remove all singletons in R. After remove all the singletons, 925706 sequences were clustered to 13255 OTUs lacross 36 samples.
 
 **Phylotype based process in mothur in order to link to LefSe analysis**
 
