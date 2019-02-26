@@ -1,8 +1,9 @@
 ##   2018 fungicide seed treatment - 16S rRNA sequencing 
 
-----
+
+---
 In total, there are 164 samples collected from stem canker soybean field planted with soybean seeds treated with different fungicide- Cruiser_maxx, Evergol_Energy as well as non-fungicide control.
-----
+
 
 **Mothur batch file**
 
