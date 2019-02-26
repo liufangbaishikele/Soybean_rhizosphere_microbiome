@@ -58,7 +58,7 @@ classify.otu(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
 **Summary of the sequencing processing**
 
 1. Before any screen or filter, we have 18891448 raw reads across 164 samples
-2. After remove all the bad contigs (e.g., have ambiguous calling during alignment, contigs are too long). Theoretically, the length of the contigs should be 428bp.  
+2. After remove all the bad contigs (e.g., have ambiguous calling during alignment, contigs are too long. Theoretically, the length of the contigs should be 427bp), we have 15759162 reads.  
 3. 
 
 
