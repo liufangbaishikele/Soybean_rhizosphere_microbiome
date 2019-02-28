@@ -23,7 +23,7 @@ For ITS sequencing we targeted ITS2 region with customized primer sets composed 
 remove.seqs(fasta=ST.trim.contigs.good.unique.precluster.pick.pick.fasta,taxonomy=ST.trim.contigs.good.unique.precluster.pick.UNITEv6_sh_97.wang.pick.taxonomy,count=ST.trim.contigs.good.unique.precluster.denovo.vsearch.pick.pick.count_table,accnos=nematoda_seq_ID.list)
 ```
 * After remove-nematode sequences, got 971362 sequence across 36 samples, which belonged to 12087 OTUs.
-* To eliminate the sequencing depth bias between samples, the shared file were rarefied to minimum sequencing depth across all samples (which is 1082) and all singleton were removed after this rarefaction. At the end, 385262 sequences belongs to 2970 OTUs were left across 36 samples.
+* To eliminate the sequencing depth bias between samples, the shared file were rarefied to minimum sequencing depth across all samples (which is 10820) and all singleton were removed after this rarefaction. At the end, 385262 sequences belongs to 2970 OTUs were left across 36 samples.
 
 
 
