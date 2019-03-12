@@ -48,4 +48,4 @@ Residual 132   31.569 0.91114
 Total    146   34.648 1.00000
 ```
 
-4. 
+**Considering the significant impacts of compartment, soybean development (Time) and seed fungicide treatment impacts will be analyzed after subset phyloseq to corresponding compartment**
