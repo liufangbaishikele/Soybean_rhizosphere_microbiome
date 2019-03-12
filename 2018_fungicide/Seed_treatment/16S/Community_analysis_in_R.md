@@ -1,6 +1,6 @@
 ## Bacterial community analysis were conducted in R
 
-**Highligts **
+**Highligts**
 
 1. Read_depth impacts
 
