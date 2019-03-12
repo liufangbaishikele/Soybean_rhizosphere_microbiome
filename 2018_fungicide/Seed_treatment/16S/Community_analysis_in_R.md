@@ -1,6 +1,6 @@
 ## Bacterial community analysis were conducted in R
 
-** Highligts **
+**Highligts **
 
 1. Read_depth impacts
 
@@ -33,4 +33,19 @@ Time          2    3.151 0.07355 16.1345  0.001 ***
 Residual    149   14.552 0.33961                   
 Total       158   42.849 1.00000    
 ```
-3. 
+3. Plot variations - Subset phyloseq object to only include non-seed samples: PERMANOVA results indicate an non-significant plots impacts on overal bacterial community composition.
+
+```
+Permutation test for adonis under NA model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_non_Seed_22017_up)) ~ Plot, data = data.frame(sample_data(r_non_Seed_22017_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Plot      14    3.079 0.08886 0.9195  0.643
+Residual 132   31.569 0.91114              
+Total    146   34.648 1.00000
+```
+
+4. 
