@@ -1,6 +1,6 @@
 ## Bacterial community analysis were conducted in R
 
-### r_Seed_22017_up
+### All samples - r_Seed_22017_up
 
 1. **Read_depth** --- significant but explain only 2% of variations
 
@@ -43,7 +43,7 @@ Residual    153   18.111 0.42267
 Total       158   42.849 1.00000  
 ```
 
-### non_Seed_22017_up
+### Remove seed samples -- non_Seed_22017_up
 
 1. **Plot variations** --- insignificant
 
