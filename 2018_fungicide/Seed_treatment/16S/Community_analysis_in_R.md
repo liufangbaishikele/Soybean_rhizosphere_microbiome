@@ -1,8 +1,53 @@
 ## Bacterial community analysis were conducted in R
 
-### Overal impacts
+### r_Seed_22017_up
 
-1. **Plot variations** - Subset phyloseq object to only include non-seed samples: PERMANOVA results indicate an non-significant plots impacts on overal bacterial community composition.
+1. **Read_depth** --- significant but explain only 2% of variations
+
+```
+Permutation test for adonis under NA model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_Seed_22017_up)) ~ Read_depth, data = data.frame(sample_data(r_Seed_22017_up)), permutations = 999, by = "margin")
+            Df SumOfSqs      R2      F Pr(>F)      
+Read_depth   1    0.899 0.02098 3.3649  0.004 **
+Residual   157   41.950 0.97902                 
+Total      158   42.849 1.00000  
+```
+
+2. **Compartment** --- Significant and can explain 57.46% variations
+
+```
+adonis2(formula = t(otu_table(r_Seed_22017_up)) ~ Compartment, data = data.frame(sample_data(r_Seed_22017_up)), permutations = 999, by = "margin")
+             Df SumOfSqs     R2      F Pr(>F)    
+Compartment   4   24.621 0.5746 52.004  0.001 ***
+Residual    154   18.228 0.4254                  
+Total       158   42.849 1.0000  
+```
+
+3. **Read_depth vs Compartment**
+
+```
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_Seed_22017_up)) ~ Read_depth + Compartment, data = data.frame(sample_data(r_Seed_22017_up)), permutations = 999, by = "margin")
+             Df SumOfSqs      R2       F Pr(>F)    
+Read_depth    1    0.117 0.00273  0.9883  0.402    
+Compartment   4   23.839 0.55635 50.3479  0.001 ***
+Residual    153   18.111 0.42267                   
+Total       158   42.849 1.00000  
+```
+
+### non_Seed_22017_up
+
+1. **Plot variations** --- insignificant
+
+- Subset phyloseq object to only include non-seed samples: PERMANOVA results indicate an non-significant plots impacts on overal bacterial community composition.
 
 ```
 Permutation test for adonis under NA model
@@ -17,37 +62,6 @@ Residual 132   31.569 0.91114
 Total    146   34.648 1.00000
 ```
 
-2. **Read_depth** impacts
-
-```
-Permutation test for adonis under NA model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
-
-adonis2(formula = t(otu_table(r_Seed_22017_up)) ~ Read_depth, data = data.frame(sample_data(r_Seed_22017_up)), permutations = 999, by = "margin")
-            Df SumOfSqs      R2      F Pr(>F)      
-Read_depth   1    0.899 0.02098 3.3649  0.004 **
-Residual   157   41.950 0.97902                 
-Total      158   42.849 1.00000  
-```
-3. Overal impacts of **Read_depth, Compartment, Time and Treatments**
-
-```
-Permutation test for adonis under reduced model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
-
-adonis2(formula = t(otu_table(r_Seed_22017_up)) ~ Read_depth + Compartment + Treatment + Time, data = data.frame(sample_data(r_Seed_22017_up)), permutations = 999, by = "margin")
-             Df SumOfSqs      R2       F Pr(>F)    
-Read_depth    1    0.113 0.00264  1.1577  0.300    
-Compartment   2   14.684 0.34269 75.1768  0.001 ***
-Treatment     2    0.404 0.00944  2.0707  0.026 *  
-Time          2    3.151 0.07355 16.1345  0.001 ***
-Residual    149   14.552 0.33961                   
-Total       158   42.849 1.00000    
-```
 
 
 **Considering the significant impacts of compartment, soybean development (Time) and seed fungicide treatment impacts will be analyzed after subset phyloseq to corresponding compartment**
@@ -57,6 +71,8 @@ Total       158   42.849 1.00000
 1. **1 week old soybeans**
 
 ```
+
+# ----Compartment ------- significant
 > adonis2(t(otu_table(wk1_up ))~Compartment,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin")
 Permutation test for adonis under NA model
 Marginal effects of terms
@@ -68,8 +84,25 @@ adonis2(formula = t(otu_table(wk1_up)) ~ Compartment, data = data.frame(sample_d
 Compartment  2   5.9422 0.61282 32.447  0.001 ***
 Residual    41   3.7543 0.38718                  
 Total       43   9.6965 1.00000                  
----
+
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#-----Plot-----insignificant
+
+
+set.seed(1013) #- insignificant
+>adonis2(t(otu_table(wk1_up ))~Plot,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin")
+Permutation test for adonis under NA model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(wk1_up)) ~ Plot, data = data.frame(sample_data(wk1_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)
+Plot     14   1.8483 0.19062 0.4878      1
+Residual 29   7.8482 0.80938              
+Total    43   9.6965 1.00000
+
 ```
 
 2. **3 weeks old soybeans**
