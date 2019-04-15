@@ -2,7 +2,7 @@
 
 ### All samples - r_Seed_22017_up
 
-1. **Read_depth** --- significant but explain only 2% of variations
+1. **Read_depth** --- significant but explain only **2%** of variations
 
 ```
 Permutation test for adonis under NA model
@@ -17,7 +17,7 @@ Residual   157   41.950 0.97902
 Total      158   42.849 1.00000  
 ```
 
-2. **Compartment** --- Significant and can explain 57.46% variations
+2. **Compartment** --- Significant and can explain **57.46%** variations
 
 ```
 adonis2(formula = t(otu_table(r_Seed_22017_up)) ~ Compartment, data = data.frame(sample_data(r_Seed_22017_up)), permutations = 999, by = "margin")
@@ -27,7 +27,7 @@ Residual    154   18.228 0.4254
 Total       158   42.849 1.0000  
 ```
 
-3. **Read_depth vs Compartment**
+3. **Read_depth vs Compartment** -- Read_depth no more significant, but compartment still significant, explaining **55.64%** variations
 
 ```
 Permutation test for adonis under reduced model
@@ -45,7 +45,7 @@ Total       158   42.849 1.00000
 
 ### Remove seed samples -- non_Seed_22017_up
 
-1. **Plot variations** --- insignificant
+1. **Plot variations** --- insignificant p=0.643
 
 - Subset phyloseq object to only include non-seed samples: PERMANOVA results indicate an non-significant plots impacts on overal bacterial community composition.
 
@@ -61,18 +61,87 @@ Plot      14    3.079 0.08886 0.9195  0.643
 Residual 132   31.569 0.91114              
 Total    146   34.648 1.00000
 ```
+2. **Read_depth** -- Significant p=0.033, but only explain **1.69%** variations
 
+```
+adonis2(formula = t(otu_table(r_non_Seed_22017_up)) ~ Read_depth, data = data.frame(sample_data(r_non_Seed_22017_up)), permutations = 999, by = "margin")
+            Df SumOfSqs      R2      F Pr(>F)  
+Read_depth   1    0.586 0.01691 2.4934  0.033 *
+Residual   145   34.062 0.98309                
+Total      146   34.648 1.00000    
+```
 
+3. **Compartment** -- significant and can explain **47.83%** of variations
 
-**Considering the significant impacts of compartment, soybean development (Time) and seed fungicide treatment impacts will be analyzed after subset phyloseq to corresponding compartment**
+```
+adonis2(formula = t(otu_table(r_non_Seed_22017_up)) ~ Compartment, data = data.frame(sample_data(r_non_Seed_22017_up)), permutations = 999, by = "margin")
+             Df SumOfSqs      R2      F Pr(>F)    
+Compartment   3   16.573 0.47832 43.705  0.001 ***
+Residual    143   18.075 0.52168                  
+Total       146   34.648 1.00000 
+```
+4. **Time** -- significant and could explain 13.43% of variations
+
+```
+adonis2(formula = t(otu_table(r_non_Seed_22017_up)) ~ Time, data = data.frame(sample_data(r_non_Seed_22017_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)    
+Time       3    4.652 0.13426 7.3922  0.001 ***
+Residual 143   29.996 0.86574                  
+Total    146   34.648 1.00000                  
+```
+
+5. **Treatment* -- 
+
+```
+adonis2(formula = t(otu_table(r_non_Seed_22017_up)) ~ Treatment, data = data.frame(sample_data(r_non_Seed_22017_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)
+Treatment   2    0.464 0.01339 0.9769  0.425
+Residual  144   34.184 0.98661              
+Total     146   34.648 1.00000    
+```
+6. **Overal Read_depth vs Compartment vs Time vs Treatment** Read_depth no more significant. Compartment, Time and Treatment all significant, but the impact of treatment is very small.
+
+```
+adonis2(formula = t(otu_table(r_non_Seed_22017_up)) ~ Read_depth + Treatment + Time + Compartment, data = data.frame(sample_data(r_non_Seed_22017_up)), permutations = 999, by = "margin")
+             Df SumOfSqs      R2       F Pr(>F)    
+Read_depth    1    0.112 0.00324  1.0787  0.309    
+Treatment     2    0.429 0.01238  2.0592  0.029 *  
+Time          2    3.151 0.09095 15.1276  0.001 ***
+Compartment   2   14.680 0.42369 70.4694  0.001 ***
+Residual    138   14.374 0.41485                   
+Total       146   34.648 1.00000
+```
+
 
 ### Compare the degree of compartment impacts along soybean development 
 
-1. **1 week old soybeans**
+1. **1 week old soybeans**  --- significant and could explain **61.28%** of the total variations
 
 ```
+#-----Read_depth-----insignificant
 
-# ----Compartment ------- significant
+adonis2(formula = t(otu_table(wk1_up)) ~ Read_depth, data = data.frame(sample_data(wk1_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)
+Read_depth  1   0.0973 0.01003 0.4256  0.897
+Residual   42   9.5993 0.98997              
+Total      43   9.6965 1.00000
+
+#-----Plot----- insignificant
+set.seed(1013) #- insignificant
+>adonis2(t(otu_table(wk1_up ))~Plot,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin")
+Permutation test for adonis under NA model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(wk1_up)) ~ Plot, data = data.frame(sample_data(wk1_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)
+Plot     14   1.8483 0.19062 0.4878      1
+Residual 29   7.8482 0.80938              
+Total    43   9.6965 1.00000
+
+# ----Compartment ----- significant and could explain 61.28% of the total varations
+
 > adonis2(t(otu_table(wk1_up ))~Compartment,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin")
 Permutation test for adonis under NA model
 Marginal effects of terms
@@ -87,27 +156,12 @@ Total       43   9.6965 1.00000
 
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-#-----Plot-----insignificant
-
-
-set.seed(1013) #- insignificant
->adonis2(t(otu_table(wk1_up ))~Plot,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin")
-Permutation test for adonis under NA model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
-
-adonis2(formula = t(otu_table(wk1_up)) ~ Plot, data = data.frame(sample_data(wk1_up)), permutations = 999, by = "margin")
-         Df SumOfSqs      R2      F Pr(>F)
-Plot     14   1.8483 0.19062 0.4878      1
-Residual 29   7.8482 0.80938              
-Total    43   9.6965 1.00000
-
 ```
 
 2. **3 weeks old soybeans**
 
 ```
+
 Permutation test for adonis under NA model
 Marginal effects of terms
 Permutation: free
@@ -139,6 +193,7 @@ Total       42   9.4213 1.00000
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
+**Considering the significant impacts of compartment, soybean development (Time) and seed fungicide treatment impacts will be analyzed after subset phyloseq to corresponding compartment**
 
 ## Treatment and soybean development impacts difference among compartments
 
