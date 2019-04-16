@@ -272,7 +272,24 @@ Residual   39   4.3774 0.69499
 Total      44   6.2985 1.00000
 ```
 
+* ---- Treatment impact on Bulk_1wk, Bulk_3wk and Bulk_4wk
 
+```
+>>> Bulk_1wk
+
+>>> Bulk_3wk
+
+>>> Bulk_4wk
+
+```
+                        
+#### Subset to Rhizosphere 
+
+* ---
+
+#### Subset to Endosphere
+
+#### Subset to SEED samples
 
 
 
