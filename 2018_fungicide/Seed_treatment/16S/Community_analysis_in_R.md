@@ -436,14 +436,14 @@ Treatment  2  0.14647 0.12323 0.7731  0.796
 Residual  11  1.04211 0.87677              
 Total     13  1.18858 1.00000
 
->>> Rhi_3wk
+>>> Rhi_3wk --- insignificant
 adonis2(formula = t(otu_table(r_Rhi_3wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_3wk_up)), permutations = 999, by = "margin")
           Df SumOfSqs      R2      F Pr(>F)
 Treatment  2  0.16711 0.15673 1.1152  0.267
 Residual  12  0.89910 0.84327              
 Total     14  1.06621 1.00000
 
->>> Rhi_4wk
+>>> Rhi_4wk -- insignificant
 adonis2(formula = t(otu_table(r_Rhi_4wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_4wk_up)), permutations = 999, by = "margin")
           Df SumOfSqs      R2     F Pr(>F)
 Treatment  2  0.23425 0.15671 1.115  0.234
@@ -454,7 +454,73 @@ Total     14  1.49478 1.00000
 
 3. **Endosphere**
 
+```
+# --- Plot ---
+adonis2(formula = t(otu_table(Endo_up)) ~ Plot, data = data.frame(sample_data(Endo_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2     F Pr(>F)
+Plot     14   1.0953 0.17258 0.432      1
+Residual 29   5.2512 0.82742             
+Total    43   6.3465 1.00000
 
+# --- Read_depth ---
+adonis2(formula = t(otu_table(Endo_up)) ~ Read_depth, data = data.frame(sample_data(Endo_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)
+Read_depth  1   0.1416 0.02232 0.9587  0.376
+Residual   42   6.2049 0.97768              
+Total      43   6.3465 1.00000
+
+# --- Time ----
+adonis2(formula = t(otu_table(Endo_up)) ~ Time, data = data.frame(sample_data(Endo_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Time      2   3.8475 0.60624 31.562  0.001 ***
+Residual 41   2.4990 0.39376                  
+Total    43   6.3465 1.0000
+
+# --- Treatment ----
+adonis2(formula = t(otu_table(Endo_up)) ~ Treatment, data = data.frame(sample_data(Endo_up)), permutations = 999, by = "margin")
+          Df SumOfSqs     R2      F Pr(>F)
+Treatment  2   0.1656 0.0261 0.5494  0.762
+Residual  41   6.1809 0.9739              
+Total     43   6.3465 1.0000
+
+# ---- Treatment + Time ---
+adonis2(formula = t(otu_table(Endo_up)) ~ Treatment + Time, data = data.frame(sample_data(Endo_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2       F Pr(>F)    
+Treatment  2   0.1546 0.02435  1.2856  0.233    
+Time       2   3.8364 0.60449 31.9095  0.001 ***
+Residual  39   2.3445 0.36941                   
+Total     43   6.3465 1.00000
+
+# --- interactions between Treatment*Time----
+adonis2(formula = t(otu_table(Endo_up)) ~ Treatment * Time, data = data.frame(sample_data(Endo_up)), permutations = 999, by = "margin")
+               Df SumOfSqs      R2      F Pr(>F)
+Treatment:Time  4   0.1736 0.02736 0.6999   0.72
+Residual       35   2.1708 0.34205              
+Total          43   6.3465 1.00000
+
+# Treatment impact along Endo_1wk, Endo_3wk and Endo_4wk 
+
+>>> Endo_1wk 
+adonis2(formula = t(otu_table(r_Endo_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Endo_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.19072 0.13268 0.9179  0.607
+Residual  12  1.24667 0.86732              
+Total     14  1.43739 1.00000
+
+>>> Endo_3wk 
+adonis2(formula = t(otu_table(r_Endo_3wk_up)) ~ Treatment, data = data.frame(sample_data(r_Endo_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.06663 0.13765 0.9578  0.509
+Residual  12  0.41741 0.86235              
+Total     14  0.48404 1.00000
+
+>>> Endo_4wk 
+adonis2(formula = t(otu_table(r_Endo_4wk_up)) ~ Treatment, data = data.frame(sample_data(r_Endo_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.06446 0.11923 0.7445   0.82
+Residual  11  0.47620 0.88077              
+Total     13  0.54066 1.00000
+```
 
 
 
