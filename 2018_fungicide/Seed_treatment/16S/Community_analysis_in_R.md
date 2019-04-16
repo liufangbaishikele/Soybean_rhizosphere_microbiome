@@ -262,6 +262,41 @@ Total       42   9.4213 1.00000
 1. **Bulk samples**
 
 ```
+# --- Plot impacts --- significant, explaining 51.08% variance
+
+adonis2(formula = t(otu_table(r_Bulk_up)) ~ Plot, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Plot     14   1.9072 0.51077 2.1626  0.001 ***
+Residual 29   1.8268 0.48923                  
+Total    43   3.7340 1.00000                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#---- Read_depth --- non significant
+
+adonis2(formula = t(otu_table(r_Bulk_up)) ~ Read_depth, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)  
+Read_depth  1   0.1249 0.03346 1.4541  0.071 .
+Residual   42   3.6090 0.96654                
+Total      43   3.7340 1.00000
+
+# ---- Time impact ----- significant and could explain 12.47% variance
+
+adonis2(formula = t(otu_table(r_Bulk_up)) ~ Time, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+         Df SumOfSqs     R2      F Pr(>F)    
+Time      2   0.4656 0.1247 2.9205  0.001 ***
+Residual 41   3.2683 0.8753                  
+Total    43   3.7340 1.0000 
+
+# --- Treatment ----- significant but does this because the plot impact or itself?
+adonis2(formula = t(otu_table(r_Bulk_up)) ~ Treatment, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)  
+Treatment  2   0.2698 0.07226 1.5967  0.014 *
+Residual  41   3.4642 0.92774                
+Total     43   3.7340 1.00000
+
+# --- Treament vs Time ---
+
 adonis2(t(otu_table(r_Bulk_22017_up))~Treatment+Time,data=data.frame(sample_data(r_Bulk_22017_up)),permutations=999,by="margin") # Time is significant, R2=0.12 and p=0.001
 Permutation test for adonis under reduced model
 Marginal effects of terms
@@ -277,18 +312,34 @@ Total     43   3.7340 1.00000
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-## Interaction effects
-adonis2(t(otu_table(r_Bulk_22017_up))~Treatment*Time,data=data.frame(sample_data(r_Bulk_22017_up)),permutations=999,by="margin") # no interaction impacts
-Permutation test for adonis under reduced model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
+## --- Treament vs Time --- Interaction effects
 
 adonis2(formula = t(otu_table(r_Bulk_22017_up)) ~ Treatment * Time, data = data.frame(sample_data(r_Bulk_22017_up)), permutations = 999, by = "margin")
                Df SumOfSqs      R2      F Pr(>F)
 Treatment:Time  4   0.2040 0.05464 0.6387      1
 Residual       35   2.7952 0.74859              
 Total          43   3.7340 1.00000    
+
+# ----- Read_depth vs Time vs Treatment ---
+
+adonis2(formula = t(otu_table(r_Bulk_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   0.0728 0.01950 0.9457  0.499    
+Treatment   2   0.2151 0.05762 1.3968  0.067 .  
+Time        2   0.4540 0.12159 2.9478  0.001 ***
+Residual   38   2.9264 0.78373                  
+Total      43   3.7340 1.00000 
+
+# ----- Read_depth vs Time vs Plot ---
+
+adonis2(formula = t(otu_table(r_Bulk_up)) ~ Read_depth + Plot + Time, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   0.0470 0.01259 0.9249  0.527    
+Plot       14   1.8204 0.48753 2.5590  0.001 ***
+Time        2   0.4219 0.11298 4.1511  0.001 ***
+Residual   26   1.3211 0.35381                  
+Total      43   3.7340 1.00000
+
 ```
 2. **Rhizosphere**
 
