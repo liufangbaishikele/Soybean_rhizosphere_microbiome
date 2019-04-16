@@ -522,7 +522,38 @@ Residual  11  0.47620 0.88077
 Total     13  0.54066 1.00000
 ```
 
+4. **Soil** -- Soil samples were collected before sowing soybean
 
+
+```
+# ---- Treatment ---- insignificant
+
+adonis2(formula = t(otu_table(r_Soil_up)) ~ Treatment, data = data.frame(sample_data(r_Soil_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.16189 0.14502 1.0177  0.405
+Residual  12  0.95439 0.85498              
+Total     14  1.11628 1.00000 
+```
+
+The insignificant fungicide treatment impact could because fungicide does not have impact on fungal community. Alternatively, this could be due to the driving impact of Plot difference as shown across all bulk soil samples. From this point, we realized that we need replicates within each plot for future fungicide treatment experiment.
+
+
+
+5. **SEED**
+
+For the SEED samples, due to the limits of PNA in blocking the amplification of SEED mitochondria, we have lots of bacteria_unclassified in the SEED samples. So, before analysis of the fungicide treatment, we removed those bacteria_unclassified from the OTU table.
+
+* PERMAOVA analysis 
+```
+# ------ Treatment ----
+
+adonis2(formula = t(otu_table(r_SEED4_up)) ~ Treatment, data = data.frame(sample_data(r_SEED4_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)    
+Treatment  2   1.7623 0.46659 5.2483  0.001 ***
+Residual  12   2.0148 0.53341                  
+Total     14   3.7771 1.00000
+
+```
 
 
 
