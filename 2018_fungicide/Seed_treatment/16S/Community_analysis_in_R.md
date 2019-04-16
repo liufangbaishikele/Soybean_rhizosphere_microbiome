@@ -340,15 +340,66 @@ Time        2   0.4219 0.11298 4.1511  0.001 ***
 Residual   26   1.3211 0.35381                  
 Total      43   3.7340 1.00000
 
+# -------- Treatment impact of Bulk_wk1, Bulk_wk3 and Bulk_wk4 -----
+
+>>>>  Bulk_1wk
+
+adonis2(formula = t(otu_table(r_Bulk_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Bulk_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2     F Pr(>F)
+Treatment  2  0.13076 0.12397 0.849  0.732
+Residual  12  0.92405 0.87603             
+Total     14  1.05482 1.00000   
+
+
+>>> Bulk_3wk 
+adonis2(formula = t(otu_table(r_Bulk_3wk_up)) ~ Treatment, data = data.frame(sample_data(r_Bulk_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs     R2      F Pr(>F)
+Treatment  2  0.15486 0.1394 0.9718  0.507
+Residual  12  0.95610 0.8606              
+Total     14  1.11096 1.0000 
+
+>>> Bulk_4wk 
+
+adonis2(formula = t(otu_table(r_Bulk_4wk_up)) ~ Treatment, data = data.frame(sample_data(r_Bulk_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs     R2      F Pr(>F)
+Treatment  2  0.17109 0.1727 1.1481  0.205
+Residual  11  0.81960 0.8273              
+Total     13  0.99068 1.0000 
 ```
+
 2. **Rhizosphere**
 
 ```
-adonis2(t(otu_table(Rhi_22017_up))~Treatment+Time,data=data.frame(sample_data(Rhi_22017_up)),permutations=999,by="margin") # Time is significant, R2=0.42 and p=0.001
-Permutation test for adonis under reduced model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
+# ------ Plot ---- insignificant
+adonis2(formula = t(otu_table(Rhi_up)) ~ Plot, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)
+Plot     14   2.0502 0.30664 0.9161  0.664
+Residual 29   4.6358 0.69336              
+Total    43   6.6861 1.00000
+
+# ---- Read_depth ----- insignificant
+adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)
+Read_depth  1   0.2380 0.03559 1.5501  0.126
+Residual   42   6.4481 0.96441              
+Total      43   6.6861 1.00000
+
+# ----- Time ------ significant, R2=42.69%
+
+adonis2(formula = t(otu_table(Rhi_up)) ~ Time, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Time      2   2.8546 0.42694 15.273  0.001 ***
+Residual 41   3.8315 0.57306                  
+Total    43   6.6861 1.00000
+
+# ------ Treatment ------ insignificant
+adonis2(formula = t(otu_table(Rhi_up)) ~ Treatment, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.3133 0.04686 1.0078  0.371
+Residual  41   6.3728 0.95314              
+Total     43   6.6861 1.00000
+
+# ---- Treatment vs Time ---
 
 adonis2(formula = t(otu_table(Rhi_22017_up)) ~ Treatment + Time, data = data.frame(sample_data(Rhi_22017_up)), permutations = 999, by = "margin")
           Df SumOfSqs      R2       F Pr(>F)    
@@ -358,10 +409,49 @@ Residual  39   3.5330 0.52841
 Total     43   6.6861 1.00000                   
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# --- Interactions between Treatment*Time ---
+
+adonis2(formula = t(otu_table(Rhi_up)) ~ Treatment * Time, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+               Df SumOfSqs      R2      F Pr(>F)
+Treatment:Time  4   0.2617 0.03914 0.6999  0.836
+Residual       35   3.2713 0.48927              
+Total          43   6.6861 1.00000
+
+# --- Read_depth vs Time vs Treatment ---
+adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2       F Pr(>F)    
+Read_depth  1   0.1235 0.01848  1.3769  0.177    
+Treatment   2   0.2451 0.03666  1.3659  0.184    
+Time        2   2.6960 0.40323 15.0242  0.001 ***
+Residual   38   3.4094 0.50993                   
+Total      43   6.6861 1.00000
+
+# Treatment impacts of Rhi_wk1, Rhi_wk3 and Rhi_wk4
+
+>>> Rhi_1wk
+adonis2(formula = t(otu_table(r_Rhi_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.14647 0.12323 0.7731  0.796
+Residual  11  1.04211 0.87677              
+Total     13  1.18858 1.00000
+
+>>> Rhi_3wk
+adonis2(formula = t(otu_table(r_Rhi_3wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.16711 0.15673 1.1152  0.267
+Residual  12  0.89910 0.84327              
+Total     14  1.06621 1.00000
+
+>>> Rhi_4wk
+adonis2(formula = t(otu_table(r_Rhi_4wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2     F Pr(>F)
+Treatment  2  0.23425 0.15671 1.115  0.234
+Residual  12  1.26053 0.84329             
+Total     14  1.49478 1.00000
+
 ```
 
-
-# HERE I am on line 434
 3. **Endosphere**
 
 
