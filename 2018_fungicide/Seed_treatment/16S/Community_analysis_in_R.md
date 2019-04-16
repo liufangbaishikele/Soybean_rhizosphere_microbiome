@@ -113,7 +113,7 @@ Total       146   34.648 1.00000
 ```
 
 
-### Compare the degree of compartment impacts along soybean development 
+### Compartment impacts changes along soybean development
 
 1. **1 week old soybeans**  --- significant and could explain **61.28%** of the total variations
 
@@ -156,34 +156,86 @@ Total       43   9.6965 1.00000
 
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
+# ---- Fungicide treatment -----
+adonis2(formula = t(otu_table(wk1_up)) ~ Treatment, data = data.frame(sample_data(wk1_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.2239 0.02309 0.4845  0.922
+Residual  41   9.4726 0.97691              
+Total     43   9.6965 1.00000
+
+# ---- Compartment vs Read_depth--- significant and explain 61.34% variance
+adonis2(formula = t(otu_table(wk1_up)) ~ Compartment + Read_depth, data = data.frame(sample_data(wk1_up)), permutations = 999, by = "margin")
+            Df SumOfSqs      R2       F Pr(>F)    
+Compartment  2   5.9479 0.61340 32.5788  0.001 ***
+Read_depth   1   0.1029 0.01061  1.1274  0.337    
+Residual    40   3.6514 0.37657                   
+Total       43   9.6965 1.00000
+
 ```
 
 2. **3 weeks old soybeans**
 
 ```
+#-------Plot -------
 
-Permutation test for adonis under NA model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
+adonis2(formula = t(otu_table(wk3_up)) ~ Plot, data = data.frame(sample_data(wk3_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)
+Plot     14   1.3592 0.14218 0.3552      1
+Residual 30   8.2008 0.85782              
+Total    44   9.5600 1.00000 
 
+#-----Read_depth ----- significant, but this is due to the relatively high sequencing depth for endo but small for rhizosphere
+
+adonis2(formula = t(otu_table(wk3_up)) ~ Read_depth, data = data.frame(sample_data(wk3_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   1.2708 0.13293 6.5921  0.001 ***
+Residual   43   8.2892 0.86707                  
+Total      44   9.5600 1.00000   
+
+#-----Compartment-----
 adonis2(formula = t(otu_table(wk3_up)) ~ Compartment, data = data.frame(sample_data(wk3_up)), permutations = 999, by = "margin")
             Df SumOfSqs      R2      F Pr(>F)    
 Compartment  2   6.8324 0.71468 52.602  0.001 ***
 Residual    42   2.7276 0.28532                  
-Total       44   9.5600 1.00000                  
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Total       44   9.5600 1.00000  
+
+# --- Compartment vs Read_depth --- significant compartment, 58.45% variance
+
+adonis2(formula = t(otu_table(wk3_up)) ~ Read_depth + Compartment, data = data.frame(sample_data(wk3_up)), permutations = 999, by = "margin")
+            Df SumOfSqs      R2       F Pr(>F)    
+Read_depth   1   0.0260 0.00272  0.3941  0.928    
+Compartment  2   5.5876 0.58447 42.3981  0.001 ***
+Residual    41   2.7016 0.28260                   
+Total       44   9.5600 1.00000
+
 ```
 
 3. **4 weeks old soybeans**
 
 ```
-adonis2(t(otu_table(wk4_up ))~Compartment,data=data.frame(sample_data(wk4_up )),permutations=999,by="margin")
-Permutation test for adonis under NA model
-Marginal effects of terms
-Permutation: free
-Number of permutations: 999
+# --- Plot ---- insignificant
+adonis2(formula = t(otu_table(wk4_up)) ~ Plot, data = data.frame(sample_data(wk4_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)
+Plot     14   1.8590 0.19732 0.4916  0.998
+Residual 28   7.5623 0.80268              
+Total    42   9.4213 1.00000
+
+#---- Read_depth ---- insignificant
+
+adonis2(formula = t(otu_table(wk4_up)) ~ Read_depth, data = data.frame(sample_data(wk4_up)), permutations = 999, by = "margin")
+           Df SumOfSqs     R2      F Pr(>F)
+Read_depth  1   0.1733 0.0184 0.7684  0.505
+Residual   41   9.2480 0.9816              
+Total      42   9.4213 1.0000
+
+# ---- Treatment ----- insignificant
+adonis2(formula = t(otu_table(wk4_up)) ~ Treatment, data = data.frame(sample_data(wk4_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.2972 0.03155 0.6515  0.689
+Residual  40   9.1241 0.96845              
+Total     42   9.4213 1.00000 
+
+# ---- Compartment ---- significant and 67.22% could be explained by compartment difference
 
 adonis2(formula = t(otu_table(wk4_up)) ~ Compartment, data = data.frame(sample_data(wk4_up)), permutations = 999, by = "margin")
             Df SumOfSqs      R2     F Pr(>F)    
@@ -192,6 +244,16 @@ Residual    40   3.0879 0.32776
 Total       42   9.4213 1.00000                 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# ---- Compartment vs Read_depth --- significant and could explain 66.7% variance
+
+adonis2(formula = t(otu_table(wk4_up)) ~ Compartment + Read_depth, data = data.frame(sample_data(wk4_up)), permutations = 999, by = "margin")
+            Df SumOfSqs      R2       F Pr(>F)    
+Compartment  2   6.2860 0.66722 41.3843  0.001 ***
+Read_depth   1   0.1260 0.01337  1.6587  0.132    
+Residual    39   2.9619 0.31439                   
+Total       42   9.4213 1.00000
+
 ```
 **Considering the significant impacts of compartment, soybean development (Time) and seed fungicide treatment impacts will be analyzed after subset phyloseq to corresponding compartment**
 
