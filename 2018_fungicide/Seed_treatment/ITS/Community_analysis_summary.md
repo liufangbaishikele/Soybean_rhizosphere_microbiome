@@ -471,12 +471,92 @@ Total     14   1.9929 1.00000
 * ---- Plot ----
 
 ```
+adonis2(formula = t(otu_table(Endo)) ~ Plot, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
+         Df SumOfSqs    R2      F Pr(>F)    
+Plot     14   4.7811 0.382 1.3246  0.001 ***
+Residual 30   7.7348 0.618                  
+Total    44  12.5159 1.000
+```
+* --- Read_depth ---
 
+```
+adonis2(formula = t(otu_table(Endo)) ~ Read_depth, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   1.4133 0.11292 5.4738  0.001 ***
+Residual   43  11.1026 0.88708                  
+Total      44  12.5159 1.00000
+```
+* --- Time ----
+
+```
+adonis2(formula = t(otu_table(Endo)) ~ Time, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Time      2   1.6394 0.13098 3.1652  0.001 ***
+Residual 42  10.8766 0.86902                  
+Total    44  12.5159 1.00000
 ```
 
 
+* ---- Read_depth vs Time vs Plot
 
-#### Subset to SEED samples
+```
+adonis2(formula = t(otu_table(Endo)) ~ Plot + Time + Read_depth, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Plot       14   4.2099 0.33637 1.4506  0.001 ***
+Time        2   1.1834 0.09455 2.8542  0.001 ***
+Read_depth  1   0.4983 0.03981 2.4037  0.001 ***
+Residual   27   5.5972 0.44720                  
+Total      44  12.5159 1.00000
+```
+
+* --- Read_depth vs Time vs Treatment
+
+```
+Treatment   2   0.6602 0.05275 1.4074  0.021 *  
+Time        2   1.2930 0.10331 2.7565  0.001 ***
+Read_depth  1   0.9004 0.07194 3.8392  0.001 ***
+Residual   39   9.1469 0.73082                  
+Total      44  12.5159 1.00000
+```
+
+* ---- Treatment impact along soybean development stages
+
+```
+
+>>> Endo_1wk
+
+adonis2(formula = t(otu_table(r_Endo_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Endo_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.4300 0.13369 0.9259  0.681
+Residual  12   2.7865 0.86631              
+Total     14   3.2165 1.00000
+
+>>> Endo_3wk
+
+adonis2(formula = t(otu_table(Endo_3wk_up)) ~ Treatment, data = data.frame(sample_data(Endo_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.5600 0.17161 1.2429  0.129
+Residual  12   2.7035 0.82839              
+Total     14   3.2635 1.00000
+
+>>> Endo_4wk
+
+adonis2(formula = t(otu_table(Endo_4wk_up)) ~ Treatment, data = data.frame(sample_data(Endo_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.4844 0.13864 0.9658  0.546
+Residual  12   3.0092 0.86136              
+Total     14   3.4936 1.00000
+```
 
 
+### Subset to SEED samples
 
+* ---- Treatment impact ----
+
+```
+adonis2(formula = t(otu_table(SEED)) ~ Treatment, data = data.frame(sample_data(SEED)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.5141 0.16021 1.1446   0.25
+Residual  12   2.6949 0.83979              
+Total     14   3.2090 1.00000
+```
