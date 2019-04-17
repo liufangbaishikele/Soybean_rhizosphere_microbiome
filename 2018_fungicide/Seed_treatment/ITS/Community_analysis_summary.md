@@ -1,4 +1,4 @@
-##                                      Community analysis summary
+#                                     Community analysis summary
 
 
 ----
@@ -10,9 +10,9 @@ Fang Liu
 
 This is the first run of ITS sequencing targeted ITS2 region. Due to the large propotion of soybean derived ITS, endosphere samples and seed samples were left with less informative sequences. Anyway, here are the summary of this run results.
 
-### PERMANOVA results
+## PERMANOVA results
 
-#### All samples without rarefaction
+### All samples without rarefaction
 
 * **Read_depth**
 
@@ -81,7 +81,7 @@ Model      4   11.041 15.062  0.001 ***
 Residual 158   28.956
 ```
 
-#### After remove all the seed samples: non_seed samples
+### After remove all the seed samples: non_seed samples
 
 * **Plot impact**
 
@@ -142,7 +142,7 @@ Residual    140   23.024 0.62275
 Total       148   36.972 1.00000
 ```
 
-#### Subset to bulk+rhizosphere+endosphere samples, in short of BRE
+### Subset to bulk+rhizosphere+endosphere samples, in short of BRE
 
 * **Plot impacts**
 
@@ -209,7 +209,7 @@ Residual    126   21.630 0.63345
 Total       133   34.146 1.00000
 ```
 
-#### subset to Bulk -- before rarefaction and after rarefaction, there are not pattern-changing difference
+### subset to Bulk -- before rarefaction and after rarefaction, there are not pattern-changing difference
 
 
 * --- Plot ----
@@ -300,7 +300,7 @@ Residual  12  1.29021 0.85513
 Total     14  1.50880 1.00000
 ```
                         
-#### Subset to Rhizosphere -- before rarefaction
+### Subset to Rhizosphere -- before rarefaction
 
 * --- Plot----
 
@@ -353,7 +353,36 @@ Treatment   2   0.6764 0.08051 2.3831  0.001 ***
 Residual   38   5.3929 0.64192                  
 Total      43   8.4012 1.00000
 ```
-#### Subset to Rhizosphere -- After rarefaction
+
+* ---- Treatment impact along Rhi_wk1, Rhi_wk3 and Rhi_wk4 ---
+
+```
+>>>> Rhi_1wk --- p=0.09 and R2=18.58%
+
+adonis2(formula = t(otu_table(r_Rhi_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)  
+Treatment  2  0.34943 0.18584 1.2554   0.09 .
+Residual  11  1.53089 0.81416                
+Total     13  1.88032 1.00000
+
+>>>> Rhi_3wk --- significant and R=27.99%
+
+adonis2(formula = t(otu_table(Rhi_3wk_up)) ~ Treatment, data = data.frame(sample_data(Rhi_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)   
+Treatment  2  0.61565 0.27987 2.3319  0.002 **
+Residual  12  1.58409 0.72013                 
+Total     14  2.19974 1.00000
+
+>>>> Rhi_4wk ---
+
+adonis2(formula = t(otu_table(Rhi_4wk_up)) ~ Treatment, data = data.frame(sample_data(Rhi_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.38076 0.16041 1.1463   0.23
+Residual  12  1.99293 0.83959              
+Total     14  2.37369 1.00000 
+```
+
+### Subset to Rhizosphere -- After rarefaction
 
 * ---- Read_depth ---
 
@@ -408,7 +437,44 @@ Residual   38   5.2355 0.69506
 Total      43   7.5325 1.00000
 ```
 
-#### Subset to Endosphere
+* --- Treatment impact along Rhi_1wk, Rhi_3wk and Rhi_4wk ----
+
+```
+>>> rf_Rhi_1wk
+
+adonis2(formula = t(otu_table(r_rf_Rhi_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_rf_Rhi_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.35167 0.18056 1.2119  0.127
+Residual  11  1.59606 0.81944              
+Total     13  1.94773 1.00000
+
+>>> rf_Rhi_3wk
+
+adonis2(formula = t(otu_table(rf_Rhi_3wk_up)) ~ Treatment, data = data.frame(sample_data(rf_Rhi_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)   
+Treatment  2  0.56049 0.27167 2.2381  0.003 **
+Residual  12  1.50261 0.72833                 
+Total     14  2.06310 1.00000
+
+>>> rf_Rhi_4wk
+
+adonis2(formula = t(otu_table(rf_Rhi_4wk_up)) ~ Treatment, data = data.frame(sample_data(rf_Rhi_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2   0.3185 0.15982 1.1413  0.225
+Residual  12   1.6744 0.84018              
+Total     14   1.9929 1.00000
+
+```
+
+### Subset to Endosphere - without rarefaction due to the very limited sequencing depth
+
+* ---- Plot ----
+
+```
+
+```
+
+
 
 #### Subset to SEED samples
 
