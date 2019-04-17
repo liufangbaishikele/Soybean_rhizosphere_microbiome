@@ -275,17 +275,138 @@ Total      44   6.2985 1.00000
 * ---- Treatment impact on Bulk_1wk, Bulk_3wk and Bulk_4wk
 
 ```
->>> Bulk_1wk
+>>> Bulk_1wk --- insignificant
 
->>> Bulk_3wk
+adonis2(formula = t(otu_table(r_rf_bulk_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_rf_bulk_1wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.23437 0.13121 0.9061  0.728
+Residual  12  1.55191 0.86879              
+Total     14  1.78628 1.00000
 
->>> Bulk_4wk
+>>> Bulk_3wk --- insignificant
 
+adonis2(formula = t(otu_table(rf_bulk_3wk_up)) ~ Treatment, data = data.frame(sample_data(rf_bulk_3wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.25781 0.14583 1.0243  0.379
+Residual  12  1.51014 0.85417              
+Total     14  1.76795 1.00000
+
+>>> Bulk_4wk ---insignificant
+
+adonis2(formula = t(otu_table(rf_bulk_4wk_up)) ~ Treatment, data = data.frame(sample_data(rf_bulk_4wk_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.21858 0.14487 1.0165  0.419
+Residual  12  1.29021 0.85513              
+Total     14  1.50880 1.00000
 ```
                         
-#### Subset to Rhizosphere 
+#### Subset to Rhizosphere -- before rarefaction
 
-* ---
+* --- Plot----
+
+```
+adonis2(formula = t(otu_table(Rhi_up)) ~ Plot, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)   
+Plot     14   3.2632 0.38842 1.3156  0.002 **
+Residual 29   5.1380 0.61158                 
+Total    43   8.4012 1.00000
+```
+* -----Read_depth---
+
+```
+adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   1.1971 0.14249 6.9791  0.001 ***
+Residual   42   7.2041 0.85751                  
+Total      43   8.4012 1.00000
+```
+
+* ---- Time ----
+
+```
+adonis2(formula = t(otu_table(Rhi_up)) ~ Time, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Time      2   1.6706 0.19885 5.0883  0.001 ***
+Residual 41   6.7306 0.80115                  
+Total    43   8.4012 1.00000
+```
+
+* --- Read_depth vs Time vs Plot 
+
+```
+adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth + Time + Plot, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   0.3648 0.04343 3.0389  0.001 ***
+Time        2   1.0049 0.11961 4.1852  0.001 ***
+Plot       14   2.9480 0.35090 1.7540  0.001 ***
+Residual   26   3.1213 0.37153                  
+Total      43   8.4012 1.00000
+```
+* ---- Read_depth vs Time vs Treatment
+
+```
+adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth + Time + Treatment, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   0.6631 0.07893 4.6724  0.001 ***
+Time        2   1.1289 0.13438 3.9774  0.001 ***
+Treatment   2   0.6764 0.08051 2.3831  0.001 ***
+Residual   38   5.3929 0.64192                  
+Total      43   8.4012 1.00000
+```
+#### Subset to Rhizosphere -- After rarefaction
+
+* ---- Read_depth ---
+
+```
+adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Read_depth, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs     R2      F Pr(>F)   
+Read_depth  1   0.4240 0.0563 2.5055  0.003 **
+Residual   42   7.1084 0.9437                 
+Total      43   7.5325 1.0000
+```
+* ----- Plot ----
+
+```
+adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Plot, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Plot     14   3.0188 0.40077 1.3854  0.001 ***
+Residual 29   4.5137 0.59923                  
+Total    43   7.5325 1.00000
+```
+
+* ---- Time ---
+
+```
+adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Time, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Time      2   1.4676 0.19484 4.9607  0.001 ***
+Residual 41   6.0649 0.80516                  
+Total    43   7.5325 1.00000
+```
+
+* ---- Read_depth vs Time vs Plot --
+
+```
+adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Read_depth + Time + Plot, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   0.1652 0.02193 1.4850  0.086 .  
+Time        2   1.0548 0.14004 4.7407  0.001 ***
+Plot       14   3.0343 0.40283 1.9481  0.001 ***
+Residual   26   2.8926 0.38402                  
+Total      43   7.5325 1.00000
+```
+
+* --- Read_depth vs Time vs Treatment ---
+
+```
+adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Read_depth + Time + Treatment, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)    
+Read_depth  1   0.1527 0.02027 1.1083  0.286    
+Time        2   1.1945 0.15858 4.3350  0.001 ***
+Treatment   2   0.6914 0.09179 2.5091  0.001 ***
+Residual   38   5.2355 0.69506                  
+Total      43   7.5325 1.00000
+```
 
 #### Subset to Endosphere
 
