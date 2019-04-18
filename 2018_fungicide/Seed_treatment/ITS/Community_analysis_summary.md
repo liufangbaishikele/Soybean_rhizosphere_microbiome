@@ -560,3 +560,8 @@ Treatment  2   0.5141 0.16021 1.1446   0.25
 Residual  12   2.6949 0.83979              
 Total     14   3.2090 1.00000
 ```
+
+# Plot difference for fungi is stronger than taht on bacteria community? 
+# One thing I want to know is if the Time effects on Bulk, Rhizosphere and Endosphere samples??
+# Another thing want to figure out how strong compartment difference it is in 1 week, 3 weeks and 4 weeks samples?
+
