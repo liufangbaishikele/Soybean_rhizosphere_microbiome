@@ -561,6 +561,23 @@ Residual  12   2.6949 0.83979
 Total     14   3.2090 1.00000
 ```
 
+
+### Marjor conclusions
+
+* For fungi community soybean development impacts are comparatively low compared with bacteria community, with 16%, 12% and 9% variations could be explained by collection time for Bulk, Rhizosphere and Endosphere samples.
+
+* Fungi community of presowing soil samples are similar to 1wk/4wk bulk soil samples. 
+
+* Collection time impact could be indicated by fungi community difference between different collection time, including presowing, Bulk_1wk and Bulk_3wk as well as Bulk_4wk. We found distinct microbial community of Bulk_3wk compared with Bulk_1wk, Bulk_4wk and Pre-sowing samples.
+
+* The community difference of bulk soil was strongly impacted by read_depth. Fungi community difference along soybean development stages changes and this change pattern differs between pre-rarefied data and rarefied data.
+
+* Soil, Bulk and Rhizosphere were subseted to quantify the Time and Compartment impacts. 
+
+
+
+
+
 ## Plot difference for fungi is stronger than taht on bacteria community? 
 ## One thing I want to know is if the Time effects on Bulk, Rhizosphere and Endosphere samples??
 ## Another thing want to figure out how strong compartment difference it is in 1 week, 3 weeks and 4 weeks samples?
