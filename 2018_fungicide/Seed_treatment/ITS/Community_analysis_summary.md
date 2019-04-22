@@ -591,9 +591,18 @@ Read_depth	1.26%	0.75%	2.01%
 Plots	48.80%	27.70%	17.80%
 Time	11.30%	38.40%	58.40%
 ```
-**The above comparision indicated that soybean development impacts on fungi community are less significant compared with that of bacteria. This could potentially indicate that soybean development modulation on root fungi community are very limited. However, soybean development modulation on associated rhizosphere and endosphere bacteria community are very intimate or bacteria community are more responsive to soybean development (which indicate their potential feedback impacts on plant performance)** 
 
-## Plot difference of bulk bacteria community are highere than that on fungi community. However, this Plot impacts decreased for bacteria rhizospehre and endosphere impacts (which indicate more robust rhizosphere and endosphere bacteria recruitment despites the indigenous bacteria community difference).For fungi community, Plots difference on bulk soil are less compared with that on bacteria community. But this plots differences did not change for rhizosphere and endospehre compartments. Which indicate that their are less robust recruitment of fungi taxa occured in rhizosphere and endosphere. 
+* The above comparision indicated that soybean development impacts fungi community to a similar degree across bulk, rhizosphere and endosphere compartments. 
 
-## Another thing want to figure out how strong compartment difference it is in 1 week, 3 weeks and 4 weeks samples?
+* We saw significantly difference fungi community between bulk, rhizosphere and endosphere compartments. But soybean development did not change rhizosphere and endosphere microbiome composition that much.
+
+* In contrast, soybean development impacts on rhizosphere and endosphere bacteria community are way stronger compared with bulk samples. This indicate that soybean development strongly modulate soybean rhizosphere and endosphere bacteria community.
+
+* Plots impacts on bulk fungi community is larger than bacteria community. Which indicate more divergent bacteria community composition between plots. However, this plots difference decreasingly very significantly for bacteria community for rhizosphere and endosphere samples. This indicate a very consistent and robust selection of bacterial community occurs in rhizosphere and endosphere despite the very divergent indigenous bacteria pools. 
+
+* In comparison, Plots impacts on soybean fungi community are similar between different compartments. This indirectly indicate that the modulation force of soybean rhizosphere and endosphere on fungi community are very limited and probably more depend on the indigenous fungi pool instead of a strong and consistent selection on specific taxa. More random selection of fungi taxa occurs in soybean rhizosphere and endospehre compartment maybe.  
+
+
+* Plot difference of bulk bacteria community are highere than that on fungi community. However, this Plot impacts decreased for bacteria rhizospehre and endosphere impacts (which indicate more robust rhizosphere and endosphere bacteria recruitment despites the indigenous bacteria community difference).For fungi community, Plots difference on bulk soil are less compared with that on bacteria community. But this plots differences did not change for rhizosphere and endospehre compartments. Which indicate that their are less robust recruitment of fungi taxa occured in rhizosphere and endosphere. 
+
 
