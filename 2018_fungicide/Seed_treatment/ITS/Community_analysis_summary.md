@@ -572,13 +572,28 @@ Total     14   3.2090 1.00000
 
 * The community difference of bulk soil was strongly impacted by read_depth. Fungi community difference along soybean development stages changes and this change pattern differs between pre-rarefied data and rarefied data.
 
-* Soil, Bulk and Rhizosphere were subseted to quantify the Time and Compartment impacts. 
+* Soil, Bulk and Rhizosphere were subseted to quantify the Read_depth vs Time vs Plot/Treatment impacts. Below are the results: Time impacts are decreasing from bulk soil to rhizosphere to endosphere samples. 
 
+**Fungi** --- Decreasing time impacts from bulk to rhizosphere and to endosphere compartment but similar between plots difference.
+```
+Variations explained by factors			
+	Bulk	Rhizosphere	Endosphere
+Read_depth	3.50%	4.34%	3.98%
+Time	16.50%	12%	9.45%
+Plot	34.80%	35.10%	33.60%
+```
+**Bacteria** --- Increasing time impacts but decreading between plots difference.
 
+```
+Variations could be explained by each factors			
+	Bulk	Rhizosphere	Endosphere
+Read_depth	1.26%	0.75%	2.01%
+Plots	48.80%	27.70%	17.80%
+Time	11.30%	38.40%	58.40%
+```
+**The above comparision indicated that soybean development impacts on fungi community are less significant compared with that of bacteria. This could potentially indicate that soybean development modulation on root fungi community are very limited. However, soybean development modulation on associated rhizosphere and endosphere bacteria community are very intimate or bacteria community are more responsive to soybean development (which indicate their potential feedback impacts on plant performance)** 
 
+## Plot difference of bulk bacteria community are highere than that on fungi community. However, this Plot impacts decreased for bacteria rhizospehre and endosphere impacts (which indicate more robust rhizosphere and endosphere bacteria recruitment despites the indigenous bacteria community difference).For fungi community, Plots difference on bulk soil are less compared with that on bacteria community. But this plots differences did not change for rhizosphere and endospehre compartments. Which indicate that their are less robust recruitment of fungi taxa occured in rhizosphere and endosphere. 
 
-
-## Plot difference for fungi is stronger than taht on bacteria community? 
-## One thing I want to know is if the Time effects on Bulk, Rhizosphere and Endosphere samples??
 ## Another thing want to figure out how strong compartment difference it is in 1 week, 3 weeks and 4 weeks samples?
 
