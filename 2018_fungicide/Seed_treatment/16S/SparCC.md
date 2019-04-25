@@ -10,7 +10,6 @@ setwd("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16
 library(phyloseq)
 library(igraph)
 library(plyr)
-```
 
 ## Read into a whole .shared and cons.taxonomy file to define label factor 
 ## This step is used to generate labels for each genus, which could be used to merge with four groups of vertex dataframe based on Genus name.
@@ -42,10 +41,8 @@ identical(sample_names(Seed_22017),sample_names(Seed_22017_up))
 
 meta<-data.frame(label=1:length(taxa_names(Seed_22017_up)),OtuID=taxa_names(Seed_22017_up),Phylum=tax_table(Seed_22017_up)[,2])
 head(meta)
-```
 
 #  Subset OTUs to creat input for SparCC analysis
----------------------------------------------------
 
 ```{r}
 #Subset the samples based on treatment
@@ -181,4 +178,4 @@ Seed_up_OTU_count<-data.frame(otu_table(Seed_up))
 #write.csv(Seed_up_OTU_count,file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/SparCC/Seed_up_OTU_count.csv")
 table(Seed_up_OTU_count==0)[2]/sum(table(Seed_up_OTU_count==0)) #0.7012274
 ```
-```
+
