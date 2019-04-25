@@ -1,6 +1,8 @@
 ### SparCC for co-orccurence network
+-----
 
-* SparCC input files preparasion
+
+* **Input files preparasion**
 
 ```
 ## set up working environment and load libraries
