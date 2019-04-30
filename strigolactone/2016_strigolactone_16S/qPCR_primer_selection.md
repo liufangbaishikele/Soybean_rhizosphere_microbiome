@@ -33,4 +33,10 @@
   * Melting temperature around 58-60-62 celsius
   * Max polyx=3
   
-  
+6. At the same time, we need some positive control for qPCR. Based on 16S contigs count table, I could find contigs with consistent count across control and over-expression treatment. But when I extract the sequence and blast in NCBI, it hits different unculture bacteria. So, very unconfident to design primer based on 16S V3-V4 region as it could amplify numerous of bacteria with similar V3-V4 regions. And from gel band, we could not tell the difference between sequences with same length but different allels.
+
+7. I was thinking to add a known bacteria strain with specific and equal concentration. We can design this strain specific primer set as positive control.
+
+
+
+
