@@ -41,9 +41,7 @@
 
  * Some researchers using IAC (internal amplification control, but the purpose is to evaluate PCR inhibation to help confirm true negative amplification instead of PCR inhibation. OR [exogenous internal positive control (IPC)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2672.2009.04364.x) 
  
- * There is no natural internal standard sequence that can be used in analogy to housekeeping genes widely used for pure culture or tissue analysis. More often, researchers using specific bacteria strain carrying specific construct are used as extraction standard to correct for extraction losses. 
-
- * Lebuhn et al, compared samples spiked and non-spiked with the target sequence to achieve this correction for their qPCR and RTqPCR data.
+ * There is no natural internal standard sequence that can be used in analogy to housekeeping genes widely used for pure culture or tissue analysis. More often, researchers using specific bacteria strain carrying specific construct are used as extraction standard to correct for extraction losses. Lebuhn et al, compared samples spiked and non-spiked with the target sequence to achieve this correction for their qPCR and RTqPCR data.[Reference](https://www.sciencedirect.com/science/article/pii/S0167701206003083#bib30)
 
  * Alternatively, we could use 16S rRNA gene as internal standard with the assumption that the recovery efficiency for each of the target gene present in a soil samples is identical. 
 
