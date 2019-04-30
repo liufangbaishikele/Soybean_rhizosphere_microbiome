@@ -27,5 +27,10 @@
   
 5. Now upload the target sequence to primer3 plus to design primer for qPCR
 
-  * 
+  * We want the amplicon length around 70-150bp
+  * GC content 40-80%
+  * primer length 18-22bp
+  * Melting temperature around 58-60-62 celsius
+  * Max polyx=3
+  
   
