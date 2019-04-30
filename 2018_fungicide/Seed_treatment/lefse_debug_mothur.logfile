@@ -1,0 +1,84 @@
+Linux version
+
+Using ReadLine
+
+Using Boost
+
+Running 64Bit Version
+
+mothur v.1.40.4
+Last updated: 03/11/2019
+by
+Patrick D. Schloss
+
+Department of Microbiology & Immunology
+
+University of Michigan
+http://www.mothur.org
+
+When using, please cite:
+Schloss, P.D., et al., Introducing mothur: Open-source, platform-independent, community-supported software for describing and comparing microbial communities. Appl Environ Microbiol, 2009. 75(23):7537-41.
+
+Distributed under the GNU General Public License
+
+Type 'help()' for information on the commands that are available
+
+For questions and analysis support, please visit our forum at https://www.mothur.org/forum
+
+Type 'quit()' to exit program
+
+Interactive Mode
+
+
+
+mothur > sub.sample(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.list,taxonomy=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.taxonomy,count=Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,size=22017,persample=true)
+You have selected a size that is larger than 206E_4w_ML number of sequences, removing 206E_4w_ML.
+You have selected a size that is larger than 309B_4w_ML number of sequences, removing 309B_4w_ML.
+You have selected a size that is larger than Seed_EE_3 number of sequences, removing Seed_EE_3.
+You have selected a size that is larger than Seed_EE_4 number of sequences, removing Seed_EE_4.
+You have selected a size that is larger than Seed_EE_5 number of sequences, removing Seed_EE_5.
+Sampling 22017 from each group.
+0.03
+
+Output File Names: 
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.count_table
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.list
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.taxonomy
+
+mothur > phylotype(taxonomy=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.taxonomy)
+1
+2
+3
+4
+5
+6
+
+Output File Names: 
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.sabund
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.rabund
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.list
+
+
+mothur > remove.rare(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.list,count=Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.count_table,nseqs=1,groups=all,bygroup=f)
+For the listfile you must select one label, using first label in your listfile.
+
+Output File Names: 
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.pick.count_table
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.1.pick.list
+
+
+mothur > make.shared(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.1.pick.list,count=Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.pick.count_table)
+1
+
+Output File Names: 
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.1.pick.shared
+
+
+mothur > classify.otu(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.1.pick.list,count=Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.subsample.pick.count_table,taxonomy=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.taxonomy)
+1	728
+
+Output File Names: 
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.1.pick.1.cons.taxonomy
+Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.subsample.tx.1.pick.1.cons.tax.summary
+
+quitting mothur
