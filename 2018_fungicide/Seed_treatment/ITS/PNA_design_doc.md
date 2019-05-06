@@ -46,4 +46,14 @@ PNA should have higher annealing temperature
 
 ## Now, I need to stop here and continue my committee meeting ppt.
 
-
+```
+https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-018-0413-8#Decs
+https://www.ncbi.nlm.nih.gov/nuccore/NC_008483.2?report=fasta
+https://www.ncbi.nlm.nih.gov/nuccore/NC_008483.2?report=fasta
+Populus PNA: CGAGGGCACGTCTGCCTGG 
+NCBI-BLAST using PNA against populus genome, found 100 identical hit.
+https://www.nature.com/articles/nmeth.2634#supplementary-information
+https://media.nature.com/original/nature-assets/nmeth/journal/v10/n10/extref/nmeth.2634-S1.pdf
+https://www.pnabio.com/
+https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0025715
+```
