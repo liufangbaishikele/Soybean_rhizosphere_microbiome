@@ -1,4 +1,8 @@
-## As our endosphere and seed ITS sequencing got high percentage of Glycine max ITS contamination. we decided to design ITS2 blocker to elimimate the amplification of soybean ITS amplification
+## ITS2 sequencing PNA design for soybean
+
+---
+
+As our endosphere and seed ITS sequencing got high percentage of Glycine max ITS contamination. we decided to design ITS2 blocker to elimimate the amplification of soybean ITS amplification
 
 Principles [Lundberg](https://www.nature.com/articles/nmeth.2634#supplementary-information):
 Peptide nucleic acid (PNA) design.
@@ -8,3 +12,5 @@ A successful elongation arrest PNA clamp is generally between 13 bp and 17 bp an
 
 The anti-mitochondrial PNA (mPNA) 5′-GGCAAGTGTTCTTCGGA-3′ and the anti-plastid PNA (pPNA) 5′-GGCTCAACCCTGGACAG-3′ (Supplementary Table 1f) were ordered from PNA Bio. Lyophilized PNA was resuspended in sterile water to a stock concentration of 100 μM. For PNA concentrations that were repeatedly tested, working stocks of 5 μM, 15 μM, 25 μM and 40 μM were prepared in water. All stocks were stored at −20 °C and heated to 65 °C before use to resolubilize any precipitate.
 PNA should have higher annealing temperature
+
+* Procedure
