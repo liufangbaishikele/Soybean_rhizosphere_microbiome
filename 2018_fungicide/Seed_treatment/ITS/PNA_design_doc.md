@@ -33,5 +33,17 @@ PNA should have higher annealing temperature
 * Melting temperature, problematic hairpins, GC content and other design considerations were calculated using the Life Technologies PNA designer (http://www6.appliedbiosystems.com/support/pnadesigner.cfm).
 * PNA will be ordered from PNA Bio company.
 
+## Practical prosedure
+* Generated Kmers with length of 9,10,11,12,and 13bp based on M04398_3_000000000-C4DLV_1_1106_23817_21172
+* Concatinate all the Kmers into one file called 9to13mer.fa
+* Modified ``UNITEv8_sh_97_s_all.fasta`` reference to exclude non-Fungi and generated ``UNITEv8_sh_97_s_k__Fungi.fasta``
+* Tried to use blast to find Glycine max specific Kmers by blast against UNITEv8_sh_97_s_k__Fungi.fasta. It turned out no hit, but I am sure there are lots of exact match. The problems is blast take input sequence larger than 20bp???
+* Trying to using mapping tools, bowtie. However my reference are thousands of ITS sequence. Which make this more complicated even after I got results.
+* So, I came up with shell script to do exact match and extract those that do not match.
+* After extracted all Glycine max specific Kmers. Mapped to M04398_3_000000000-C4DLV_1_1106_23817_21172 (Glycine max ITS2). 
+* Next step will be look into the distribution of those Kmers and found a region with length around 20bp and design PNA based on that. 
+* Then I need to check the annealing temperature for all the candicate PNAs
+
+## Now, I need to stop here and continue my committee meeting ppt.
 
 
