@@ -15,6 +15,8 @@ A successful elongation arrest PNA clamp is generally between 13 bp and 17 bp an
 The anti-mitochondrial PNA (mPNA) 5′-GGCAAGTGTTCTTCGGA-3′ and the anti-plastid PNA (pPNA) 5′-GGCTCAACCCTGGACAG-3′ (Supplementary Table 1f) were ordered from PNA Bio. Lyophilized PNA was resuspended in sterile water to a stock concentration of 100 μM. For PNA concentrations that were repeatedly tested, working stocks of 5 μM, 15 μM, 25 μM and 40 μM were prepared in water. All stocks were stored at −20 °C and heated to 65 °C before use to resolubilize any precipitate.
 PNA should have higher annealing temperature
 
+Mellisa populus paper using ITS2 blocker - CGAGGGCACGTCTGCCTGG
+
 ## Procedure
 
 1. I went back to my ITS sequence pipeline and extracted non-funfi contigs and their count
