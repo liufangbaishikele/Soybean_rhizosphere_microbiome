@@ -34,15 +34,121 @@ PNA should have higher annealing temperature
 * PNA will be ordered from PNA Bio company.
 
 ## Practical prosedure
-* Generated Kmers with length of 9,10,11,12,and 13bp based on M04398_3_000000000-C4DLV_1_1106_23817_21172
-* Concatinate all the Kmers into one file called 9to13mer.fa
+* Generated Kmers with length of 9,10,11,12,and 13bp based on M04398_3_000000000-C4DLV_1_1106_23817_21172 using Jellyfish software.
+
+```
+/staton/software/jellyfish-2.2.10/jellyfish count -m 9 -s 100M -t 10 -C M04398_3_000000000-C4DLV_1_1106_23817_21172
+mv mer_counts.jf 9mer_counts.jf
+/staton/software/jellyfish-2.2.10/jellyfish dump 9mer_counts.jf > 9_mer_counts_dumps.fa
+
+/staton/software/jellyfish-2.2.10/jellyfish count -m 10 -s 100M -t 10 -C M04398_3_000000000-C4DLV_1_1106_23817_21172
+mv mer_counts.jf 10mer_counts.jf
+/staton/software/jellyfish-2.2.10/jellyfish dump 10mer_counts.jf > 10_mer_counts_dumps.fa
+
+/staton/software/jellyfish-2.2.10/jellyfish count -m 11 -s 100M -t 10 -C M04398_3_000000000-C4DLV_1_1106_23817_21172
+mv mer_counts.jf 11mer_counts.jf
+/staton/software/jellyfish-2.2.10/jellyfish dump 11mer_counts.jf > 11_mer_counts_dumps.fa
+
+/staton/software/jellyfish-2.2.10/jellyfish count -m 12 -s 100M -t 10 -C M04398_3_000000000-C4DLV_1_1106_23817_21172
+mv mer_counts.jf 12mer_counts.jf
+/staton/software/jellyfish-2.2.10/jellyfish dump 12mer_counts.jf > 12_mer_counts_dumps.fa
+
+/staton/software/jellyfish-2.2.10/jellyfish count -m 13 -s 100M -t 10 -C M04398_3_000000000-C4DLV_1_1106_23817_21172
+mv mer_counts.jf 13mer_counts.jf
+/staton/software/jellyfish-2.2.10/jellyfish dump 13mer_counts.jf > 13_mer_counts_dumps.fa
+
+for file in *.fa; do echo $file; grep -v '>' $file > update_$file;done
+for file in update_*; do echo $file; awk '{print ">" NR; print $0}' $file > header_$file; done
+```
+* Concatinate all the Kmers into one file called 9to13mer.fa and remove all header information and add new header information
+```
+cat *.fa > 9to13mer_counts_dumps.fa
+grep -v '>' 9to13mer_counts_dumps.fa > 9to13mer_seq_only
+for seq in $(cat 9to13mer_seq_only); do echo $seq >> match_out; grep -c $seq UNITEv8_sh_97_s_k__Fungi.fasta >> match_out; done
+grep -B 1 '^0' match_out > Glycine_max_ITS_specific_mers
+#Edit this Glycine_max_ITS_specific_mers file to remove all --lines and 0 lines
+awk '{print ">" NR; print $0}' Glycine_max_ITS_specific_mers_edit > Glycine_max_ITS_specific_mers_edit_add_header
+```
 * Modified ``UNITEv8_sh_97_s_all.fasta`` reference to exclude non-Fungi and generated ``UNITEv8_sh_97_s_k__Fungi.fasta``
+
+```
+grep 'k__Fungi' UNITEv8_sh_97_s_all.tax > UNITEv8_sh_97_s_k__Fungi.tax
+awk '{print $1}' UNITEv8_sh_97_s_k__Fungi.tax > k__Fungi_seqID
+grep -Ff k__Fungi_seqID UNITEv8_sh_97_s_all.fasta > UNITEv8_sh_97_s_k__Fungi.fasta
+```
 * Tried to use blast to find Glycine max specific Kmers by blast against UNITEv8_sh_97_s_k__Fungi.fasta. It turned out no hit, but I am sure there are lots of exact match. The problems is blast take input sequence larger than 20bp???
 * Trying to using mapping tools, bowtie. However my reference are thousands of ITS sequence. Which make this more complicated even after I got results.
 * So, I came up with shell script to do exact match and extract those that do not match.
+
+```
+grep -v '>' 9to13mer_counts_dumps.fa > 9to13mer_seq_only
+for seq in $(cat 9to13mer_seq_only); do echo $seq >> match_out; grep -c $seq UNITEv8_sh_97_s_k__Fungi.fasta >> match_out; done
+grep -B 1 '^0' match_out > Glycine_max_ITS_specific_mers
+#Edit this Glycine_max_ITS_specific_mers file to remove all --lines and 0 lines
+awk '{print ">" NR; print $0}' Glycine_max_ITS_specific_mers_edit > Glycine_max_ITS_specific_mers_edit_add_header
+```
 * After extracted all Glycine max specific Kmers. Mapped to M04398_3_000000000-C4DLV_1_1106_23817_21172 (Glycine max ITS2). 
-* Next step will be look into the distribution of those Kmers and found a region with length around 20bp and design PNA based on that. 
-* Then I need to check the annealing temperature for all the candicate PNAs
+
+*After I done with the mapping using bowtie and visualization, I checked the GC content and try to design PNA based on requirements, I realized that those Glycine max ITS2 unique kmers can not match with the Glycine_max_ITS2 sequence. Then I went back the kmer file and found that the kmers were extracted with both forward and reverse direction.* 
+
+*So, I reanalyzed/updated the data from ``Glycine_max_ITS_specific_mers_edit`` to remove those reverse complement kmers that did not match fungi ITS database. Basically, I removed all kmers that do not match with the Glycine max ITS2 sequneces. Therefore, end with ``Glycine_max_ITS_specific_mers_edit_match_seq_edit`` as the Glycine specific kmers and will be used for mapping against Glycine max ITS reference to look at the location of those kmers.*
+
+      ```
+      for seq in $(cat Glycine_max_ITS_specific_mer) ; do echo $seq; echo $seq >> Glycine_max_ITS_specific_mers_edit_match_count; grep -c $seq M04398_3_000000000-C4DLV_1_1106_23817_21172>> Glycine_max_ITS_specific_mers_edit_match_count; done
+      ```
+**Here to remove kmers got no hit in Glycine max ITS sequence**
+
+      ```
+      grep -B 1 '1' Glycine_max_ITS_specific_mers_edit_match_count > Glycine_max_ITS_specific_mers_edit_match_seq
+      ```
+**Edit this seq file to make it cleaser and add header to this seq file**
+
+      ```
+      awk '{print ">" NR; print $0}' Glycine_max_ITS_specific_mers_edit_match_seq_edit > Glycine_max_ITS_specific_mers_edit_match_seq_edit_with_header
+      ```
+
+**Doing mapping using bowtie2**
+
+  1. Creat index file
+
+      ```
+      /staton/software/bowtie2-2.3.4.3-linux-x86_64/bowtie2-build -f M04398_3_000000000-C4DLV_1_1106_23817_21172.fasta ref
+      ```
+
+  2. Run alignment
+
+      ```
+      /staton/software/bowtie2-2.3.4.3-linux-x86_64/bowtie2  -x ref -f Glycine_max_ITS_specific_mers_edit_match_seq_edit_with_header -N 0 --end-to-end --norc -S Kmer_vs_Glycine_max_ITS2.sam
+      ```
+
+   3. convert sam file to bam file
+
+      ```
+      /staton/software/samtools-1.9/samtools view Kmer_vs_Glycine_max_ITS2.sam -b  -o Kmer_vs_Glycine_max_ITS2.bam
+      ```
+
+   4. Sort bam file inder to generate IGV readable index file and bam file
+
+      ```
+      /staton/software/samtools-1.9/samtools sort Kmer_vs_Glycine_max_ITS2.bam -o Kmer_vs_Glycine_max_ITS2_sorted.bam
+      ```
+
+   5. Generate the index file
+
+      ```
+      /staton/software/samtools-1.9/samtools index -b Kmer_vs_Glycine_max_ITS2_sorted.bam 
+      ```
+
+   6. secure copy sorted bam and sorted_bam.bai index file as well as reference fasta file to local computer. Using IGV for visualization
+
+   7. Next step will be look into the distribution of those Kmers and found a region with length around 20bp and design PNA based on that.
+
+   8. Extract one of the fragement cover overlapped  kmers with length of 18bp. 
+
+   9. Double check its uniqueness against all fungi ITS database
+
+  10. Then I need to check the annealing temperature for all the candicate PNAs
+  
 
 ## Now, I need to stop here and continue my committee meeting ppt.
 
