@@ -22,7 +22,7 @@ tax_table()   Taxonomy Table:    [ 144821 taxa by 6 taxonomic ranks ]
 ```
 * In total, it has 13079622 reads after mothur pipeline before doing any rarefaction
 
-**After rarefaction at 13021**
+**r_Seed_13021_up**
 
 1. Summary of the otu_table, tax_table and sample_data
 
@@ -36,15 +36,15 @@ tax_table()   Taxonomy Table:    [ 21355 taxa by 6 taxonomic ranks ]
 
 3. PERMANOVA results
 
-* Read-depth
+            * Read-depth
 
-```
-adonis2(formula = t(otu_table(r_Seed_13021_up)) ~ Read_depth, data = data.frame(sample_data(r_Seed_13021_up)), permutations = 999, by = "margin")
-            Df SumOfSqs      R2      F Pr(>F)  
-Read_depth   1    0.478 0.01323 1.9714  0.067 .
-Residual   147   35.644 0.98677                
-Total      148   36.122 1.00000
-```
+            ```
+            adonis2(formula = t(otu_table(r_Seed_13021_up)) ~ Read_depth, data = data.frame(sample_data(r_Seed_13021_up)), permutations = 999, by = "margin")
+                        Df SumOfSqs      R2      F Pr(>F)  
+            Read_depth   1    0.478 0.01323 1.9714  0.067 .
+            Residual   147   35.644 0.98677                
+            Total      148   36.122 1.00000
+            ```
 
 * Plot design impact check up: we have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
 
