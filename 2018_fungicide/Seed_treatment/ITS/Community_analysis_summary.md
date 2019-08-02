@@ -10,7 +10,6 @@ Fang Liu
 
 This is the results of Combined run of ITS sequencing targeted ITS2 region. For the first run, we got very limited reads left for endosphere and some rhizosphere samples. So, we design ITS blocker to block off soybean ITS, but it did not work as good as we expected. However, for most of the samples we got enough reads for analysis.
 
-## PERMANOVA results
 
 ### All samples without rarefaction, but singletons were removed
 
@@ -234,253 +233,188 @@ Time        2   1.2374 0.19817 5.5489  0.001 ***
 Residual   39   4.3484 0.69642                  
 Total      44   6.2439 1.00000
 ```
-                        
+--------------------------------------------------------------------------------                        
+
+
 ### Subset to Rhizosphere -- before rarefaction
+
+```
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 5020 taxa and 44 samples ]
+sample_data() Sample Data:       [ 44 samples by 7 sample variables ]
+tax_table()   Taxonomy Table:    [ 5020 taxa by 7 taxonomic ranks ]
+````
+* -----Read_depth---
+
+```
+adonis2(formula = t(otu_table(r_rms_Rhi_up)) ~ Read_depth, data = data.frame(sample_data(r_rms_Rhi_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2    F Pr(>F)  
+Read_depth  1   0.3343 0.04459 1.96  0.016 *
+Residual   42   7.1636 0.95541              
+Total      43   7.4979 1.00000
+```
 
 * --- Plot----
 
 ```
-adonis2(formula = t(otu_table(Rhi_up)) ~ Plot, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
-         Df SumOfSqs      R2      F Pr(>F)   
-Plot     14   3.2632 0.38842 1.3156  0.002 **
-Residual 29   5.1380 0.61158                 
-Total    43   8.4012 1.00000
-```
-* -----Read_depth---
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Rhi_up))$Time, plot permutation: none
+Permutation: free
+Number of permutations: 999
 
-```
-adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   1.1971 0.14249 6.9791  0.001 ***
-Residual   42   7.2041 0.85751                  
-Total      43   8.4012 1.00000
+adonis2(formula = t(otu_table(r_rms_Rhi_up)) ~ Plot, data = data.frame(sample_data(r_rms_Rhi_up)), permutations = perm, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Plot     14   3.1112 0.41495 1.4691  0.001 ***
+Residual 29   4.3867 0.58505                  
+Total    43   7.4979 1.00000
 ```
 
 * ---- Time ----
 
 ```
-adonis2(formula = t(otu_table(Rhi_up)) ~ Time, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
+aPermutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Rhi_up))$Plot, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Rhi_up)) ~ Time, data = data.frame(sample_data(r_rms_Rhi_up)), permutations = perm, by = "margin")
          Df SumOfSqs      R2      F Pr(>F)    
-Time      2   1.6706 0.19885 5.0883  0.001 ***
-Residual 41   6.7306 0.80115                  
-Total    43   8.4012 1.00000
+Time      2   1.4557 0.19414 4.9387  0.001 ***
+Residual 41   6.0423 0.80586                  
+Total    43   7.4979 1.00000
+```
+
+* --- Treatment
+
+```
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Rhi_up))$Time, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Rhi_up)) ~ Treatment, data = data.frame(sample_data(r_rms_Rhi_up)), permutations = perm, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)    
+Treatment  2   0.7743 0.10326 2.3606  0.001 ***
+Residual  41   6.7237 0.89674                  
+Total     43   7.4979 1.00000
 ```
 
 * --- Read_depth vs Time vs Plot 
 
 ```
-adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth + Time + Plot, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
            Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   0.3648 0.04343 3.0389  0.001 ***
-Time        2   1.0049 0.11961 4.1852  0.001 ***
-Plot       14   2.9480 0.35090 1.7540  0.001 ***
-Residual   26   3.1213 0.37153                  
-Total      43   8.4012 1.00000
+Read_depth  1   0.1177 0.01570 1.0813  0.355    
+Time        2   1.2127 0.16174 5.5714  0.001 ***
+Plot       14   3.0498 0.40675 2.0015  0.001 ***
+Residual   26   2.8298 0.37741                  
+Total      43   7.4979 1.00000
 ```
 * ---- Read_depth vs Time vs Treatment
 
 ```
-adonis2(formula = t(otu_table(Rhi_up)) ~ Read_depth + Time + Treatment, data = data.frame(sample_data(Rhi_up)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   0.6631 0.07893 4.6724  0.001 ***
-Time        2   1.1289 0.13438 3.9774  0.001 ***
-Treatment   2   0.6764 0.08051 2.3831  0.001 ***
-Residual   38   5.3929 0.64192                  
-Total      43   8.4012 1.00000
+term          df SumOfSqs     R2 statistic p.value
+  <chr>      <dbl>    <dbl>  <dbl>     <dbl>   <dbl>
+1 Read_depth     1    0.149 0.0199      1.11   0.306
+2 Time           2    1.28  0.171       4.76   0.001
+3 Treatment      2    0.768 0.102       2.86   0.001
+4 Residual      38    5.11  0.682      NA     NA    
+5 Total         43    7.50  1          NA     NA 
 ```
 
-* ---- Treatment impact along Rhi_wk1, Rhi_wk3 and Rhi_wk4 ---
-
-```
->>>> Rhi_1wk --- p=0.09 and R2=18.58%
-
-adonis2(formula = t(otu_table(r_Rhi_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_1wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)  
-Treatment  2  0.34943 0.18584 1.2554   0.09 .
-Residual  11  1.53089 0.81416                
-Total     13  1.88032 1.00000
-
->>>> Rhi_3wk --- significant and R=27.99%
-
-adonis2(formula = t(otu_table(Rhi_3wk_up)) ~ Treatment, data = data.frame(sample_data(Rhi_3wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)   
-Treatment  2  0.61565 0.27987 2.3319  0.002 **
-Residual  12  1.58409 0.72013                 
-Total     14  2.19974 1.00000
-
->>>> Rhi_4wk ---
-
-adonis2(formula = t(otu_table(Rhi_4wk_up)) ~ Treatment, data = data.frame(sample_data(Rhi_4wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2  0.38076 0.16041 1.1463   0.23
-Residual  12  1.99293 0.83959              
-Total     14  2.37369 1.00000 
-```
-
-### Subset to Rhizosphere -- After rarefaction
-
-* ---- Read_depth ---
-
-```
-adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Read_depth, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
-           Df SumOfSqs     R2      F Pr(>F)   
-Read_depth  1   0.4240 0.0563 2.5055  0.003 **
-Residual   42   7.1084 0.9437                 
-Total      43   7.5325 1.0000
-```
-* ----- Plot ----
-
-```
-adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Plot, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
-         Df SumOfSqs      R2      F Pr(>F)    
-Plot     14   3.0188 0.40077 1.3854  0.001 ***
-Residual 29   4.5137 0.59923                  
-Total    43   7.5325 1.00000
-```
-
-* ---- Time ---
-
-```
-adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Time, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
-         Df SumOfSqs      R2      F Pr(>F)    
-Time      2   1.4676 0.19484 4.9607  0.001 ***
-Residual 41   6.0649 0.80516                  
-Total    43   7.5325 1.00000
-```
-
-* ---- Read_depth vs Time vs Plot --
-
-```
-adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Read_depth + Time + Plot, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   0.1652 0.02193 1.4850  0.086 .  
-Time        2   1.0548 0.14004 4.7407  0.001 ***
-Plot       14   3.0343 0.40283 1.9481  0.001 ***
-Residual   26   2.8926 0.38402                  
-Total      43   7.5325 1.00000
-```
-
-* --- Read_depth vs Time vs Treatment ---
-
-```
-adonis2(formula = t(otu_table(rf_Rhi_up)) ~ Read_depth + Time + Treatment, data = data.frame(sample_data(rf_Rhi_up)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   0.1527 0.02027 1.1083  0.286    
-Time        2   1.1945 0.15858 4.3350  0.001 ***
-Treatment   2   0.6914 0.09179 2.5091  0.001 ***
-Residual   38   5.2355 0.69506                  
-Total      43   7.5325 1.00000
-```
-
-* --- Treatment impact along Rhi_1wk, Rhi_3wk and Rhi_4wk ----
-
-```
->>> rf_Rhi_1wk
-
-adonis2(formula = t(otu_table(r_rf_Rhi_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_rf_Rhi_1wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2  0.35167 0.18056 1.2119  0.127
-Residual  11  1.59606 0.81944              
-Total     13  1.94773 1.00000
-
->>> rf_Rhi_3wk
-
-adonis2(formula = t(otu_table(rf_Rhi_3wk_up)) ~ Treatment, data = data.frame(sample_data(rf_Rhi_3wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)   
-Treatment  2  0.56049 0.27167 2.2381  0.003 **
-Residual  12  1.50261 0.72833                 
-Total     14  2.06310 1.00000
-
->>> rf_Rhi_4wk
-
-adonis2(formula = t(otu_table(rf_Rhi_4wk_up)) ~ Treatment, data = data.frame(sample_data(rf_Rhi_4wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2   0.3185 0.15982 1.1413  0.225
-Residual  12   1.6744 0.84018              
-Total     14   1.9929 1.00000
-
-```
 
 ### Subset to Endosphere - without rarefaction due to the very limited sequencing depth
+
+```
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 2391 taxa and 45 samples ]
+sample_data() Sample Data:       [ 45 samples by 7 sample variables ]
+tax_table()   Taxonomy Table:    [ 2391 taxa by 7 taxonomic ranks ]
+```
+
+* --- Read_depth ---
+
+```
+adonis2(formula = t(otu_table(r_rms_Endo_up)) ~ Read_depth, data = data.frame(sample_data(r_rms_Endo_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)  
+Read_depth  1   0.3568 0.04236 1.9021  0.012 *
+Residual   43   8.0660 0.95764                
+Total      44   8.4228 1.00000
+```
 
 * ---- Plot ----
 
 ```
-adonis2(formula = t(otu_table(Endo)) ~ Plot, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
-         Df SumOfSqs    R2      F Pr(>F)    
-Plot     14   4.7811 0.382 1.3246  0.001 ***
-Residual 30   7.7348 0.618                  
-Total    44  12.5159 1.000
+ermutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Endo_up))$Time, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Endo_up)) ~ Plot, data = data.frame(sample_data(r_rms_Endo_up)), permutations = perm, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Plot     14   3.3155 0.39364 1.3911  0.001 ***
+Residual 30   5.1073 0.60636                  
+Total    44   8.4228 1.00000 
 ```
-* --- Read_depth ---
+* ---- Treatment ---
 
 ```
-adonis2(formula = t(otu_table(Endo)) ~ Read_depth, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   1.4133 0.11292 5.4738  0.001 ***
-Residual   43  11.1026 0.88708                  
-Total      44  12.5159 1.00000
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Endo_up))$Time, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Endo_up)) ~ Treatment, data = data.frame(sample_data(r_rms_Endo_up)), permutations = perm, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)   
+Treatment  2   0.5881 0.06983 1.5764  0.002 **
+Residual  42   7.8347 0.93017                 
+Total     44   8.4228 1.00000
 ```
 * --- Time ----
 
 ```
-adonis2(formula = t(otu_table(Endo)) ~ Time, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Endo_up))$Plot, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Endo_up)) ~ Time, data = data.frame(sample_data(r_rms_Endo_up)), permutations = perm, by = "margin")
          Df SumOfSqs      R2      F Pr(>F)    
-Time      2   1.6394 0.13098 3.1652  0.001 ***
-Residual 42  10.8766 0.86902                  
-Total    44  12.5159 1.00000
+Time      2   1.2603 0.14963 3.6951  0.001 ***
+Residual 42   7.1625 0.85037                  
+Total    44   8.4228 1.00000                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
 
 
 * ---- Read_depth vs Time vs Plot
 
 ```
-adonis2(formula = t(otu_table(Endo)) ~ Plot + Time + Read_depth, data = data.frame(sample_data(Endo)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)    
-Plot       14   4.2099 0.33637 1.4506  0.001 ***
-Time        2   1.1834 0.09455 2.8542  0.001 ***
-Read_depth  1   0.4983 0.03981 2.4037  0.001 ***
-Residual   27   5.5972 0.44720                  
-Total      44  12.5159 1.00000
+term          df SumOfSqs     R2 statistic p.value
+  <chr>      <dbl>    <dbl>  <dbl>     <dbl>   <dbl>
+1 Plot          14    3.23  0.383       1.71   0.001
+2 Time           2    1.17  0.138       4.32   0.001
+3 Read_depth     1    0.204 0.0242      1.51   0.065
+4 Residual      27    3.64  0.433      NA     NA    
+5 Total         44    8.42  1          NA     NA 
 ```
 
 * --- Read_depth vs Time vs Treatment
 
 ```
-Treatment   2   0.6602 0.05275 1.4074  0.021 *  
-Time        2   1.2930 0.10331 2.7565  0.001 ***
-Read_depth  1   0.9004 0.07194 3.8392  0.001 ***
-Residual   39   9.1469 0.73082                  
-Total      44  12.5159 1.00000
-```
-
-* ---- Treatment impact along soybean development stages
-
-```
-
->>> Endo_1wk
-
-adonis2(formula = t(otu_table(r_Endo_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_Endo_1wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2   0.4300 0.13369 0.9259  0.681
-Residual  12   2.7865 0.86631              
-Total     14   3.2165 1.00000
-
->>> Endo_3wk
-
-adonis2(formula = t(otu_table(Endo_3wk_up)) ~ Treatment, data = data.frame(sample_data(Endo_3wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2   0.5600 0.17161 1.2429  0.129
-Residual  12   2.7035 0.82839              
-Total     14   3.2635 1.00000
-
->>> Endo_4wk
-
-adonis2(formula = t(otu_table(Endo_4wk_up)) ~ Treatment, data = data.frame(sample_data(Endo_4wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2   0.4844 0.13864 0.9658  0.546
-Residual  12   3.0092 0.86136              
-Total     14   3.4936 1.00000
+term          df SumOfSqs     R2 statistic p.value
+  <chr>      <dbl>    <dbl>  <dbl>     <dbl>   <dbl>
+1 Treatment      2    0.539 0.0639      1.66   0.011
+2 Time           2    1.18  0.140       3.64   0.001
+3 Read_depth     1    0.242 0.0288      1.49   0.068
+4 Residual      39    6.33  0.752      NA     NA    
+5 Total         44    8.42  1          NA     NA
 ```
 
 
@@ -489,12 +423,21 @@ Total     14   3.4936 1.00000
 * ---- Treatment impact ----
 
 ```
-adonis2(formula = t(otu_table(SEED)) ~ Treatment, data = data.frame(sample_data(SEED)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2   0.5141 0.16021 1.1446   0.25
-Residual  12   2.6949 0.83979              
-Total     14   3.2090 1.00000
+Permutation test for adonis under NA model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_SEED)) ~ Treatment, data = data.frame(sample_data(r_rms_SEED)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)  
+Treatment  2  0.45624 0.20242 1.5228  0.079 .
+Residual  12  1.79765 0.79758                
+Total     14  2.25389 1.00000
 ```
+
+### Subset based on development stage - week1, week3 and week4
+
+
 
 
 ### Marjor conclusions
