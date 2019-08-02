@@ -48,24 +48,40 @@ tax_table()   Taxonomy Table:    [ 144821 taxa by 6 taxonomic ranks ]
 
 **r_Soil_up**
 
-*Plot design impact check up*
+           *Plot design impact check up*
 
-We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
+           We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
 
-* Treatment impact
-```
-adonis2(formula = t(otu_table(r_Soil_up)) ~ Treatment, data = data.frame(sample_data(r_Soil_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2  0.17841 0.14635 1.0286  0.377
-Residual  12  1.04069 0.85365              
-Total     14  1.21909 1.00000
-```
+           * Treatment impact
+           ```
+           adonis2(formula = t(otu_table(r_Soil_up)) ~ Treatment, data = data.frame(sample_data(r_Soil_up)), permutations = 999, by = "margin")
+                     Df SumOfSqs      R2      F Pr(>F)
+           Treatment  2  0.17841 0.14635 1.0286  0.377
+           Residual  12  1.04069 0.85365              
+           Total     14  1.21909 1.00000
+           ```
 
 **More exploration with r_SB_CT_up**
 
-* Time impact
+           * Time impact
+           
+           ```
+           adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Time, data = data.frame(sample_data(r_SB_CT_up)), permutations = perm, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Time      3  0.42175 0.23849 1.6703  0.001 ***
+Residual 16  1.34668 0.76151                  
+Total    19  1.76842 1.00000
+           ```
 
-* Read_depth impact
+           * Read_depth impact
+           
+           ```
+           adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Read_depth, data = data.frame(sample_data(r_SB_CT_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)  
+Read_depth  1  0.13545 0.07659 1.4931  0.042 *
+Residual   18  1.63297 0.92341                
+Total      19  1.76842 1.00000
+           ```
 
 
 
