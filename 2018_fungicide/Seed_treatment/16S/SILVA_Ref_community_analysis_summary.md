@@ -92,7 +92,7 @@ tax_table()   Taxonomy Table:    [ 19681 taxa by 6 taxonomic ranks ]
 ```
 * PERMANOVA 
 
-* Read_depth
+* Read_depth - insignificant
 
 ```
 adonis2(formula = t(otu_table(r_BRE_up)) ~ Read_depth, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
@@ -103,9 +103,49 @@ Total      133   33.258 1.00000
 ```
 
 
+* Compartment impact
 
+```
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: paste(data.frame(sample_data(r_BRE_up))$Time, data.frame(sample_data(r_BRE_up))$Plot, , plot permutation: none
+Permutation: free
+Number of permutations: 999
 
+adonis2(formula = t(otu_table(r_BRE_up)) ~ Compartment, data = data.frame(sample_data(r_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Compartment, data = data, method = method)
+             Df SumOfSqs      R2      F Pr(>F)    
+Compartment   2   15.215 0.45748 55.233  0.001 ***
+Residual    131   18.043 0.54252                  
+Total       133   33.258 1.00000                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+```
 
+* Time impact
+
+```
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: paste(data.frame(sample_data(r_BRE_up))$Compartment, data.frame(sample_data(r_BRE_up))$Plot, , plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_BRE_up)) ~ Time, data = data.frame(sample_data(r_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Time, data = data, method = method)
+          Df SumOfSqs      R2      F Pr(>F)    
+Time       2    3.183 0.09572 6.9332  0.001 ***
+Residual 131   30.075 0.90428                  
+Total    133   33.258 1.00000                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+```
+
+* Plot impact vs Treatment impact
+
+```
+
+```
 
 
 
