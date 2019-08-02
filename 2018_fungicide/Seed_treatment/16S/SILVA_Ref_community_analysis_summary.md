@@ -25,17 +25,17 @@ tax_table()   Taxonomy Table:    [ 144821 taxa by 6 taxonomic ranks ]
 **r_Seed_13021_up**
 
 1. Summary of the otu_table, tax_table and sample_data
-
-```
-phyloseq-class experiment-level object
-otu_table()   OTU Table:         [ 21355 taxa and 149 samples ]
-sample_data() Sample Data:       [ 149 samples by 7 sample variables ]
-tax_table()   Taxonomy Table:    [ 21355 taxa by 6 taxonomic ranks ]
-```
+           
+           ```
+           phyloseq-class experiment-level object
+           otu_table()   OTU Table:         [ 21355 taxa and 149 samples ]
+           sample_data() Sample Data:       [ 149 samples by 7 sample variables ]
+           tax_table()   Taxonomy Table:    [ 21355 taxa by 6 taxonomic ranks ]
+           ```
 2. Total read - 1913852
 
 3. PERMANOVA results
-
+           
             * Read-depth
 
             ```
@@ -46,8 +46,13 @@ tax_table()   Taxonomy Table:    [ 21355 taxa by 6 taxonomic ranks ]
             Total      148   36.122 1.00000
             ```
 
-* Plot design impact check up: we have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
+**r_Soil_up**
 
+*Plot design impact check up*
+
+We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
+
+* Treatment impact
 ```
 adonis2(formula = t(otu_table(r_Soil_up)) ~ Treatment, data = data.frame(sample_data(r_Soil_up)), permutations = 999, by = "margin")
           Df SumOfSqs      R2      F Pr(>F)
@@ -55,6 +60,13 @@ Treatment  2  0.17841 0.14635 1.0286  0.377
 Residual  12  1.04069 0.85365              
 Total     14  1.21909 1.00000
 ```
+
+**More exploration with r_SB_CT_up**
+
+* Time impact
+
+* Read_depth impact
+
 
 
 
