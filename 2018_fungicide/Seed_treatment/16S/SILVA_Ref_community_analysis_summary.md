@@ -144,10 +144,66 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 * Plot impact vs Treatment impact
 
 ```
+1.  Treatment
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: paste(data.frame(sample_data(r_BRE_up))$Compartment, data.frame(sample_data(r_BRE_up))$Time, , plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_BRE_up)) ~ Treatment, data = data.frame(sample_data(r_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Treatment, data = data, method = method)
+           Df SumOfSqs      R2      F Pr(>F)    
+Treatment   2    0.411 0.01235 0.8188  0.001 ***
+Residual  131   32.848 0.98765                  
+Total     133   33.258 1.00000
+
+2. Plot 
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: paste(data.frame(sample_data(r_BRE_up))$Compartment, data.frame(sample_data(r_BRE_up))$Time, , plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_BRE_up)) ~ Plot, data = data.frame(sample_data(r_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Plot, data = data, method = method)
+          Df SumOfSqs      R2      F Pr(>F)    
+Plot      14    2.880 0.08659 0.8058  0.001 ***
+Residual 119   30.378 0.91341                  
+Total    133   33.258 1.00000                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
 
 ```
 
+* Read_Depth vs Compartment vs Time vs Plot
 
+```
+Terms added sequentially (first to last)
+
+             Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+Compartment   2    15.215  7.6075  73.138 0.45748  0.001 ***
+Plot         14     2.867  0.2048   1.969 0.08619  0.001 ***
+Time          2     3.199  1.5996  15.379 0.09619  0.001 ***
+Read_depth    1     0.120  0.1195   1.149 0.00359  0.291    
+Residuals   114    11.858  0.1040         0.35654           
+Total       133    33.258                 1.00000
+```
+
+* Read_depth vs Compartment vs Time vs Treatment
+
+```
+Terms added sequentially (first to last)
+
+             Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+Compartment   2    15.215  7.6075  66.937 0.45748  0.001 ***
+Treatment     2     0.407  0.2034   1.789 0.01223  0.057 .  
+Time          2     3.206  1.6030  14.104 0.09639  0.001 ***
+Read_depth    1     0.110  0.1104   0.972 0.00332  0.402    
+Residuals   126    14.320  0.1137         0.43057           
+Total       133    33.258                 1.00000
+```
 
 
 
