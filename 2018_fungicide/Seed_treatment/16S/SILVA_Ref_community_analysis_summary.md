@@ -761,18 +761,18 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
 * ---- Read_depth vs Compartment vs Treatment
 
           ```
-          Permutation test for adonis under reduced model
+                    Permutation test for adonis under reduced model
           Marginal effects of terms
           Permutation: free
           Number of permutations: 999
 
-          adonis2(formula = t(otu_table(r_wk4_up)) ~ Compartment + Read_depth + Plot, data = data.frame(sample_data(r_wk4_up)), permutations = 999, by = "margin")
+          adonis2(formula = t(otu_table(r_wk3_up)) ~ Compartment + Read_depth + Treatment, data = data.frame(sample_data(r_wk3_up)), permutations = 999, by = "margin")
                       Df SumOfSqs      R2       F Pr(>F)    
-          Compartment  2   6.5726 0.64770 55.1227  0.001 ***
-          Read_depth   1   0.0766 0.00755  1.2851  0.229    
-          Plot        14   1.7326 0.17074  2.0758  0.001 ***
-          Residual    27   1.6097 0.15863                   
-          Total       44  10.1476 1.00000                   
+          Compartment  2   5.5587 0.56684 39.2318  0.001 ***
+          Read_depth   1   0.0279 0.00284  0.3937  0.942    
+          Treatment    2   0.2068 0.02109  1.4594  0.152    
+          Residual    39   2.7629 0.28175                   
+          Total       44   9.8065 1.00000                   
           ---
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
