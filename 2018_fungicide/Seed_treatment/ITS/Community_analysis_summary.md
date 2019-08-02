@@ -3,25 +3,32 @@
 
 ----
 Fang Liu
-04/13/2019
+08/02/2019
 
 
 **Overal description**
 
-This is the first run of ITS sequencing targeted ITS2 region. Due to the large propotion of soybean derived ITS, endosphere samples and seed samples were left with less informative sequences. Anyway, here are the summary of this run results.
+This is the results of Combined run of ITS sequencing targeted ITS2 region. For the first run, we got very limited reads left for endosphere and some rhizosphere samples. So, we design ITS blocker to block off soybean ITS, but it did not work as good as we expected. However, for most of the samples we got enough reads for analysis.
 
 ## PERMANOVA results
 
-### All samples without rarefaction
+### All samples without rarefaction, but singletons were removed
+
+```
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 8360 taxa and 164 samples ]
+sample_data() Sample Data:       [ 164 samples by 7 sample variables ]
+tax_table()   Taxonomy Table:    [ 8360 taxa by 7 taxonomic ranks ]
+```
 
 * **Read_depth**
 
 ```
 adonis2(formula = t(otu_table(r_rms_seed_phyloseq)) ~ Read_depth, data = data.frame(sample_data(r_rms_seed_phyloseq)), permutations = 999, by = "margin")
             Df SumOfSqs      R2      F Pr(>F)    
-Read_depth   1    6.841 0.14874 28.307  0.001 ***
-Residual   162   39.152 0.85126                  
-Total      163   45.993 1.00000                  
+Read_depth   1    3.792 0.08548 15.142  0.001 ***
+Residual   162   40.566 0.91452                  
+Total      163   44.358 1.00000                 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -46,258 +53,186 @@ Residual    158   28.115 0.61128
 Total       163   45.993 1.00000 
 ```
 
-```
-capscale(formula = t(otu_table(r_rms_seed_phyloseq)) ~ Read_depth + Condition(Compartment), data = data.frame(sample_data(r_rms_seed_phyloseq)), distance = "bray", dfun = vegdist) 
-
------ summary ------
-Partitioning of squared Bray distance:
-              Inertia Proportion
-Total         46.8384   1.000000
-Conditioned   17.4739   0.373067
-Constrained    0.4088   0.008727
-Unconstrained 28.9557   0.618205
-
------ anova results ----
-
-Df SumOfSqs      F Pr(>F)    
-Model      1   0.4088 2.2305  0.001 ***
-Residual 158  28.9557 
-
-
-
-capscale(formula = t(otu_table(r_rms_seed_phyloseq)) ~ Compartment + Condition(Read_depth), data = data.frame(sample_data(r_rms_seed_phyloseq)),distance = "bray", dfun = vegdist) 
-
- ----- summary -----
-Partitioning of squared Bray distance:
-              Inertia Proportion
-Total          46.838     1.0000
-Conditioned     6.842     0.1461
-Constrained    11.041     0.2357
-Unconstrained  28.956     0.6182
-
-----  anova results -----
-Df SumOfSqs      F Pr(>F)    
-Model      4   11.041 15.062  0.001 ***
-Residual 158   28.956
-```
 
 ### After remove all the seed samples: non_seed samples
 
-* **Plot impact**
-
-```
-          Df SumOfSqs     R2      F Pr(>F)    
-Plot      14    5.501 0.1488 1.6732  0.001 ***
-Residual 134   31.470 0.8512                  
-Total    148   36.972 1.0000
-```
 * **Read_Depth**
 
 ```
-            Df SumOfSqs      R2      F Pr(>F)    
-Read_depth   1    6.630 0.17933 32.121  0.001 ***
-Residual   147   30.342 0.82067                  
-Total      148   36.972 1.00000
-```
-* **Compartment impact**
-
-```
-              Df SumOfSqs      R2      F Pr(>F)    
-Compartment   3   10.938 0.29585 20.307  0.001 ***
-Residual    145   26.034 0.70415                  
-Total       148   36.972 1.00000
+adonis2(formula = t(otu_table(r_rms_non_Seed_up)) ~ Read_depth, data = data.frame(sample_data(r_rms_non_Seed_up)), permutations = 999, by = "margin")
+            Df SumOfSqs     R2      F Pr(>F)    
+Read_depth   1    2.644 0.0749 11.902  0.001 ***
+Residual   147   32.661 0.9251                  
+Total      148   35.306 1.0000
 ```
 
-* **Compartment vs Read_Depth**
+### Subset to rms_Soil_up 
+In order to check the clustering of plots before sowing soybean seeds
+
+**Treatment impact** -- insignificant
 
 ```
-             Df SumOfSqs      R2      F Pr(>F)    
-Read_depth    1    0.407 0.01100 2.2861  0.012 *  
-Compartment   3    4.715 0.12753 8.8310  0.001 ***
-Residual    144   25.627 0.69315                  
-Total       148   36.972 1.00000
+adonis2(formula = t(otu_table(r_rms_Soil_up)) ~ Treatment, data = data.frame(sample_data(r_rms_Soil_up)), permutations = 999, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)
+Treatment  2  0.19993 0.14733 1.0367  0.359
+Residual  12  1.15709 0.85267              
+Total     14  1.35702 1.00000
 ```
-
-* **Read_depth vs Plot vs Compartment vs Time** -- Plot is a significant factor
-
-```
-adonis2(formula = t(otu_table(r_non_Seed_up)) ~ Read_depth + Compartment + Plot, data = data.frame(sample_data(r_non_Seed_up)), permutations = 999, by = "margin")
-             Df SumOfSqs      R2      F Pr(>F)    
-Read_depth    1    0.425 0.01149 2.7448  0.003 ** 
-Compartment   3    4.511 0.12200 9.7149  0.001 ***
-Plot         14    5.507 0.14895 2.5416  0.001 ***
-Residual    130   20.120 0.54419                  
-Total       148   36.972 1.00000
-```
-* **Read_depth vs  Compartment vs Time vs Treatment**
-
-```
-adonis2(formula = t(otu_table(r_non_Seed_up)) ~ Read_depth + Compartment + Treatment + Time, data = data.frame(sample_data(r_non_Seed_up)), permutations = 999, by = "margin")
-             Df SumOfSqs      R2       F Pr(>F)    
-Read_depth    1    0.234 0.00634  1.4257  0.103    
-Compartment   2    4.060 0.10983 12.3449  0.001 ***
-Treatment     2    0.931 0.02518  2.8306  0.001 ***
-Time          2    1.675 0.04530  5.0916  0.001 ***
-Residual    140   23.024 0.62275                   
-Total       148   36.972 1.00000
-```
-
-### Subset to bulk+rhizosphere+endosphere samples, in short of BRE
-
-* **Plot impacts**
-
-```
-adonis2(formula = t(otu_table(r_BRE_up)) ~ Plot, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)    
-Plot      14    5.498 0.16102 1.6313  0.001 ***
-Residual 119   28.648 0.83898                  
-Total    133   34.146 1.00000
-```
+### Subset to BRE - Bulk, rhizosphere and endosphere 
 
 * **Read_depth**
 
 ```
-adonis2(formula = t(otu_table(r_BRE_up)) ~ Read_depth, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
-            Df SumOfSqs      R2      F Pr(>F)    
-Read_depth   1    6.140 0.17983 28.942  0.001 ***
-Residual   132   28.006 0.82017                  
-Total      133   34.146 1.00000
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Read_depth, data = data.frame(sample_data(r_rms_BRE_up)), permutations = 999, by = "margin")
+            Df SumOfSqs     R2      F Pr(>F)    
+Read_depth   1    2.554 0.0789 11.307  0.001 ***
+Residual   132   29.818 0.9211                  
+Total      133   32.372 1.0000
 ```
 
+* **Plot impacts**
+
+```
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Plot, data = data.frame(sample_data(r_rms_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Plot, data = data, method = method)
+          Df SumOfSqs      R2      F Pr(>F)    
+Plot      14    5.192 0.16037 1.6236  0.001 ***
+Residual 119   27.180 0.83963                  
+Total    133   32.372 1.00000 
+```
 * **Compartment**
 
 ```
-adonis2(formula = t(otu_table(r_BRE_up)) ~ Compartment, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Compartment, data = data.frame(sample_data(r_rms_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Compartment, data = data, method = method)
              Df SumOfSqs      R2      F Pr(>F)    
-Compartment   2    9.413 0.27567 24.929  0.001 ***
-Residual    131   24.733 0.72433                  
-Total       133   34.146 1.00000 
+Compartment   2   10.182 0.31452 30.054  0.001 ***
+Residual    131   22.190 0.68548                  
+Total       133   32.372 1.00000
 ```
 
 * **Time impact**
 
 ```
-adonis2(formula = t(otu_table(r_BRE_up)) ~ Time, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
-          Df SumOfSqs    R2      F Pr(>F)    
-Time       2    1.844 0.054 3.7389  0.001 ***
-Residual 131   32.302 0.946                  
-Total    133   34.146 1.000
+Marginal effects of terms
+Plots: paste(data.frame(sample_data(r_rms_BRE_up))$Compartment, data.frame(sample_data(r_rms_BRE_up))$Plot, , plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Time, data = data.frame(sample_data(r_rms_BRE_up)), permutations = perm, by = "margin")
+Model: adonis0(formula = lhs ~ Time, data = data, method = method)
+          Df SumOfSqs      R2      F Pr(>F)    
+Time       2    1.885 0.05824 4.0504  0.001 ***
+Residual 131   30.487 0.94176                  
+Total    133   32.372 1.00000 
 ```
 
 * **Read_depth vs Compartment vs Time vs Plot**
 
 ```
-adonis2(formula = t(otu_table(r_BRE_up)) ~ Read_depth + Compartment + Time + Plot, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Read_depth + Compartment + Time + Plot, data = data.frame(sample_data(r_rms_BRE_up)), permutations = 999, by = "margin")
              Df SumOfSqs      R2       F Pr(>F)    
-Read_depth    1    0.326 0.00955  2.1751  0.014 *  
-Compartment   2    3.570 0.10454 11.9073  0.001 ***
-Time          2    1.597 0.04676  5.3266  0.001 ***
-Plot         14    5.496 0.16095  2.6190  0.001 ***
-Residual    114   17.088 0.50043                   
-Total       133   34.146 1.00000
+Read_depth    1    0.274 0.00846  2.1010  0.033 *  
+Compartment   2    7.789 0.24060 29.8663  0.001 ***
+Time          2    1.887 0.05830  7.2367  0.001 ***
+Plot         14    5.179 0.15997  2.8368  0.001 ***
+Residual    114   14.865 0.45919                   
+Total       133   32.372 1.00000 
 ```
 * **Read_depth vs Compartment vs Time vs Treatment**
 
 ```
-adonis2(formula = t(otu_table(r_BRE_up)) ~ Read_depth + Compartment + Time + Treatment, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Read_depth + Compartment + Time + Treatment, data = data.frame(sample_data(r_rms_BRE_up)), permutations = 999, by = "margin")
              Df SumOfSqs      R2       F Pr(>F)    
-Read_depth    1    0.308 0.00902  1.7948  0.029 *  
-Compartment   2    3.738 0.10947 10.8873  0.001 ***
-Time          2    1.614 0.04728  4.7023  0.001 ***
-Treatment     2    0.954 0.02793  2.7781  0.001 ***
-Residual    126   21.630 0.63345                   
-Total       133   34.146 1.00000
+Read_depth    1    0.273 0.00842  1.8023  0.059 .  
+Compartment   2    7.853 0.24259 25.9574  0.001 ***
+Time          2    1.893 0.05849  6.2580  0.001 ***
+Treatment     2    0.983 0.03038  3.2506  0.001 ***
+Residual    126   19.060 0.58878                   
+Total       133   32.372 1.00000
 ```
 
-### subset to Bulk -- before rarefaction and after rarefaction, there are not pattern-changing difference
+### subset to Bulk -- r_rms_Bulk vs r_rf_rms_Bulk vs r_norm_Bulk. Here, rms means singletons were removed; rf means samples were rarefied to minimum read depth after remove singletons; 
 
+**r_rms_Bulk**
 
-* --- Plot ----
+* --- Read_depth ----
 ```
-adonis2(formula = t(otu_table(rf_bulk_up)) ~ Plot, data = data.frame(sample_data(rf_bulk_up)), permutations = 999, by = "margin")
-         Df SumOfSqs      R2      F Pr(>F)   
-Plot     14   2.4372 0.38695 1.3525  0.004 **
-Residual 30   3.8613 0.61305                 
-Total    44   6.2985 1.00000 
+adonis2(formula = t(otu_table(r_rms_Bulk_up)) ~ Read_depth, data = data.frame(sample_data(r_rms_Bulk_up)), permutations = 999, by = "margin")
+           Df SumOfSqs      R2      F Pr(>F)  
+Read_depth  1   0.2703 0.04328 1.9454  0.014 *
+Residual   43   5.9736 0.95672                
+Total      44   6.2439 1.00000
 ```
 
-* ---- Read_depth ---
-
-```
-adonis2(formula = t(otu_table(rf_bulk_up)) ~ Read_depth, data = data.frame(sample_data(rf_bulk_up)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)   
-Read_depth  1   0.3712 0.05893 2.6928  0.002 **
-Residual   43   5.9273 0.94107                 
-Total      44   6.2985 1.00000
-```
-* ---- Time -----
+* ---- Time ---
 
 ```
-adonis2(formula = t(otu_table(rf_bulk_up)) ~ Time, data = data.frame(sample_data(rf_bulk_up)), permutations = 999, by = "margin")
+Permutation test for adonis under NA model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Bulk_up)) ~ Time, data = data.frame(sample_data(r_rms_Bulk_up)), permutations = 999, by = "margin")
          Df SumOfSqs      R2      F Pr(>F)    
-Time      2   1.3968 0.22178 5.9845  0.001 ***
-Residual 42   4.9016 0.77822                  
-Total    44   6.2985 1.00000
+Time      2   1.3833 0.22155 5.9768  0.001 ***
+Residual 42   4.8605 0.77845                  
+Total    44   6.2439 1.00000
+```
+* ---- Plot -----
+
+```
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Bulk_up))$Time, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Bulk_up)) ~ Plot, data = data.frame(sample_data(r_rms_Bulk_up)), permutations = perm, by = "margin")
+         Df SumOfSqs      R2      F Pr(>F)    
+Plot     14   2.4409 0.39092 1.3753  0.001 ***
+Residual 30   3.8030 0.60908                  
+Total    44   6.2439 1.00000
 ```
 * ---- Treatment ----
 
 ```
-adonis2(formula = t(otu_table(rf_bulk_up)) ~ Treatment, data = data.frame(sample_data(rf_bulk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs     R2      F Pr(>F)
-Treatment  2   0.3577 0.0568 1.2646  0.122
-Residual  42   5.9407 0.9432              
-Total     44   6.2985 1.0000
+Permutation test for adonis under NA model
+Marginal effects of terms
+Plots: data.frame(sample_data(r_rms_Bulk_up))$Time, plot permutation: none
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_Bulk_up)) ~ Treatment, data = data.frame(sample_data(r_rms_Bulk_up)), permutations = perm, by = "margin")
+          Df SumOfSqs      R2      F Pr(>F)   
+Treatment  2   0.3617 0.05793 1.2913  0.003 **
+Residual  42   5.8822 0.94207                 
+Total     44   6.2439 1.00000                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
 * ----Read_depth vs Time vs Plot
 
 ```
-adonis2(formula = t(otu_table(rf_bulk_up)) ~ Read_depth + Plot + Time, data = data.frame(sample_data(rf_bulk_up)), permutations = 999, by = "margin")
+adonis2(formula = t(otu_table(r_rms_Bulk_up)) ~ Read_depth + Plot + Time, data = data.frame(sample_data(r_rms_Bulk_up)), permutations = 999, by = "margin")
            Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   0.1217 0.01932 1.4025  0.106    
-Plot       14   2.3727 0.37671 1.9532  0.001 ***
-Time        2   1.1127 0.17666 6.4117  0.001 ***
-Residual   27   2.3427 0.37195                  
-Total      44   6.2985 1.00000
+Read_depth  1   0.0995 0.01593 1.1573  0.222    
+Plot       14   2.4008 0.38450 1.9955  0.001 ***
+Time        2   1.2131 0.19428 7.0581  0.001 ***
+Residual   27   2.3202 0.37160                  
+Total      44   6.2439 1.00000
 ```
 
 * ---- Read_depth vs Time vs Treatment
 
 ```
-adonis2(formula = t(otu_table(rf_bulk_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(rf_bulk_up)), permutations = 999, by = "margin")
+adonis2(formula = t(otu_table(r_rms_Bulk_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(r_rms_Bulk_up)), permutations = 999, by = "margin")
            Df SumOfSqs      R2      F Pr(>F)    
-Read_depth  1   0.1665 0.02644 1.4835  0.070 .  
-Treatment   2   0.3380 0.05367 1.5059  0.038 *  
-Time        2   1.1956 0.18982 5.3259  0.001 ***
-Residual   39   4.3774 0.69499                  
-Total      44   6.2985 1.00000
-```
-
-* ---- Treatment impact on Bulk_1wk, Bulk_3wk and Bulk_4wk
-
-```
->>> Bulk_1wk --- insignificant
-
-adonis2(formula = t(otu_table(r_rf_bulk_1wk_up)) ~ Treatment, data = data.frame(sample_data(r_rf_bulk_1wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2  0.23437 0.13121 0.9061  0.728
-Residual  12  1.55191 0.86879              
-Total     14  1.78628 1.00000
-
->>> Bulk_3wk --- insignificant
-
-adonis2(formula = t(otu_table(rf_bulk_3wk_up)) ~ Treatment, data = data.frame(sample_data(rf_bulk_3wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2  0.25781 0.14583 1.0243  0.379
-Residual  12  1.51014 0.85417              
-Total     14  1.76795 1.00000
-
->>> Bulk_4wk ---insignificant
-
-adonis2(formula = t(otu_table(rf_bulk_4wk_up)) ~ Treatment, data = data.frame(sample_data(rf_bulk_4wk_up)), permutations = 999, by = "margin")
-          Df SumOfSqs      R2      F Pr(>F)
-Treatment  2  0.21858 0.14487 1.0165  0.419
-Residual  12  1.29021 0.85513              
-Total     14  1.50880 1.00000
+Read_depth  1   0.1505 0.02410 1.3496  0.112    
+Treatment   2   0.3726 0.05968 1.6711  0.012 *  
+Time        2   1.2374 0.19817 5.5489  0.001 ***
+Residual   39   4.3484 0.69642                  
+Total      44   6.2439 1.00000
 ```
                         
 ### Subset to Rhizosphere -- before rarefaction
