@@ -1,0 +1,1840 @@
+---
+title: "2018_seed_fungicide_16S_13021"
+author: "Fang Liu"
+date: "6/21/2019"
+output:
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load required libraries to working environment
+
+```{r echo=FALSE}
+library(vegan)
+library(phyloseq)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(plyr)
+library(metagenomeSeq)
+library(Hmisc)
+library(directlabels)
+library(stringr)
+library(broom)
+library(permute)
+```
+
+## Set working directory
+
+```{r}
+setwd('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021')
+getwd()
+```
+
+-------------------------------------------------
+Using 97% similarity based OTU clustering 
+-------------------------------------------------
+
+## Upload mothur .shared and cons.taxonomy file
+
+```{r}
+# Read in the original strigolactone output OTU table and taxonomy table for sequencing depth barplot
+
+Seed_phyloseq<-import_mothur(mothur_shared_file = "/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.shared",mothur_constaxonomy_file = "/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.cons.taxonomy")
+
+Seed_phyloseq #144821 taxa and 164 samples
+min(sample_sums(Seed_phyloseq)) #252
+max(sample_sums(Seed_phyloseq)) #488368
+sum(sample_sums(Seed_phyloseq)) #13079622 reads remained 
+sort(sample_sums(Seed_phyloseq))
+
+# Read in the meta data
+Seed_meta<-read.csv('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/Seed_meta.csv',row.names = 1,header = TRUE)
+head(Seed_meta)
+identical(rownames(Seed_meta),sample_names(Seed_phyloseq))
+# update meta data by adding in read depth data
+Seed_meta_up<-Seed_meta
+Seed_meta_up$Treatment<-factor(Seed_meta_up$Treatment,levels = c("CT","CM","EE"))
+Seed_meta_up$Compartment<-factor(Seed_meta_up$Compartment,levels=c("Soil","Bulk","Rhizosphere","Endosphere","Seed"))
+Seed_meta_up$Time<-factor(Seed_meta_up$Time,levels = c('Presowing','1wk','3wk','4wk','Seed'))
+Seed_meta_up$Read_depth<-sample_sums(Seed_phyloseq)
+Seed_meta_up[1:5,]
+
+# Generate phyloseq object by merging Seed_phyloseq with sample data
+# Here, before merge always check if the sample order in meta data match with that from phyloseq object
+identical(rownames(Seed_meta_up),sample_names(Seed_phyloseq)) # TRUE
+Seed_meta_up_phyloseq<-sample_data(Seed_meta_up)
+
+#>>>>> Seed_phyloseq_up >>>>> with sample data integrated
+
+Seed_phyloseq_up<-merge_phyloseq(Seed_phyloseq,Seed_meta_up_phyloseq)
+Seed_phyloseq_up
+colnames(tax_table(Seed_phyloseq_up))<-c('Kingdom','Phylum','Class','Order','Family','Genus')
+sample_names(Seed_phyloseq_up)[1:5]
+Seed_phyloseq_up # 144821 taxa and 164 samples
+
+```
+
+## Read depth barplot
+
+```{r}
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Read_depth_barplot.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_up,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# reorder the Sample_ID based on Compartment and time
+Seed_meta_up2<-Seed_meta_up[with(Seed_meta_up,order(Compartment, Time)),]
+Seed_meta_up2$Sample_ID<-factor(Seed_meta_up2$Sample_ID,levels =as.character(Seed_meta_up2$Sample_ID))
+
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Read_depth_barplot reordered based on Compartment and time.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_up2,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+```
+
+## >>>>> Seed_13021>>>>>>>>
+## rarefied at 13021 and remove singletons: due the low sequencing depth, all the seed samples were removed
+
+```{r}
+Seed_13021<-import_mothur(mothur_shared_file = "/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick.shared",mothur_constaxonomy_file = "/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick.0.03.cons.taxonomy")
+Seed_13021 # 21355 taxa and 150 samples
+sum(sample_sums(Seed_13021))
+sample_sums(Seed_13021)
+Seed_13021_up<-merge_phyloseq(Seed_13021,Seed_meta_up_phyloseq)
+Seed_13021_up # 21355 taxa and 150 samples
+colnames(tax_table(Seed_13021_up))<-c('Kingdom','Phylum','Class','Order','Family','Genus')
+# Here to remove the sample - Seed_CM_4
+Seed_13021_up<-prune_samples(sample_names(Seed_13021_up)[1:149],Seed_13021_up)
+```
+
+
+## Diversity
+```{r}
+Seed_13021_up
+Diversity<-data.frame(estimate_richness(Seed_13021_up,split=TRUE,measures = NULL),sample_data(Seed_13021_up))
+dim(Diversity)
+Diversity[1:5,]
+identical(substring((rownames(Diversity)),2),sample_names(Seed_13021_up))
+rownames(Diversity)<-sample_names(Seed_13021_up)
+  
+#system("sed 's/X//g' file")
+# Define color for treatment
+Diversity$Treat<-factor(Diversity$Treat,levels = c('Soil','Bulk_1wk','Bulk_3wk','Bulk_4wk','Rhi_1wk','Rhi_3wk','Rhi_4wk','Endo_1wk','Endo_3wk','Endo_4wk','Seed'))
+
+
+Treat_checklist<-data.frame(Treat_colors=c('#9b9696','#ffee32','#b6cc0e','#ed5567','#07aeba','#3a44ff','#f936f6','#723434','#316022','#05fff2','#b105fc'),Treat_labels=c('Soil','Seed','Bulk_1wk','Bulk_3wk','Bulk_4wk','Rhi_1wk','Rhi_3wk','Rhi_4wk','Endo_1wk','Endo_3wk','Endo_4wk'))
+Treat_colors<-factor(Treat_checklist$Treat_colors,levels = as.character(Treat_checklist$Treat_colors))
+Treat_labels<-factor(Treat_checklist$Treat_labels,levels = as.character(Treat_checklist$Treat_labels))
+
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Treatment_colour_pie.tiff",units = 'in',width=10,height = 8,res=300,compression = 'lzw')
+pie(rep (1,11),col=Treat_colors,labels=paste(Treat_labels,Treat_colors,sep=":"),radius = 1.0)
+dev.off()
+
+
+## Shannon diversity
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Shannon diversity .tiff', units="in", width=7, height=5, res=300)
+
+boxplot(Shannon~Treat, data=Diversity, main="Diversity between treatments") 
+
+ggplot(Diversity,aes(x=Treat,y=Shannon,fill=Treat))+geom_boxplot(size=0.5)+
+geom_jitter(shape=16, position=position_jitter(width = 0,height = 0),aes(fill=Treat))+scale_fill_manual(values = Treat_colors,name="Treat")+labs(title="Shannon Diversity",x="Treatment",y="Shannon Index")+theme(legend.position="none",panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=17,family="Arial",face="bold",vjust = 3,hjust=0.5)),text=element_text(family="Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text.y=element_text(size=12,family="Arial"),axis.text.x = element_text(family="Arial",size=13,angle = 90),
+    axis.title=element_text(size = 15,face="bold",family="Arial",vjust = 1),legend.title = element_text(size=13,face="bold",family="Arial"),legend.text = (element_text(size=10,family="Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+## Here, the diversity change could be interpreted as below:
+
+#In the rhizosphere at week 1, some competive bacteria taxa kind take advangage of the nutrients or resources probobaly opportunists. Then other taxas comes after and become competive when the rhizosphere nutrients becomes less abundant. Or when cross-feed interactions happens. However, inside of the endosphere, diverse bacteria kind of colonize soybean root during its germination maybe in the first week, then those adapted to the microenvironment within the plant started to be dominant and stable. 
+
+## Test fungicide treatment impacts
+
+
+```
+
+## Rarefaction plot at maximum sequencing depth
+
+```{r}
+## >>>>>> at maximum depth >>>
+
+# This rarefaction table is generated from mothur using raw OTU table and rarefied with interval of 100
+rarefaction_df<-read.csv('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.groups.rarefaction.csv',header = TRUE)
+head(rarefaction_df)
+rarefaction_df<-rarefaction_df[c(1,which(rarefaction_df$numsampled%%100==0)),]
+rarefaction_df_up<-rarefaction_df[,-c(grep("lci|hci",colnames(rarefaction_df),perl=TRUE))]
+head(rarefaction_df_up)
+# To change treatment name to regular expression instead of X0.03.CT_1
+colnames<-gsub('X0.03.','',colnames(rarefaction_df_up))
+colnames(rarefaction_df_up)<-colnames
+head(rarefaction_df_up)
+rarefaction_df_up<-rarefaction_df_up[,c('numsampled',as.character(sample_data(Seed_phyloseq_up)$Sample_ID))]
+head(rarefaction_df_up)  
+  
+melt_cultivar_otu_rarefy_max<-melt(rarefaction_df_up,id.vars = 'numsampled')
+head(melt_cultivar_otu_rarefy_max)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Rarefaction plot with maximum depth.tiff', units="in", width=16, height=8, res=600)
+ggplot(melt_cultivar_otu_rarefy_max,aes(x=numsampled,y=value,colour=variable))+geom_line(aes(x=numsampled,y=value,group=variable),size=0.4)+geom_dl(aes(label = variable), method = list(dl.combine("last.points"), cex = 0.2))+ylab("OTU numbers")+xlab("Sequencing depth")+theme(panel.background = element_rect(fill="white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), title=(element_text(size=15,family="Times",face="bold")),text=element_text(family="Times",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Times"),
+    axis.title=element_text(size = 15,face="bold",family="Times"),legend.title = element_text(size=13,face="bold",family="Times"),legend.text = (element_text(size=5,family="Times")),legend.position="none")+ggtitle("Rarefaction curve with maximum read depth")
+dev.off()
+
+## >>>>>> at minimum depth >>>
+
+# This rarefaction table is generated from mothur using raw OTU table and rarefied with interval of 100
+rarefaction_df<-read.csv('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/minimum_depth.rarefaction.csv',header = TRUE)
+head(rarefaction_df)
+rarefaction_df<-rarefaction_df[c(1,which(rarefaction_df$numsampled%%100==0)),]
+rarefaction_df_up<-rarefaction_df[,-c(grep("lci|hci",colnames(rarefaction_df),perl=TRUE))]
+head(rarefaction_df_up)
+# To change treatment name to regular expression instead of X0.03.CT_1
+colnames<-gsub('X0.03.','',colnames(rarefaction_df_up))
+colnames(rarefaction_df_up)<-colnames
+head(rarefaction_df_up)
+rarefaction_df_up<-rarefaction_df_up[,c('numsampled',as.character(sample_names(Seed_13021)))]
+rarefaction_df_up[1:5,1:5]
+  
+melt_cultivar_otu_rarefy_max<-melt(rarefaction_df_up,id.vars = 'numsampled')
+head(melt_cultivar_otu_rarefy_max)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Rarefaction plot with minimum depth.tiff', units="in", width=16, height=8, res=600)
+ggplot(melt_cultivar_otu_rarefy_max,aes(x=numsampled,y=value,colour=variable))+geom_line(aes(x=numsampled,y=value,group=variable),size=0.4)+
+geom_dl(aes(label = variable), method = list(dl.combine("last.points"), cex = 0.2))+ylab("OTU numbers")+xlab("Sequencing depth")+theme(panel.background = element_rect(fill="white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), title=(element_text(size=15,family="Times",face="bold")),text=element_text(family="Times",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Times"),
+    axis.title=element_text(size = 15,face="bold",family="Times"),legend.title = element_text(size=13,face="bold",family="Times"),legend.text = (element_text(size=5,family="Times")),legend.position="none")+ggtitle("Rarefaction curve with maximum read depth")
+dev.off()
+
+```
+
+
+## stacked barplot with all samples 
+
+```{r}
+phylum_Seed_13021<-tax_glom(Seed_13021_up,taxrank = rank_names(Seed_13021_up)[2],NArm = TRUE)
+phylum_Seed_13021 #39 taxa and 149 samples
+
+r_phylum_Seed_13021<-transform_sample_counts(phylum_Seed_13021 ,function(x) x/sum(x))
+filter_r_phylum_Seed_13021<- filter_taxa(r_phylum_Seed_13021, function(x) sum(x>0.01)>0.2*length(x),prune = TRUE)
+filter_r_phylum_Seed_13021 # got 14 phyla across 149 sampels left
+sample_sums(filter_r_phylum_Seed_13021)
+tax_table(filter_r_phylum_Seed_13021)[,2]
+Others<-1-sample_sums(filter_r_phylum_Seed_13021)
+phylum_seed<-rbind(otu_table(filter_r_phylum_Seed_13021),Others)
+phylum_seed<-as.data.frame(phylum_seed)
+phylum_seed[,1:5]
+rownames(phylum_seed)<-c(tax_table(filter_r_phylum_Seed_13021)[,2],"Others")
+phylum_seed
+#phylum_rarefied_ST<-data.frame(Treat=as.factor(sample_data(r_phylum_Seed_13021)$Treatment),t(phylum_rarefied_ST))
+phylum_seed[,1:5]
+#phylum_seed<-phylum_seed%>% group_by(Sample_ID) %>%
+#  summarise_all(funs(mean))
+phylum_Seed_t<-as.data.frame(t(phylum_seed))
+
+
+phylum_Seed_t %>%
+  mutate(dominant=phylum_Seed_t%>%
+           select(c(Proteobacteria,Acidobacteria,Bacteroidetes,Actinobacteria,Verrucomicrobia,Planctomycetes))%>%
+           rowSums()) %>% select(dominant)
+
+rowSums(phylum_Seed_t[,1:dim(phylum_Seed_t)[2]])
+phylum_Seed_t[1:5,1:5]
+phylum_Seed_t$Sample_ID<-rownames(phylum_Seed_t)
+identical(phylum_Seed_t$Sample_ID,as.character(sample_data(Seed_13021_up)$Sample_ID))
+phylum_Seed_t$Compartment<-sample_data(Seed_13021_up)$Compartment
+phylum_Seed_t$Time<-sample_data(Seed_13021_up)$Time
+phylum_Seed_t[1:5,]
+phylum_Seed_t_melt<-melt(phylum_Seed_t,id.vars = c("Sample_ID","Compartment","Time"))
+dim(phylum_Seed_t_melt)
+head(phylum_Seed_t_melt)
+colnames(phylum_Seed_t_melt)<-c('Sample_ID','Compartment','Time','Phylum','Relative_abundance')
+phylum_Seed_t_melt[1:5,]
+
+# Define Phylum colors
+
+Bacteria_phylum_vs_color_checklist<-data.frame(phylum=c('Proteobacteria','Actinobacteria','Bacteria_unclassified','Acidobacteria','Nitrospirae','Chloroflexi','Candidatus_Saccharibacteria','Firmicutes','Bacteroidetes','Verrucomicrobia','candidate_division_WPS-1','Gemmatimonadetes','Planctomycetes','BRC1','Latescibacteria','Chlamydiae','Others','Patescibacteria','Rokubacteria','Cyanobacteria'),colors=c('#ff9082','#98d66d','#fcef5d','#c45cc0','#45b1f9','#f76fc3','#85c1b8','#a584ff','#ffb444','#7ebfe5','#cec0c9','#467584','#005ff9','#bc8c38','#bcba6d','#91749e','#b2798d','#343837','#b23301','#235931'))
+phylum_colors<-as.character(Bacteria_phylum_vs_color_checklist$colors)
+phylum_labels<-as.character(Bacteria_phylum_vs_color_checklist$phylum)
+
+    
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Phylum_colour_pie.tiff",units = 'in',width=10,height = 8,res=300,compression = 'lzw')
+pie(rep (1,20),col=phylum_colors,labels=paste(phylum_labels,phylum_colors,sep=":"),radius = 1.0)
+dev.off()
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Phylum level stacked barplot using rarefied_ST.tiff', units="in", width=15, height=5, res=300)
+
+phylum_Seed_t_melt$Phylum<-factor(phylum_Seed_t_melt$Phylum,levels=phylum_labels[match(c(as.character(unique(phylum_Seed_t_melt$Phylum))),phylum_labels)])
+
+ggplot(phylum_Seed_t_melt, aes(x =Sample_ID , y = Relative_abundance,fill=Phylum))+geom_bar(stat='identity',size=0.1)+labs(x="Treatment",y="Relative Abundance")+scale_fill_manual(values=phylum_colors[match(levels(phylum_Seed_t_melt$Phylum),phylum_labels)])+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),axis.text.x = element_text(size = 6,family="Arial"),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=6,family="Arial",angle = 90),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+## Phylum stacked barplot with reordered sample_ID
+
+phylum_Seed_t2<-phylum_Seed_t[with(phylum_Seed_t,order(Compartment,Time)),]
+phylum_Seed_t2$Sample_ID<-factor(phylum_Seed_t2$Sample_ID,levels = as.character(phylum_Seed_t2$Sample_ID))
+phylum_Seed_t_melt2<-melt(phylum_Seed_t2,id.vars = c("Sample_ID","Compartment","Time"))
+dim(phylum_Seed_t_melt2)
+head(phylum_Seed_t_melt2)
+colnames(phylum_Seed_t_melt2)<-c('Sample_ID','Compartment','Time','Phylum','Relative_abundance')
+dim(phylum_Seed_t_melt2)
+phylum_Seed_t_melt2[1:5,]
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Phylum level stacked barplot using rarefied_ST_reordered_sampleID1.tiff', units="in", width=15, height=5, res=300)
+
+phylum_Seed_t_melt2$Phylum<-factor(phylum_Seed_t_melt2$Phylum,levels=phylum_labels[match(c(as.character(unique(phylum_Seed_t_melt2$Phylum))),phylum_labels)])
+
+ggplot(phylum_Seed_t_melt2, aes(x =Sample_ID , y = Relative_abundance,fill=Phylum))+geom_bar(stat='identity',size=0.1)+labs(x="Treatment",y="Relative Abundance")+scale_fill_manual(values=phylum_colors[match(c(as.character(unique(phylum_Seed_t_melt2$Phylum))),phylum_labels)])+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),axis.text.x = element_text(size = 6,family="Arial"),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=6,family="Arial",angle = 90),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+
+## Barplot after grouping based on Treat
+
+filter_r_phylum_Seed_13021
+Others<-1-sample_sums(filter_r_phylum_Seed_13021)
+phylum_seed<-rbind(otu_table(filter_r_phylum_Seed_13021),Others)
+phylum_seed[,1:5]
+rownames(phylum_seed)<-c(tax_table(filter_r_phylum_Seed_13021)[,2],"Others")
+phylum_seed
+identical(rownames(t(phylum_seed)),sample_names(filter_r_phylum_Seed_13021)) # TRUE
+phylum_group_seed<-data.frame(Treat=sample_data(filter_r_phylum_Seed_13021)$Treat,t(phylum_seed))
+phylum_group_seed<-phylum_group_seed%>% group_by(Treat) %>%
+  summarise_all(funs(mean))
+phylum_group_seed
+rowSums(phylum_group_seed[,2:16])
+phylum_group_Seed_melt<-melt(phylum_group_seed,id.vars = "Treat")
+colnames(phylum_group_Seed_melt)<-c('Treat','Phylum','Relative_abundance')
+phylum_group_Seed_melt
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Phylum level stacked barplot grouped.tiff', units="in", width=7, height=5, res=300)
+
+phylum_group_Seed_melt$Phylum<-factor(phylum_group_Seed_melt$Phylum,levels=phylum_labels[match(c(as.character(unique(phylum_group_Seed_melt$Phylum))),phylum_labels)])
+
+phylum_group_Seed_melt$Treat<-factor(phylum_group_Seed_melt$Treat,levels = c('Soil','Bulk_1wk','Bulk_3wk','Bulk_4wk','Rhi_1wk','Rhi_3wk','Rhi_4wk','Endo_1wk','Endo_3wk','Endo_4wk','Seed'))
+
+ggplot(phylum_group_Seed_melt, aes(x =Treat , y = Relative_abundance,fill=Phylum))+geom_bar(stat='identity',size=0.1)+labs(x="Treatment",y="Relative Abundance")+scale_fill_manual(values=phylum_colors[match(levels(phylum_Seed_t_melt$Phylum),phylum_labels)])+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),axis.text.x = element_text(size = 12,family="Arial",angle = 90),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+```
+
+
+## ----- PERMANOVA test ------- 
+
+```{r}
+# >>>> Read_depth >>>>>
+
+r_Seed_13021_up<-transform_sample_counts(Seed_13021_up,function(x) x/sum(x))
+set.seed(1013)
+adonis2(t(otu_table(r_Seed_13021_up))~Read_depth,data=data.frame(sample_data(r_Seed_13021_up)),permutations=999,by="margin") # p=0.048 significant, but it could only explain 1.5% of the community difference
+
+#            Df SumOfSqs      R2      F Pr(>F)  
+#Read_depth   1    0.478 0.01323 1.9714  0.067 .
+#Residual   147   35.644 0.98677                
+#Total      148   36.122 1.00000
+
+# >>>> Compartment >>>>>
+set.seed(1013)
+adonis2(t(otu_table(r_Seed_13021_up))~Compartment,data=data.frame(sample_data(r_Seed_13021_up)),permutations=999,by="margin")
+#adonis2(formula = t(otu_table(r_Seed_13021_up)) ~ Compartment, data = data.frame(sample_data(r_Seed_13021_up)), permutations = 999, by = "margin")
+#             Df SumOfSqs      R2      F Pr(>F)    
+#Compartment   3   16.759 0.46396 41.834  0.001 ***
+#Residual    145   19.363 0.53604                  
+#Total       148   36.122 1.00000                  
+
+# >>>> Compartment vs Read_depth >>>>>
+set.seed(1013)
+adonis2(t(otu_table(r_Seed_13021_up))~Compartment+Read_depth,data=data.frame(sample_data(r_Seed_13021_up)),permutations=999,by="margin")
+
+#adonis2(formula = t(otu_table(r_Seed_13021_up)) ~ Compartment + Read_depth, data = data.frame(sample_data(r_Seed_13021_up)), permutations = 999, by = "margin")
+#             Df SumOfSqs      R2       F Pr(>F)    
+#Compartment   3   16.389 0.45372 40.8571  0.001 ***
+#Read_depth    1    0.108 0.00299  0.8089  0.524    
+#Residual    144   19.255 0.53304                   
+#Total       148   36.122 1.00000
+```
+
+# >>>>> PCoA before subset >>>> using r_Seed_13021_up
+
+```{r}
+# >>> Treatment_vs_Time >>>
+
+dim(otu_table(r_Seed_13021_up)) # 21355   149
+Seed_13021_up_bray<-vegdist(t(otu_table(r_Seed_13021_up)),method="bray",binary = FALSE)
+Seed_13021_up_PCoA<-ordinate(r_Seed_13021_up,method = "PCoA", Seed_13021_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Seed_13021_up_Treatment_vs_Time.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Seed_13021_up,Seed_13021_up_PCoA,type="samples",shape="Time",color="Treatment")+labs(title="PCoA Seed_13021_up_Treatment_vs_Time",x="PCoA1 [39.8%]",y="PCoA2 [13.4%]")+geom_point(size=2)+scale_shape_manual(values = c(0,1,2,4,8))+scale_color_manual(values = c("#84a8a4","#c143a2","#e59112"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+#p$layers<-p$layers[-1]
+#p
+dev.off()
+
+      # >>> Define Plots cplors >>>
+      
+      color_plot<-c("#8569D5","#00CDCD","orange","#DA5724","#508578","#CD9BCD","#AD6F3B","#673770","#D14285","#652926","#C84248","#CBD588","#D3D3ED","#BAFFE2","#000099","grey")
+      label_plot<-factor(unique(sample_data(Seed_13021_up)$Plot),levels = unique(sample_data(Seed_13021_up)$Plot))
+      tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Plot_corlor_pie.tiff",units = 'in',width=10,height = 8,res=300,compression = 'lzw')
+      pie(rep (1,16),col=color_plot,labels=paste(label_plot,color_plot,sep=":"),radius = 1.0)
+      dev.off()
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Seed_13021_up_between_Plots.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Seed_13021_up,Seed_13021_up_PCoA,type="samples",color="Plot")+labs(title="PCoA Seed_13021_up_between_Plots",x="PCoA1 [39.8%]",y="PCoA2 [13.4%]")+geom_point(size=2)+scale_color_manual(values = c("#8569D5","#00CDCD","orange","#DA5724","#508578","#CD9BCD","#AD6F3B","#673770","#D14285","#652926","#C84248","#CBD588","#D3D3ED","#BAFFE2","#000099","grey"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+# >>> Compartment vs Treatment >>>
+
+# First, I want to define the colors for different compartment to make sure both my ITS and 16S data use the same annotations
+
+# Define compartment colors
+color_compartment<-c("#CD9BCD","#C84248","orange","#00CDCD","#ABAD29")
+label_compartment<-factor(levels(Seed_meta_up$Compartment),levels = c("Soil","Bulk","Rhizosphere","Endosphere","Seed"))
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Compartment_corlor_pie.tiff",units = 'in',width=10,height = 8,res=300,compression = 'lzw')
+pie(rep (1,5),col=color_compartment,labels=paste(label_compartment,color_compartment,sep=":"),radius = 1.0)
+dev.off()
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Seed_13021_up_Compartment vs Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Seed_13021_up,Seed_13021_up_PCoA,type="samples",shape="Treatment",color="Compartment")+labs(title="PCoA Seed_13021_up_Compartment vs Treatment",x="PCoA1 [39.8%]",y="PCoA2 [13.4%]")+scale_color_manual(values =c("#CD9BCD","#C84248","orange","#00CDCD","#ABAD29") )+
+  geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+# >>> Compartment vs Time >>>
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Seed_13021_up_Compartment vs Time.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Seed_13021_up,Seed_13021_up_PCoA,type="samples",color="Compartment",shape="Time",)+labs(title="PCoA Seed_13021_up_Compartment vs Time",x="PCoA1 [39.8%]",y="PCoA2 [13.4%]")+geom_point(size=2)+scale_color_manual(values = c("#CD9BCD","#C84248","orange","#00CDCD","#ABAD29"))+scale_shape_manual(values = c(0,1,2,4,8))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+#p$layers<-p$layers[-1]
+#p
+dev.off()
+```
+
+## Subset phyloseq to Soil- this test turned out that no significant difference between indigenous bacteria community between plots that were assinged to CT, CM and EE 
+
+```{r}
+## Soil samples
+
+Soil<-subset_samples(Seed_13021_up,Compartment=="Soil")
+Soil #21355 taxa and 15 samples
+
+Soil_up<-filter_taxa(Soil, function(x) sum(x)>1,prune = TRUE)
+Soil_up #7796 taxa and 15 samples
+
+r_Soil_up<-transform_sample_counts(Soil_up,function(x) x/sum(x))
+
+# PERMANOVA analysis  ---  no significant difference between treatment.
+
+set.seed(1013)
+adonis2(t(otu_table(r_Soil_up))~Treatment,data=data.frame(sample_data(r_Soil_up)),permutations=999,by="margin") # p=0.001, explain 46.66% variations
+
+# PCoA plot
+r_Soil_up_bray<-vegdist(t(otu_table(r_Soil_up)),method="bray",binary = FALSE)
+r_Soil_up_PCoA<-ordinate(r_Soil_up,method = "PCoA", r_Soil_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA r_Soil_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(r_Soil_up,r_Soil_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA r_Soil_up_Treatment",x="PCoA1 [20.1%]",y="PCoA2 [14.9%]")+
+  geom_point(size=2)+ theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+```
+
+
+##SB_CT
+
+```{r}
+SB_CT<-subset_samples(Seed_13021_up,(Compartment=="Soil"&Treatment=="CT")|(Treatment=="CT"&Compartment=="Bulk"))
+sample_names(SB_CT)
+SB_CT #21355 taxa and 20 samples
+
+SB_CT_up<-filter_taxa(SB_CT,function(x) sum(x)>1,prune = TRUE)
+SB_CT_up # 9403 taxa and 20 samples
+
+r_SB_CT_up<-transform_sample_counts(SB_CT_up,function(x) x/sum(x))
+
+#PERMANOVA
+
+#------- Time ---- significant and R2=18.08%
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(SB_CT_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(SB_CT))~Time,data=data.frame(sample_data(SB_CT_up)),permutations=perm,by="margin") 
+
+#adonis2(formula = t(otu_table(SB_CT)) ~ Time, data = data.frame(sample_data(SB_CT_up)), permutations = perm, by = "margin")
+#         Df SumOfSqs      R2    F Pr(>F)    
+#Time      3  0.43452 0.23518 1.64  0.001 ***
+#Residual 16  1.41309 0.76482                
+#Total    19  1.84761 1.00000
+
+## PCoA plot
+
+SB_CT_up_bray<-vegdist(t(otu_table(r_SB_CT_up)),method="bray",binary = FALSE)
+SB_CT_up_PCoA<-ordinate(r_SB_CT_up,method = "PCoA",SB_CT_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Bulk 1wk 3wk 4wk and presowing in CT plots.tiff', units="in", width=7, height=6, res=300)
+
+plot_ordination(r_SB_CT_up,SB_CT_up_PCoA,type="samples",color="Time",shape = "Treatment")+labs(title="SB_CT_13021_up_Time",x="PCoA1 [18%]",y="PCoA2 [11.5%]")+geom_point(size=2)+scale_shape_manual(values = c(0))+scale_color_manual(values=c("#456780","#b04f13","#a037ad","#fa667a"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=10,face="bold",family = "Arial"),legend.text = (element_text(size=8,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,2,2,1),"cm"))
+dev.off()
+```
+
+# As bacterial community composition significant different between compartment, the dataset will be subsetted to specific compartment and then analyze Plot, Time and treatment impacts
+
+#>>>>> Before subset samples to different compartment, test if bulk soil and pre-planting soil significantly different in terms of bacterial community composition
+
+```{r}
+BS_13021 <-subset_samples(Seed_13021_up,Compartment=="Soil"|Compartment=="Bulk")
+BS_13021 # 21355 taxa and 60 samples
+BS_13021_up<-filter_taxa(BS_13021,function(x) sum(x)>1,prune = TRUE)
+BS_13021_up # 16148 taxa and 60 samples
+r_BS_13021_up<-transform_sample_counts(BS_13021_up,function(x) x/sum(x))
+
+# PERMANOVA test between bulk soil and pre-planting soil
+
+# --- Plot --- signifcant and could explain 44.06% of variations
+set.seed(1013)  
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_BS_13021_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_BS_13021_up))~Plot,data=data.frame(sample_data(r_BS_13021_up )),permutations=999,by="margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Plot     14   2.2565 0.44059 2.4753  0.001 ***
+#Residual 44   2.8650 0.55941                  
+#Total    58   5.1215 1.00000
+
+# -----Time ----here time factor mixed with compartment impact as pre_sow time cource are represented by all soil compartment
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_BS_13021_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_BS_13021_up))~Time,data=data.frame(sample_data(r_BS_13021_up)),permutations=perm,by="margin")
+
+# Plot vs Time
+set.seed(1013)
+adonis2(t(otu_table(r_BS_13021_up))~Plot+Time,data=data.frame(sample_data(r_BS_13021_up )),permutations=999,by="margin")
+
+#adonis2(formula = t(otu_table(r_BS_13021_up)) ~ Plot + Time, data = data.frame(sample_data(r_BS_13021_up)), permutations = 999, by = "margin")
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Plot     14   2.2592 0.43990 3.0181  0.001 ***
+#Time      3   0.6803 0.13247 4.2412  0.001 ***
+#Residual 41   2.1922 0.42685                  
+#Total    58   5.1357 1.00000
+
+# OKay, since bulk soil and pre-plant soil bacterial community composition indicated to be significantly different, I will seperate these two parts intead of combine them together.
+
+# PCoA of BS_13021_up
+
+BS_13021_up_bray<-vegdist(t(otu_table(r_BS_13021_up)),method="bray",binary = FALSE)
+BS_13021_up_PCoA<-ordinate(r_BS_13021_up,method = "PCoA",BS_13021_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA BS_13021_up_Bulk_vs_PreSoil between plots.tiff', units="in", width=7, height=6, res=300)
+
+plot_ordination(r_BS_13021_up,BS_13021_up_PCoA,type="samples",shape="Time",color="Plot")+labs(title="BS_13021_up_Plots_vs_Compartment",x="PCoA1 [14.8%]",y="PCoA2 [7.8%]")+geom_point(size=2)+scale_shape_manual(values = c(0,1,2,4))+scale_color_manual(values =c("#8569D5","#00CDCD","orange","#DA5724","#508578","#CD9BCD","#AD6F3B","#673770","#D14285","#652926","#C84248","#CBD588","#D3D3ED","#BAFFE2","#000099","grey"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=10,face="bold",family = "Arial"),legend.text = (element_text(size=8,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,2,2,1),"cm"))
+dev.off()
+```
+
+## BRE
+
+```{r}
+BRE<-subset_samples(Seed_13021_up,Compartment=="Bulk"|Compartment=="Rhizosphere"|Compartment=="Endosphere")
+BRE #21355 taxa and 134 samples 
+
+BRE_up<-filter_taxa(BRE,function(x) sum(x)>1,prune = TRUE)
+BRE_up #19681 taxa and 134 samples
+
+## Read depth impact - turned to be insignificant
+set.seed(1013) 
+adonis2(t(otu_table(BRE_up))~Read_depth,data=data.frame(sample_data(BRE_up)),permutations=999,by="margin")
+
+## Compartment impacts -- need to subset based on collection time and strata set to plot
+set.seed(1013) 
+perm<-how(nperm=999,plots = Plots(strata = paste(data.frame(sample_data(BRE_up))$Time,data.frame(sample_data(BRE_up))$Plot,sep = "_")),within=Within(type='free'))
+adonis2(t(otu_table(BRE_up))~Compartment,data=data.frame(sample_data(BRE_up)),permutations=perm,by="margin")
+
+## Treatment impact -- I should subset my samples to strata using specific compartment and time combination 
+# When I set Time as strata, it means that I will randomize samples within 1wk, 3wk and 4wk but not between Arial.
+
+set.seed(1013) 
+perm<-how(nperm=999,plots = Plots(strata = paste(data.frame(sample_data(BRE_up))$Compartment,data.frame(sample_data(BRE_up))$Time,sep = "_")),within=Within(type='free'))
+adonis2(t(otu_table(BRE_up))~Treatment,data=data.frame(sample_data(BRE_up)),permutations=perm,by="margin")
+
+# Do not constrains the permutation matrix, treatment impact is nonsignificant
+set.seed(1013) 
+adonis2(t(otu_table(BRE_up))~Treatment,data=data.frame(sample_data(BRE_up)),permutations=999,by="margin")
+
+## Time impacts -- I should subset the data to specific compartment
+set.seed(1013) 
+perm<-how(nperm=999,plots = Plots(strata = paste(data.frame(sample_data(BRE_up))$Compartment,data.frame(sample_data(BRE_up))$Plot,sep = "_" )),
+          within=Within(type='free'))
+adonis2(t(otu_table(BRE_up))~Time,data=data.frame(sample_data(BRE_up)),permutations=perm,by="margin")
+
+## Compartment vs Treatment vs Time impacts
+
+set.seed(1013) 
+adonis(t(otu_table(BRE_up))~Compartment+Treatment+Time,data=data.frame(sample_data(BRE_up)),permutations=999,by="margin")
+
+## Compartment vs Plot vs Time impacts  vs Read_depth
+
+set.seed(1013) 
+adonis(t(otu_table(BRE_up))~Compartment+Plot+Time+Read_depth,data=data.frame(sample_data(BRE_up)),permutations=999,by="margin")
+
+```
+
+## Time based subset - Subset dataset to different development stage and see how compartment impacts will change. This is based on my assumption that at different development stage, the compartment impacts may differs
+
+```{r}
+# >>>> week 1 >>>>
+
+wk1<-subset_samples(Seed_13021_up,Time=="1wk")
+wk1 # 21355 taxa and 44 samples
+wk1_up<-filter_taxa(wk1,function(x) sum(x)>1,prune = TRUE)
+wk1_up #11316 taxa and 44 samples
+
+# Read depth barplot
+
+Seed_meta_wk1<-data.frame(sample_data(wk1_up))
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/wk1_Read_depth_barplot.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_wk1,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# reorder the Sample_ID based on Compartment and time
+Seed_meta_wk1_up<-Seed_meta_wk1[with(Seed_meta_wk1,order(Compartment)),]
+Seed_meta_wk1_up$Sample_ID<-factor(Seed_meta_wk1_up$Sample_ID,levels = as.character(Seed_meta_wk1_up$Sample_ID))
+
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Read_depth_barplot reordered based on Compartment and time.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_wk1_up,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+# PERMANOVA
+
+# --- Read_depth --- insignificant
+set.seed(1013) 
+adonis2(t(otu_table(wk1_up ))~Read_depth,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin")
+
+# ----- Plot impacts-----insignificant
+set.seed(1013) 
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk1_up))$Compartment),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk1_up))~Plot,data=data.frame(sample_data(wk1_up )),permutations=perm,by="margin")
+
+#  ---Treatment ---- # insignificant impact
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk1_up))$Compartment),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk1_up))~Treatment,data=data.frame(sample_data(wk1_up)),permutations=perm,by="margin")
+
+#  ---Compartment ---- # p=0.001 and R2=59.85%
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk1_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk1_up ))~Compartment,data=data.frame(sample_data(wk1_up )),permutations=perm,by="margin")
+
+#            Df SumOfSqs     R2      F Pr(>F)    
+#Compartment  2   5.9502 0.5985 30.558  0.001 ***
+#Residual    41   3.9917 0.4015                  
+#Total       43   9.9419 1.0000
+
+# --- Compartment vs Read_depth --
+
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk1_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk1_up ))~Compartment+Read_depth,data=data.frame(sample_data(wk1_up )),permutations=perm,by="margin")
+#             Df SumOfSqs      R2       F Pr(>F)    
+#Compartment  2   5.9501 0.59848 30.6182  0.001 ***
+#Read_depth   1   0.1051 0.01057  1.0812  0.447    
+#Residual    40   3.8866 0.39093                   
+#Total       43   9.9419 1.00000
+
+# ---- Read_Depth vs Compartment vs Treatment
+set.seed(1013)
+tidy(adonis2(t(otu_table(wk1_up ))~Compartment+Read_depth+Treatment,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin"))
+
+
+# ---- Read_Depth vs Compartment vs Plot
+set.seed(1013)
+tidy(adonis2(t(otu_table(wk1_up ))~Compartment+Read_depth+Plot,data=data.frame(sample_data(wk1_up )),permutations=999,by="margin"))
+
+# PCoA plot
+
+wk1_bray<-vegdist(t(otu_table(wk1_up)),method="bray",binary = FALSE)
+wk1_PCoA<-ordinate(wk1_up,method = "PCoA", wk1_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA wk1 Time vs Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(wk1_up,wk1_PCoA,type="samples",color="Compartment",shape = 'Treatment')+labs(title="wk1_Time")+geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values = c("#C84248","orange","#00CDCD"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# >>>> week 3 compartment impacts >>>>
+
+wk3<-subset_samples(Seed_13021_up,Time=="3wk")
+wk3 #21355 taxa and 45 samples
+wk3_up<-filter_taxa(wk3,function(x) sum(x)>1,prune = TRUE)
+wk3_up #11403 taxa and 45 samples
+
+# Read depth barplot
+
+Seed_meta_wk3<-data.frame(sample_data(wk3_up))
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/wk3_Read_depth_barplot.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_wk3,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# reorder the Sample_ID based on Compartment and time
+Seed_meta_wk3_up<-Seed_meta_wk3[with(Seed_meta_wk3,order(Compartment)),]
+Seed_meta_wk3_up$Sample_ID<-factor(Seed_meta_wk3_up$Sample_ID,levels = as.character(Seed_meta_wk3_up$Sample_ID))
+
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Read_depth_barplot reordered based on Compartment and time.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_wk3_up,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# PERMANOVA
+
+# --- Read_depth --- insignificant
+set.seed(1013) 
+adonis2(t(otu_table(wk3_up))~Read_depth,data=data.frame(sample_data(wk3_up )),permutations=999,by="margin")
+
+# ----- Plot impacts-----significant
+set.seed(1013) 
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk3_up))$Compartment),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk3_up))~Plot,data=data.frame(sample_data(wk3_up )),permutations=perm,by="margin")
+
+#  ---Treatment ---- # pvalue= 0.022 *
+
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk3_up))$Compartment),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk3_up ))~Treatment,data=data.frame(sample_data(wk3_up)),permutations=perm,by="margin")
+
+#  ---Compartment ---- # p=0.001 and R2=61.28%
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk3_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk3_up ))~Compartment,data=data.frame(sample_data(wk3_up )),permutations=perm,by="margin")
+
+# --- Compartment vs Read_depth --
+
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk3_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk3_up ))~Compartment+Read_depth,data=data.frame(sample_data(wk3_up )),permutations=perm,by="margin")
+
+# ---- Read_Depth vs Compartment vs Treatment
+set.seed(1013)
+tidy(adonis2(t(otu_table(wk3_up ))~Compartment+Read_depth+Treatment,data=data.frame(sample_data(wk3_up )),permutations=999,by="margin"))
+
+# ---- Read_Depth vs Compartment vs plot
+set.seed(1013)
+tidy(adonis2(t(otu_table(wk3_up ))~Compartment+Read_depth+Plot,data=data.frame(sample_data(wk3_up )),permutations=999,by="margin"))
+
+
+# PCoA plot
+
+# --- Compartment vs Treatment ----
+
+wk3_bray<-vegdist(t(otu_table(wk3_up)),method="bray",binary = FALSE)
+wk3_PCoA<-ordinate(wk3_up,method = "PCoA", wk3_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA wk3 Compartment vs Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(wk3_up,wk3_PCoA,type="samples",color="Compartment",shape = 'Treatment')+labs(title="wk3_Time",x="PCoA1 [61.7%]",y="PCoA2 [10.3%]")+geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values = c("#C84248","orange","#00CDCD"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# ----Compartment vs Read_depth
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA wk3 .tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(wk3_up,wk3_PCoA,type="samples",color="Read_depth",shape ='Compartment')+labs(title="wk3_Time",x="PCoA1 [61.7%]",y="PCoA2 [10.3%]")+geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_gradient(low = "#4c9b58",high = "#d13436")+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# >>>> week 4 compartment impacts >>>>
+
+wk4<-subset_samples(Seed_13021_up,Time=="4wk")
+wk4 #21355 taxa and 45 samples
+wk4_up<-filter_taxa(wk4,function(x) sum(x)>1,prune = TRUE)
+wk4_up #11513 taxa and 45 samples
+
+# Read depth barplot
+
+Seed_meta_wk4<-data.frame(sample_data(wk4_up))
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/wk4_Read_depth_barplot.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_wk4,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# reorder the Sample_ID based on Compartment and time
+Seed_meta_wk4_up<-Seed_meta_wk4[with(Seed_meta_wk4,order(Compartment)),]
+Seed_meta_wk4_up$Sample_ID<-factor(Seed_meta_wk4_up$Sample_ID,levels = as.character(Seed_meta_wk4_up$Sample_ID))
+
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Read_depth_barplot reordered based on Compartment and time.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+
+ggplot(data=Seed_meta_wk4_up,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# PERMANOVA
+
+# --- Read_depth --- insignificant
+set.seed(1013) 
+adonis2(t(otu_table(wk4_up))~Read_depth,data=data.frame(sample_data(wk4_up )),permutations=999,by="margin")
+
+# ----- Plot impacts-----insignificant
+set.seed(1013) 
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk4_up))$Compartment),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk4_up))~Plot,data=data.frame(sample_data(wk4_up )),permutations=perm,by="margin")
+
+#  ---Treatment ---- # pvalue= 0.003 **
+
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk4_up))$Compartment),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk4_up ))~Treatment,data=data.frame(sample_data(wk4_up)),permutations=perm,by="margin")
+
+#  ---Compartment ---- # p=0.001 and R2=65.85%
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk4_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk4_up ))~Compartment,data=data.frame(sample_data(wk4_up )),permutations=perm,by="margin")
+
+# --- Compartment vs Read_depth --
+
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(wk4_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(wk4_up ))~Compartment+Read_depth,data=data.frame(sample_data(wk4_up )),permutations=perm,by="margin")
+
+# ---- Read_Depth vs Compartment vs Treatment
+set.seed(1013)
+tidy(adonis2(t(otu_table(wk4_up ))~Compartment+Read_depth+Treatment,data=data.frame(sample_data(wk4_up )),permutations=999,by="margin"))
+
+
+# ---- Read_Depth vs Compartment vs Plot
+set.seed(1013)
+tidy(adonis2(t(otu_table(wk4_up ))~Compartment+Read_depth+Plot,data=data.frame(sample_data(wk4_up )),permutations=999,by="margin"))
+
+# PCoA plot
+
+wk4_bray<-vegdist(t(otu_table(wk4_up)),method="bray",binary = FALSE)
+wk4_PCoA<-ordinate(wk4_up,method = "PCoA", wk4_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA wk4 Time vs Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(wk4_up,wk4_PCoA,type="samples",color="Compartment",shape = 'Treatment')+labs(title="wk4_Time",x="PCoA1 [54.9%]",y="PCoA2 [12.8%]")+geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values = c("#C84248","orange","#00CDCD"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+```
+
+
+## Subset dataset to different compartment and Evaluate the treatment and Time impacts
+
+
+```{r}
+## >>>>  Bulk soil >>>>>>
+
+Bulk<-subset_samples(Seed_13021_up,Compartment=="Bulk")
+Bulk # 21355 taxa and 45 samples
+## remove all singletons
+Bulk_up<-filter_taxa(Bulk,function(x) sum(x)>1,prune = TRUE)
+Bulk_up # 14071 taxa and 45 samples
+r_Bulk_up<-transform_sample_counts(Bulk_up,function(x) x/sum(x))
+
+## PERMANOVA
+
+## >>>>>> Plot >>>>> significant p=0.001 and explain 48.17% of the variantions
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Bulk_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Bulk_up))~Plot,data=data.frame(sample_data(r_Bulk_up)),permutations=perm,by="margin")
+
+## >>>> Read_depth >>>>> 0.19
+set.seed(1013)
+adonis2(t(otu_table(r_Bulk_up))~Read_depth,data=data.frame(sample_data(r_Bulk_up)),permutations=999,by="margin")
+
+## >>>> Time >>>> significant and could explain 11.99% of the variation
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Bulk_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Bulk_up))~Time,data=data.frame(sample_data(r_Bulk_up)),permutations=perm,by="margin")
+
+## >>>> Treatment >>>> barely significant p=0.038 and R2=6.20% 
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Bulk_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Bulk_up))~Treatment,data=data.frame(sample_data(r_Bulk_up)),permutations=999,by="margin")
+
+# ---- Treatment: Time --- include individual impact and interactions impact. Could be infered based on freedom of variables.
+
+set.seed(1013)
+adonis2(t(otu_table(r_Bulk_up))~Time:Treatment,data=data.frame(sample_data(r_Bulk_up)),permutations=999,by="margin") 
+
+#adonis2(formula = t(otu_table(r_Bulk_up)) ~ Time:Treatment, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+#               Df SumOfSqs      R2      F Pr(>F)   
+#Time:Treatment  8   0.9388 0.25141 1.4693  0.002 **
+#Residual       35   2.7952 0.74859                 
+#Total          43   3.7340 1.00000
+
+## >>>>>> Treatment*Time interaction impacts >>>>> insignificant
+
+set.seed(1013)
+adonis2(t(otu_table(r_Bulk_up))~Time+Treatment,data=data.frame(sample_data(r_Bulk_up)),permutations=999,by="margin") 
+
+#          Df SumOfSqs      R2      F Pr(>F)    
+#Time       2   0.5144 0.11990 2.9313  0.001 ***
+#Treatment  2   0.2661 0.06201 1.5160  0.019 *  
+#Residual  40   3.5098 0.81809                  
+#Total     44   4.2903 1.00000
+
+
+## >>>>>> Read_depth vs Time vs Treatment
+
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Bulk_up))~Read_depth+Treatment+Time,data=data.frame(sample_data(r_Bulk_up)),permutations=999,by="margin")) # Time is significant, p=0.001, and R2= 12.45. Treatment is significant, R2=0.12 and p=0.001; 
+
+#adonis2(formula = t(otu_table(r_Bulk_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
+#           Df SumOfSqs      R2      F Pr(>F)    
+#Read_depth  1   0.0728 0.01950 0.9457  0.499    
+#Treatment   2   0.2151 0.05762 1.3968  0.067 .  
+#Time        2   0.4540 0.12159 2.9478  0.001 ***
+#Residual   38   2.9264 0.78373                  
+#Total      43   3.7340 1.00000
+
+## >>>>>> Read_depth vs Time vs Plot
+
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Bulk_up))~Read_depth+Plot+Time,data=data.frame(sample_data(r_Bulk_up)),permutations=999,by="margin"))
+
+
+#PCoA plot - Treatment vs Time
+
+Bulk_up_bray<-vegdist(t(otu_table(r_Bulk_up)),method="bray",binary = FALSE)
+Bulk_up_PCoA<-ordinate(r_Bulk_up,method = "PCoA",Bulk_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Bulk_up Time vs Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(r_Bulk_up,Bulk_up_PCoA,type="samples",shape="Time",color="Treatment")+labs(title="Bulk_up_Time vs Treatment",x="PCoA1 [17.6%]",y="PCoA2 [11.7%]")+geom_point(size=2)+scale_shape_manual(values = c(1,2,4))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+## Plot difference
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Bulk_up between plots difference.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(r_Bulk_up,Bulk_up_PCoA,type="samples",color="Plot",shape = 'Time')+labs(title="PCoA Bulk_up between plots difference",x="PCoA1 [17.6%]",y="PCoA2 [11.7%]")+geom_point(size=2)+scale_color_manual(values = c("#8569D5","#00CDCD","orange","#DA5724","#508578","#CD9BCD","#AD6F3B","#673770","#D14285","#652926","#C84248","#CBD588","#D3D3ED","#BAFFE2","#000099","grey"))+scale_shape_manual(values = c(1,2,4))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# >>>>> CAP analysis >>>
+
+set.seed(1013)
+cap_Bulk_up<-capscale(t(otu_table(r_Bulk_up))~Time+Condition(Plot),data=data.frame(sample_data(r_Bulk_up)),distance = 'bray',dfun = vegdist)
+summary(cap_Bulk_up)
+anova(cap_Bulk_up) 
+
+#capscale(formula = t(otu_table(r_Bulk_up)) ~ Time + Condition(Plot), data = data.frame(sample_data(r_Bulk_up)), distance = "bray", dfun = vegdist)
+#         Df SumOfSqs      F Pr(>F)    
+#Model     2  0.45865 4.5257  0.001 ***
+#Residual 27  1.36812
+
+Bulk_up_cap<-ordinate(Bulk_up,'CAP','bray',~Time+Treatment)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/CAP_Bulk_up.tiff', units="in", width=7, height=5, res=300)
+plot_ordination(Bulk_up,Bulk_up_cap,type="samples",color="Treatment",shape = "Time")+
+  geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+ ggtitle("CAP plot of soybean rhizosphere and bulk microbiome \n ~Soil_type+Treatment") +theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+      # >>> Bulk_1wk >>>>
+      
+      Bulk_1wk<-subset_samples(Bulk,Time=="1wk")
+      Bulk_1wk_up<-filter_taxa(Bulk_1wk,function(x) sum(x)>1,prune = TRUE)
+      Bulk_1wk_up #10647 taxa and 15 samples
+      
+      # PERMANOVA test for significance 
+      
+      r_Bulk_1wk_up<-transform_sample_counts(Bulk_1wk_up,function(x) x/sum(x))
+      set.seed(1013)
+      adonis2(t(otu_table(r_Bulk_1wk_up))~Treatment,data=data.frame(sample_data(r_Bulk_1wk_up)),permutations=999,by="margin") # p value =0.785
+      
+      
+      #>>> PCoA >>>>>
+      
+      Bulk_1wk_up_bray<-vegdist(t(otu_table(Bulk_1wk_up)),method="bray",binary = FALSE)
+      Bulk_1wk_up_PCoA<-ordinate(Bulk_1wk_up,method = "PCoA", Bulk_1wk_up_bray)
+      tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Bulk_1wk_13021_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+      
+      plot_ordination(Bulk_1wk_up,Bulk_1wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Bulk_3wk_up_Treatment")+
+        geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+ ggtitle("Bulk_1wk_up_Treatment") +theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+      dev.off()
+      
+      # >>> Bulk_3wk_up >>>> 
+      
+      Bulk_3wk<-subset_samples(Bulk,Time=="3wk")
+      Bulk_3wk # 28114 OTUs across 15 samples
+      Bulk_3wk_up<-filter_taxa(Bulk_3wk,function(x) sum(x)>1,prune = TRUE)
+      Bulk_3wk_up # 10389 taxa and 15 samples
+      
+      # PERMANOVA test
+      r_Bulk_3wk_up<-transform_sample_counts(Bulk_3wk_up,function(x) x/sum(x))
+      set.seed(1013)
+      adonis2(t(otu_table(r_Bulk_3wk_up))~Treatment,data=data.frame(sample_data(r_Bulk_3wk_up)),permutations=999,by="margin") #0.473
+      
+      # >>>>> PCoA plot
+      
+      r_Bulk_3wk_up_bray<-vegdist(t(otu_table(r_Bulk_3wk_up)),method="bray",binary = FALSE)
+      r_Bulk_3wk_up_PCoA<-ordinate(r_Bulk_3wk_up,method = "PCoA", r_Bulk_3wk_up_bray)
+      tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Bulk_3wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+      
+      plot_ordination(r_Bulk_3wk_up,r_Bulk_3wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Bulk_3wk_up_Treatment")+geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+      dev.off()
+      
+      ## >>>>>> Bulk_4wk_up >>>>
+      
+      Bulk_4wk<-subset_samples(Bulk,Time=="4wk")
+      Bulk_4wk # 28114 OTUs across 15 samples
+      Bulk_4wk_up<-filter_taxa(Bulk_4wk,function(x) sum(x)>1,prune = TRUE)
+      Bulk_4wk_up # 10335 taxa and 14 samples
+      
+      # PERMANOVA test
+      r_Bulk_4wk_up<-transform_sample_counts(Bulk_4wk_up,function(x) x/sum(x))
+      
+      #>>> Treatment impact --insignificant
+      set.seed(1013)
+      adonis2(t(otu_table(r_Bulk_4wk_up))~Treatment,data=data.frame(sample_data(r_Bulk_4wk_up)),permutations=999,by="margin") # p=0.213
+      
+      
+      # >>>>> PCoA plot
+      
+      r_Bulk_4wk_up_bray<-vegdist(t(otu_table(r_Bulk_4wk_up)),method="bray",binary = FALSE)
+      r_Bulk_4wk_up_PCoA<-ordinate(r_Bulk_4wk_up,method = "PCoA", r_Bulk_4wk_up_bray)
+      tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Bulk_4wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+      
+      plot_ordination(r_Bulk_4wk_up,r_Bulk_4wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Bulk_4wk_up_Treatment")+
+        geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+      dev.off()
+```
+
+## >>>>  Rhisphere >>>>>>
+
+```{r}
+
+Rhi<-subset_samples(Seed_13021_up,Compartment=="Rhizosphere")
+Rhi # 21355 taxa and 44 samples
+
+## remove all singletons
+Rhi_up<-filter_taxa(Rhi,function(x) sum(x)>1,prune = TRUE)
+Rhi_up # 10465 taxa and 44 samples
+r_Rhi_up<-transform_sample_counts(Rhi_up,function(x) x/sum(x))
+
+## PERMANOVA
+
+# ----- Plot -----
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Rhi_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Rhi_up))~Plot,data=data.frame(sample_data(r_Rhi_up)),permutations=perm,by="margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Plot     14   2.1208 0.30325 0.9016  0.001 ***
+#Residual 29   4.8728 0.69675                  
+#Total    43   6.9936 1.00000
+
+# ----- Read_depth ----insignificant
+
+set.seed(1013)
+adonis2(t(otu_table(r_Rhi_up))~Read_depth,data=data.frame(sample_data(r_Rhi_up)),permutations=999,by="margin")
+
+
+# ------Time ------ significant and R2=42.69
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Rhi_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Rhi_up))~Time,data=data.frame(sample_data(r_Rhi_up)),permutations=perm,by="margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Time      2   2.8993 0.41457 14.517  0.001 ***
+#Residual 41   4.0943 0.58543                  
+#Total    43   6.9936 1.00000
+
+# -----Treatment------significant
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Rhi_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Rhi_up))~Treatment,data=data.frame(sample_data(r_Rhi_up)),permutations=perm,by="margin")
+
+#          Df SumOfSqs      R2     F Pr(>F)   
+#Treatment  2   0.3209 0.04589 0.986  0.008 **
+#Residual  41   6.6727 0.95411                
+#Total     43   6.9936 1.00000
+
+
+# ----- Treatment and Time impacts
+set.seed(1013)
+adonis2(t(otu_table(r_Rhi_up))~Treatment+Time,data=data.frame(sample_data(r_Rhi_up)),permutations=999,by="margin")
+#          Df SumOfSqs      R2       F Pr(>F)    
+#Treatment  2   0.2958 0.04459  1.6537  0.103    
+#Time       2   2.8356 0.42742 15.8522  0.001 ***
+#Residual  39   3.4881 0.52577                   
+#Total     43   6.6342 1.00000
+
+# --- Treatment*Time interactions impact
+set.seed(1013)
+adonis2(t(otu_table(r_Rhi_up))~Treatment*Time,data=data.frame(sample_data(r_Rhi_up)),permutations=999,by="margin") 
+
+#               Df SumOfSqs      R2      F Pr(>F)
+#Treatment:Time  4   0.2973 0.04251 0.7451  0.776
+#Residual       35   3.4912 0.49919              
+#Total          43   6.9936 1.00000
+
+# ----- Read_depth vs Time vs Treatment---
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Rhi_up))~Read_depth+Treatment+Time,data=data.frame(sample_data(r_Rhi_up)),permutations=999,by="margin")) 
+
+#term          df SumOfSqs     R2 statistic p.value
+#  <chr>      <dbl>    <dbl>  <dbl>     <dbl>   <dbl>
+#1 Read_depth     1    0.124 0.0186      1.40   0.17 
+#2 Treatment      2    0.244 0.0368      1.38   0.179
+#3 Time           2    2.69  0.406      15.2    0.001
+#4 Residual      38    3.36  0.507      NA     NA    
+#5 Total         43    6.63  1          NA     NA 
+
+# ----- Read_depth vs Time vs Plot---
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Rhi_up))~Read_depth+Plot+Time,data=data.frame(sample_data(r_Rhi_up)),permutations=999,by="margin")) 
+
+#term          df SumOfSqs      R2 statistic p.value
+#  <chr>      <dbl>    <dbl>   <dbl>     <dbl>   <dbl>
+#1 Read_depth     1   0.0565 0.00807     0.739   0.592
+#2 Plot          14   1.92   0.275       1.80    0.004
+#3 Time           2   2.61   0.373      17.1     0.001
+#4 Residual      26   1.99   0.284      NA      NA    
+#5 Total         43   6.99   1          NA      NA 
+
+# >>>> PCoA >>>
+
+# >>> Treatment_vs_Time
+
+dim(otu_table(r_Rhi_up)) # 13696 OTUs across 44 samples
+Rhi_up_bray<-vegdist(t(otu_table(r_Rhi_up)),method="bray",binary = FALSE)
+Rhi_up_PCoA<-ordinate(Rhi_up,method = "PCoA", Rhi_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Rhi_up_Treatment_vs_Time.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Rhi_up,Rhi_up_PCoA,type="samples",shape="Time",color="Treatment")+labs(title="PCoA Rhi_up_Treatment_vs_Time",x="PCoA1 [43.0%]",y="PCoA2 [10.8%]")+
+  geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Rhi_up_Treatment_vs_Time with labels.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Rhi_up,Rhi_up_PCoA,type="samples",shape="Time",color="Treatment",label="Sample_ID")+labs(title="PCoA Rhi_up_Treatment_vs_Time",x="PCoA1 [43.0%]",y="PCoA2 [10.8%]")+
+  geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+## >>>> Plot impacts >>>>
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Rhi_up_between Plot.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Rhi_up,Rhi_up_PCoA,type="samples",color="Plot")+labs(title="PCoA Rhi_up_between Plot",x="PCoA1 [43.0%]",y="PCoA2 [10.8%]")+geom_point(size=2)+scale_color_manual(values = c("#8569D5","#00CDCD","orange","#DA5724","#508578","#CD9BCD","#AD6F3B","#673770","#D14285","#652926","#C84248","#CBD588","#D3D3ED","#BAFFE2","#000099","grey"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+        # >>> Rhi_1wk >>>>
+        
+        Rhi_1wk<-subset_samples(Rhi,Time=="1wk")
+        Rhi_1wk_up<-filter_taxa(Rhi_1wk,function(x) sum(x)>1,prune = TRUE)
+        Rhi_1wk_up #6334 taxa and 14 samples
+        
+        # PERMANOVA test for significance 
+        
+        r_Rhi_1wk_up<-transform_sample_counts(Rhi_1wk_up,function(x) x/sum(x))
+        set.seed(1013)
+        
+        # >>>>  Read_depth >>>  insignificant
+        set.seed(1013)
+        adonis2(t(otu_table(r_Rhi_1wk_up))~Read_depth,data=data.frame(sample_data(r_Rhi_1wk_up)),permutations=999,by="margin") # p value =0.431
+        
+        # >>> Treatment >>>> insignificant
+        set.seed(1013)
+        adonis2(t(otu_table(r_Rhi_1wk_up))~Treatment,data=data.frame(sample_data(r_Rhi_1wk_up)),permutations=999,by="margin")
+        
+      
+        #>>> PCoA >>>>>
+        
+        Rhi_1wk_up_bray<-vegdist(t(otu_table(Rhi_1wk_up)),method="bray",binary = FALSE)
+        Rhi_1wk_up_PCoA<-ordinate(Rhi_1wk_up,method = "PCoA", Rhi_1wk_up_bray)
+        tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Rhi_1wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+        
+        plot_ordination(Rhi_1wk_up,Rhi_1wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Rhi_1wk_up_Treatment")+
+          geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+        dev.off()
+        
+        # >>> Rhi_3wk_up >>>>
+        
+        Rhi_3wk<-subset_samples(Rhi,Time=="3wk")
+        Rhi_3wk # 27378 taxa and 15 samples
+        Rhi_3wk_up<-filter_taxa(Rhi_3wk,function(x) sum(x)>1,prune = TRUE)
+        Rhi_3wk_up # 8660 taxa and 15 samples
+        
+        # PERMANOVA test
+        r_Rhi_3wk_up<-transform_sample_counts(Rhi_3wk_up,function(x) x/sum(x))
+        
+        # Treatment 
+        set.seed(1013)
+        adonis2(t(otu_table(r_Rhi_3wk_up))~Treatment,data=data.frame(sample_data(r_Rhi_3wk_up)),permutations=999,by="margin") # p=0.277
+        
+        # Read_Depth 
+        set.seed(1013)
+        adonis2(t(otu_table(r_Rhi_3wk_up))~Read_depth,data=data.frame(sample_data(r_Rhi_3wk_up)),permutations=999,by="margin") #  0.461
+       
+       
+        # >>>>> PCoA plot
+        
+        r_Rhi_3wk_up_bray<-vegdist(t(otu_table(r_Rhi_3wk_up)),method="bray",binary = FALSE)
+        r_Rhi_3wk_up_PCoA<-ordinate(r_Rhi_3wk_up,method = "PCoA", r_Rhi_3wk_up_bray)
+        tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Rhi_3wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+        
+        plot_ordination(r_Rhi_3wk_up,r_Rhi_3wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Rhi_3wk_up_Treatment")+
+          geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+        dev.off()
+        
+        ## >>>>>> Rhi_4wk_up >>>>
+        
+        Rhi_4wk<-subset_samples(Rhi,Time=="4wk")
+        Rhi_4wk # 27378 taxa and 15 samples
+        Rhi_4wk_up<-filter_taxa(Rhi_4wk,function(x) sum(x)>1,prune = TRUE)
+        Rhi_4wk_up # 8131 taxa and 15 samples
+        
+        # PERMANOVA test
+        r_Rhi_4wk_up<-transform_sample_counts(Rhi_4wk_up,function(x) x/sum(x))
+        
+        # Treatment
+        set.seed(1013)
+        adonis2(t(otu_table(r_Rhi_4wk_up))~Treatment,data=data.frame(sample_data(r_Rhi_4wk_up)),permutations=999,by="margin") # p=0.181
+        
+        # Read_depth
+        set.seed(1013)
+        adonis2(t(otu_table(r_Rhi_4wk_up))~Read_depth,data=data.frame(sample_data(r_Rhi_4wk_up)),permutations=999,by="margin") # p=0.155
+        
+        # >>>>> PCoA plot
+        
+        r_Rhi_4wk_up_bray<-vegdist(t(otu_table(r_Rhi_4wk_up)),method="bray",binary = FALSE)
+        r_Rhi_4wk_up_PCoA<-ordinate(r_Rhi_4wk_up,method = "PCoA", r_Rhi_4wk_up_bray)
+        tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Rhi_4wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+        
+        plot_ordination(r_Rhi_4wk_up,r_Rhi_4wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Rhi_4wk_up_Treatment")+geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+        dev.off()
+```
+
+## >>>>  Endosphere >>>>>>
+
+```{r}
+Endo<-subset_samples(Seed_13021_up,Compartment=="Endosphere")
+Endo #21355 taxa and 45 samples
+
+## remove all singletons
+Endo_up<-filter_taxa(Endo,function(x) sum(x)>1,prune = TRUE)
+Endo_up # 8715 taxa and 44 samples
+r_Endo_up<-transform_sample_counts(Endo_up,function(x) x/sum(x))
+
+## PERMANOVA
+
+# ------ Plot ----- insignificant
+set.seed(1013)
+perm<-how(nperm=999,
+          plots = Plots(strata = data.frame(sample_data(r_Endo_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Endo_up))~Plot,data=data.frame(sample_data(r_Endo_up)),permutations=perm,by="margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Plot     14   1.1034 0.17259 0.4321  0.001 ***
+#Residual 29   5.2901 0.82741                  
+#Total    43   6.3935 1.00000
+
+# --- Read_depth --- insignificant pvalue=0.386
+
+set.seed(1013)
+adonis2(t(otu_table(r_Endo_up))~Read_depth,data=data.frame(sample_data(r_Endo_up)),permutations=999,by="margin")
+
+
+# ----- Time --- significant and R2=60.62%
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Endo_up))$Plot),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Endo_up))~Time,data=data.frame(sample_data(r_Endo_up)),permutations=perm,by="margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Time      2   3.8939 0.60904 31.936  0.001 ***
+#Residual 41   2.4996 0.39096                  
+#Total    43   6.3935 1.00000
+
+# ------- Treatment -------- insignificant
+
+set.seed(1013)
+perm<-how(nperm=999,plots = Plots(strata = data.frame(sample_data(r_Endo_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Endo_up))~Treatment,data=data.frame(sample_data(r_Endo_up)),permutations=perm,by="margin")
+
+#adonis2(formula = t(otu_table(r_Endo_up)) ~ Treatment, data = data.frame(sample_data(r_Endo_up)), permutations = 999, by = "margin")
+#          Df SumOfSqs     R2      F Pr(>F)
+#Treatment  2   0.1656 0.0261 0.5494  0.762
+#Residual  41   6.1809 0.9739              
+#Total     43   6.3465 1.0000
+
+## --- Treatment + Time impacts
+
+set.seed(1013)
+adonis2(t(otu_table(r_Endo_up))~Treatment+Time,data=data.frame(sample_data(r_Endo_up)),permutations=999,by="margin") 
+
+#          Df SumOfSqs      R2       F Pr(>F)    
+#Treatment  2   0.1557 0.02436  1.2958  0.231    
+#Time       2   3.8826 0.60728 32.3023  0.001 ***
+#Residual  39   2.3438 0.36660                   
+#Total     43   6.3935 1.00000
+
+# --- interaction between treatment and Time ---
+set.seed(1013)
+adonis2(t(otu_table(r_Endo_up))~Treatment*Time,data=data.frame(sample_data(r_Endo_up)),permutations=999,by="margin")
+
+#               Df SumOfSqs      R2      F Pr(>F)
+#Treatment:Time  4   0.1725 0.02698 0.6952  0.726
+#Residual       35   2.1713 0.33961              
+#Total          43   6.3935 1.00000 
+
+# ----- Read_depth vs Time vs Treatment
+
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Endo_up))~Read_depth+Time+Treatment,data=data.frame(sample_data(r_Endo_up)),permutations=999,by="margin"))
+
+# ----- Read_depth vs Time vs Plot ---
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Endo_up))~Read_depth+Time+Plot,data=data.frame(sample_data(r_Endo_up)),permutations=999,by="margin"))
+
+#term          df SumOfSqs     R2 statistic p.value
+#  <chr>      <dbl>    <dbl>  <dbl>     <dbl>   <dbl>
+#1 Read_depth     1    0.127 0.0199      2.53   0.075
+#2 Time           2    3.75  0.586      37.3    0.001
+#3 Plot          14    1.14  0.178       1.62   0.046
+#4 Residual      26    1.31  0.204      NA     NA    
+#5 Total         43    6.39  1          NA     NA 
+
+# >>>> PCoA >>>
+
+# >>> Treatment_vs_Time
+
+dim(otu_table(r_Endo_up)) # 8686 OTUs across 44 samples
+Endo_up_bray<-vegdist(t(otu_table(r_Endo_up)),method="bray",binary = FALSE)
+Endo_up_PCoA<-ordinate(Endo_up,method = "PCoA", Endo_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo_up_Time_vs_Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Endo_up,Endo_up_PCoA,type="samples",shape="Time",color="Treatment",label = "Sample_ID")+labs(title="PCoA Endo_up_Time_vs_Treatment",x="PCoA1 [59.9%]",y="PCoA2 [8.5%]")+
+  geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values =c('#fce75d','#5d9ffc','#fc5df7' ))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+# Plots difference
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo_up between plots.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Endo_up,Endo_up_PCoA,type="samples",color="Plot",label ="Sample_ID")+labs(title="Endo_up_between plots",x="PCoA1 [59.9%]",y="PCoA2 [8.5%]")+geom_point(size=2)+scale_color_manual(values=c("#8569D5","#00CDCD","orange","#DA5724","#508578","#CD9BCD","#AD6F3B","#673770","#D14285","#652926","#C84248","#CBD588","#D3D3ED","#BAFFE2","#000099","grey"))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+    # >>> Endo_1wk >>>>
+    
+    Endo_1wk<-subset_samples(Endo,Time=="1wk")
+    Endo_1wk_up<-filter_taxa(Endo_1wk,function(x) sum(x)>1,prune = TRUE)
+    Endo_1wk_up #5951 OTUs across 15 samples
+    
+    # PERMANOVA test for significance 
+    
+    # >>>>> Treatment is not significant
+    
+    r_Endo_1wk_up<-transform_sample_counts(Endo_1wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo_1wk_up))~Treatment,data=data.frame(sample_data(r_Endo_1wk_up)),permutations=999,by="margin") # p value =0.607
+    
+    # Read depth
+     r_Endo_1wk_up<-transform_sample_counts(Endo_1wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo_1wk_up))~Read_depth,data=data.frame(sample_data(r_Endo_1wk_up)),permutations=999,by="margin") # p value =0.459
+    
+    #>>> PCoA >>>>>
+    
+    Endo_1wk_up_bray<-vegdist(t(otu_table(Endo_1wk_up)),method="bray",binary = FALSE)
+    Endo_1wk_up_PCoA<-ordinate(Endo_1wk_up,method = "PCoA", Endo_1wk_up_bray)
+    tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo_1wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+    
+    plot_ordination(Endo_1wk_up,Endo_1wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Endo_1wk_up_Treatment")+
+      geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+    dev.off()
+    
+    # >>> Endo_3wk_up >>>>
+    
+    Endo_3wk<-subset_samples(Endo,Time=="3wk")
+    Endo_3wk # 27378 taxa and 15 sampless
+    Endo_3wk_up<-filter_taxa(Endo_3wk,function(x) sum(x)>1,prune = TRUE)
+    Endo_3wk_up # 3682 taxa and 15 samples
+    
+    # PERMANOVA test
+    
+    # Treatment - insignificant
+    r_Endo_3wk_up<-transform_sample_counts(Endo_3wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo_3wk_up))~Treatment,data=data.frame(sample_data(r_Endo_3wk_up)),permutations=999,by="margin") # p=0.509
+    
+    # Read_Depth
+     r_Endo_3wk_up<-transform_sample_counts(Endo_3wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo_3wk_up))~Read_depth,data=data.frame(sample_data(r_Endo_3wk_up)),permutations=999,by="margin") # p=0.509
+    
+    # >>>>> PCoA plot
+    
+    r_Endo_3wk_up_bray<-vegdist(t(otu_table(r_Endo_3wk_up)),method="bray",binary = FALSE)
+    r_Endo_3wk_up_PCoA<-ordinate(r_Endo_3wk_up,method = "PCoA", r_Endo_3wk_up_bray)
+    tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo_3wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+    
+    plot_ordination(r_Endo_3wk_up,r_Endo_3wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Endo_3wk_up_Treatment")+geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+    dev.off()
+    
+    ## >>>>>> Endo_4wk_up >>>>
+    
+    Endo_4wk<-subset_samples(Endo,Time=="4wk")
+    Endo_4wk # 28114 OTUs across 15 samples
+    Endo_4wk_up<-filter_taxa(Endo_4wk,function(x) sum(x)>1,prune = TRUE)
+    Endo_4wk_up # 3899 OTUs across 14 samples
+    
+    # PERMANOVA test
+    r_Endo_4wk_up<-transform_sample_counts(Endo_4wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo_4wk_up))~Treatment,data=data.frame(sample_data(r_Endo_4wk_up)),permutations=999,by="margin") # p=0.82
+  
+    # >>>>> PCoA plot
+    
+    r_Endo_4wk_up_bray<-vegdist(t(otu_table(r_Endo_4wk_up)),method="bray",binary = FALSE)
+    r_Endo_4wk_up_PCoA<-ordinate(r_Endo_4wk_up,method = "PCoA", r_Endo_4wk_up_bray)
+    tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo_4wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+    
+    plot_ordination(r_Endo_4wk_up,r_Endo_4wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Endo_4wk_up_Treatment")+
+      geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+```
+
+
+## >>> Endo2_up >>> after remove 105E_1wk_ML
+
+```{r}
+## >>>>  Endosphere >>>>>>
+
+Endo<-subset_samples(Seed_13021_up,Compartment=="Endosphere")
+Endo # 28114 OTUs across 44 samples
+
+Endo2<-subset_samples(Endo,Sample_ID!= "105E_1w_ML")
+Endo2 #28114 taxa and 43 samples
+
+## remove all singletons
+Endo2_up<-filter_taxa(Endo2,function(x) sum(x)>1,prune = TRUE)
+Endo2_up #  8641 taxa and 43 samples
+r_Endo2_up<-transform_sample_counts(Endo2_up,function(x) x/sum(x))
+
+
+## PERMANOVA
+
+# --plot --
+set.seed(1013)
+perm<-how(nperm=999,
+          plots = Plots(strata = data.frame(sample_data(r_Endo2_up))$Time),
+          within=Within(type='free'))
+adonis2(t(otu_table(r_Endo2_up))~Plot,data=data.frame(sample_data(r_Endo2_up)),permutations=perm,by="margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Plot     14   1.0623 0.17304 0.4334  0.001 ***
+#Residual 29   5.0765 0.82696                  
+#Total    43   6.1387 1.00000
+
+## >>>>>> Treatment and Time impacts
+
+set.seed(1013)
+adonis2(t(otu_table(r_Endo2_up))~Treatment+Time,data=data.frame(sample_data(r_Endo2_up)),permutations=999,by="margin") 
+
+#          Df SumOfSqs      R2       F Pr(>F)    
+#Treatment  2   0.1542 0.02512  1.4576  0.181    
+#Time       2   3.9072 0.63649 36.9347  0.001 ***
+#Residual  39   2.0628 0.33604                   
+#Total     43   6.1387 1.00000
+
+
+# >>>>> Treatment and time interactions >>>
+
+set.seed(1013)
+adonis2(t(otu_table(Endo2_up))~Treatment*Time,data=data.frame(sample_data(Endo2_up)),permutations=999,by="margin") 
+
+#               Df SumOfSqs      R2      F Pr(>F)
+#Treatment:Time  4   0.1677 0.02735 0.7745  0.608
+#Residual       35   1.8949 0.30904              
+#Total          43   6.1315 1.00000
+
+
+# ----- Read_depth vs Time vs Treatment
+
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Endo2_up))~Read_depth+Time+Treatment,data=data.frame(sample_data(r_Endo2_up)),permutations=999,by="margin"))
+
+# ----- Read_depth vs Time vs Plot ---
+set.seed(1013)
+tidy(adonis2(t(otu_table(r_Endo2_up))~Read_depth+Time+Plot,data=data.frame(sample_data(r_Endo2_up)),permutations=999,by="margin"))
+
+
+# >>>> PCoA >>>>
+
+# >>> Time vs Treatment
+
+dim(otu_table(Endo2_up)) # 8641 OTUs across 43 samples
+Endo2_up_bray<-vegdist(t(otu_table(Endo2_up)),method="bray",binary = FALSE)
+Endo2_up_PCoA<-ordinate(Endo2_up,method = "PCoA", Endo2_up_bray)
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo2_up_Time_vs_Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(Endo2_up,Endo2_up_PCoA,type="samples",shape="Time",color="Treatment")+labs(title="PCoA Endo2_up_Time_vs_Treatment",x="PCoA1 [63%]",y="PCoA2 [6.1%]")+
+  geom_point(size=2)+scale_shape_manual(values = c(8,0,1))+scale_color_manual(values =c('#fce75d','#5d9ffc','#fc5df7' ))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+
+    # >>> Endo2_1wk >>>>
+    
+    Endo2_1wk<-subset_samples(Endo2,Time=="1wk")
+    Endo2_1wk_up<-filter_taxa(Endo2_1wk,function(x) sum(x)>1,prune = TRUE)
+    Endo2_1wk_up #5879 taxa and 14 samples
+    
+    # PERMANOVA test for significance 
+    
+    r_Endo2_1wk_up<-transform_sample_counts(Endo2_1wk_up,function(x) x/sum(x))
+    
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo2_1wk_up))~Treatment,data=data.frame(sample_data(r_Endo2_1wk_up)),permutations=999,by="margin") # p value = 0.337  # >>>>> Treatment is not significant
+    
+    
+    #>>> PCoA >>>>>
+    
+    Endo2_1wk_up_bray<-vegdist(t(otu_table(Endo2_1wk_up)),method="bray",binary = FALSE)
+    Endo2_1wk_up_PCoA<-ordinate(Endo2_1wk_up,method = "PCoA", Endo2_1wk_up_bray)
+    tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo2_1wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+    
+    plot_ordination(Endo2_1wk_up,Endo2_1wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Endo2_1wk_up_Treatment")+geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+    dev.off()
+    
+    # >>> Endo2_3wk_up >>>>
+    
+    Endo2_3wk<-subset_samples(Endo2,Time=="3wk")
+    Endo2_3wk # 28114 OTUs across 15 samples
+    Endo2_3wk_up<-filter_taxa(Endo2_3wk,function(x) sum(x)>1,prune = TRUE)
+    Endo2_3wk_up # 3644 OTUs across 15 samples
+    
+    # PERMANOVA test
+    r_Endo2_3wk_up<-transform_sample_counts(Endo2_3wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo2_3wk_up))~Treatment,data=data.frame(sample_data(r_Endo2_3wk_up)),permutations=999,by="margin") # p=0.509
+    
+    # >>>>> PCoA plot
+    
+    r_Endo2_3wk_up_bray<-vegdist(t(otu_table(r_Endo2_3wk_up)),method="bray",binary = FALSE)
+    r_Endo2_3wk_up_PCoA<-ordinate(r_Endo2_3wk_up,method = "PCoA", r_Endo2_3wk_up_bray)
+    tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo2_3wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+    
+    plot_ordination(r_Endo2_3wk_up,r_Endo2_3wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Endo2_3wk_up_Treatment")+geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+    dev.off()
+    
+    ## >>>>>> Endo2_4wk_up >>>>
+    
+    Endo2_4wk<-subset_samples(Endo2,Time=="4wk")
+    Endo2_4wk # 28114 OTUs across 15 samples
+    Endo2_4wk_up<-filter_taxa(Endo2_4wk,function(x) sum(x)>1,prune = TRUE)
+    Endo2_4wk_up # 3899 OTUs across 14 samples
+    
+    # PERMANOVA test
+    r_Endo2_4wk_up<-transform_sample_counts(Endo2_4wk_up,function(x) x/sum(x))
+    set.seed(1013)
+    adonis2(t(otu_table(r_Endo2_4wk_up))~Treatment,data=data.frame(sample_data(r_Endo2_4wk_up)),permutations=999,by="margin")  #p value = 0.82
+    
+    r_Endo2_4wk_up_bray<-vegdist(t(otu_table(r_Endo2_4wk_up)),method="bray",binary = FALSE)
+    r_Endo2_4wk_up_PCoA<-ordinate(r_Endo2_4wk_up,method = "PCoA", r_Endo2_4wk_up_bray)
+    tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA Endo2_4wk_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+    
+    plot_ordination(r_Endo2_4wk_up,r_Endo2_4wk_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="PCoA Endo2_4wk_up_Treatment")+
+      geom_point(size=2)+scale_shape_manual(values = c(15,16,17))+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7'))+theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+    dev.off()
+```
+
+## >>> Seed microbiome >>>
+
+```{r}
+## SEED
+
+SEED<-subset_samples(Seed_phyloseq_up,Compartment=="Seed")
+SEED #144821 taxa and 15 samples
+SEED_up<-filter_taxa(SEED,function(x) sum(x)>1,prune = TRUE)
+SEED_up # 1030 taxa and 15 samples
+r_SEED_up<-transform_sample_counts(SEED_up,function(x) x/sum(x))
+
+## Read depth barplot
+SEED_meta<-data.frame(sample_data(r_SEED_up))
+
+tiff("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/SEED_Read_depth_barplot.tiff",units = 'in',width = 16,height = 8,res = 300,bg='White',compression = 'lzw')
+ggplot(data=SEED_meta,aes(x=Sample_ID,y=Read_depth))+geom_bar(width=0.7,stat = "identity") +xlab("Sample_ID")+ylab("Sequencing depth") +
+  scale_y_continuous(labels = scales::comma)+theme(panel.background = element_rect(fill = "white",color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),text=element_text(family="Arial"), plot.title = element_text(family='Arial', hjust = .5,vjust = 3,size = 24,face="bold"), axis.text.x = element_text(family="Arial",size=8,angle=90,vjust = .6),axis.text.y = element_text(family="Arial",size=14),axis.title.x = element_text(family="Arial",size=20,face="bold"),axis.title.y = element_text(family="Arial",size=20,face="bold"),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+# PERMANOVA test of treatment impacts
+set.seed(1013)
+adonis2(t(otu_table(r_SEED_up))~Treatment,data=data.frame(sample_data(r_SEED_up)),permutations=999,by="margin") 
+
+#          Df SumOfSqs      R2      F Pr(>F)    
+#Treatment  2   1.7254 0.47214 5.3668  0.001 ***
+#Residual  12   1.9289 0.52786                  
+#Total     14   3.6543 1.00000
+
+# PCoA plot
+r_SEED_up_bray<-vegdist(t(otu_table(r_SEED_up)),method="bray",binary = FALSE)
+r_SEED_up_PCoA<-ordinate(r_SEED_up,method = "PCoA", r_SEED_up_bray)
+tiff('/Users/fangliu/Documents/2018_fugicide_project/SEED_treatment/16S/SEED_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA r_SEED_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(r_SEED_up,r_SEED_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="r_SEED_up_weighted Bray-Curtis PCoA plot",x="PCoA1 [32.9%]",y="PCoA2 [17.4%]")+
+  geom_point(size=2)+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7')) +theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+## Stacked barplot of SEED samples
+
+r_SEED_up #1030 taxa and 15 samples
+sample_sums(SEED_up)
+
+SEED_phylum<-tax_glom(r_SEED_up,taxrank = rank_names(r_SEED_up)[2],NArm = TRUE)
+SEED_phylum #20 taxa and 15 samples
+r_SEED_phylum<-transform_sample_counts(SEED_phylum,function(x) x/sum(x))
+
+filter_r_SEED_phylum<- filter_taxa(r_SEED_phylum, function(x) sum(x>0.0001)>0.2*length(x),prune = TRUE)
+filter_r_SEED_phylum # got 9 phyla across 159 sampels left
+sample_sums(filter_r_SEED_phylum)
+tax_table(filter_r_SEED_phylum)[,2]
+Others<-1-sample_sums(filter_r_SEED_phylum)
+phylum_SEED<-rbind(otu_table(filter_r_SEED_phylum),Others)
+phylum_SEED<-as.data.frame(phylum_SEED)
+phylum_SEED[,1:10]
+rownames(phylum_SEED)<-c(tax_table(filter_r_SEED_phylum)[,2],"Others")
+phylum_SEED
+#phylum_rarefied_ST<-data.frame(Treat=as.factor(sample_data(r_phylum_SEED_13021)$Treatment),t(phylum_rarefied_ST))
+head(phylum_SEED)
+#phylum_SEED<-phylum_SEED%>% group_by(Sample_ID) %>%
+#  summarise_all(funs(mean))
+phylum_SEED_t<-as.data.frame (t(phylum_SEED))
+
+
+phylum_SEED_t %>%
+  mutate(dominant=phylum_SEED_t%>%
+           select(c(Proteobacteria,Acidobacteria,Bacteroidetes,Actinobacteria,Planctomycetes))%>%
+           rowSums()) %>% select(dominant)
+
+rowSums(phylum_SEED_t[,1:10])
+phylum_SEED_t$Sample_ID<-rownames(phylum_SEED_t)
+identical(phylum_SEED_t$Sample_ID,as.character(sample_data(SEED_up)$Sample_ID))
+phylum_SEED_t$Treatment<-sample_data(SEED_up)$Treatment
+phylum_SEED_t_melt<-melt(phylum_SEED_t,id.vars = c("Sample_ID","Treatment"))
+dim(phylum_SEED_t_melt)
+head(phylum_SEED_t_melt)
+colnames(phylum_SEED_t_melt)<-c('Sample_ID','Treatment','Phylum','Relative_abundance')
+phylum_SEED_t_melt
+
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/SEED_treatment/16S/SEED_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Phylum level stacked barplot for only SEED samples.tiff', units="in", width=15, height=5, res=300)
+
+phylum_SEED_t_melt$Phylum<-factor(phylum_SEED_t_melt$Phylum,levels=phylum_labels[match(c(as.character(unique(phylum_SEED_t_melt$Phylum))),phylum_labels)])
+
+ggplot(phylum_SEED_t_melt, aes(x =Sample_ID , y = Relative_abundance,fill=Phylum))+geom_bar(stat='identity',size=0.1)+labs(x="Treatment",y="Relative Abundance")+scale_fill_manual(values=phylum_colors[match(c(as.character(unique(phylum_SEED_t_melt$Phylum))),phylum_labels)])+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),axis.text.x = element_text(size = 6,family="Arial"),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=6,family="Arial",angle = 90),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+# -- top phylum
+# Proteobacteria, Actinobacteria, Acidobacteria, Cyanobacteria and Firmicutes
+
+## SEED_genus
+
+sample_sums(SEED_up)
+SEED_genus<-tax_glom(SEED_up,taxrank = rank_names(SEED_up)[6],NArm = TRUE)
+SEED_genus
+sort(taxa_sums(SEED_genus),decreasing = TRUE)[1:10]
+SEED_genus_count<-data.frame(tax_table(SEED_genus),otu_table(SEED_genus))
+#write.csv(SEED_genus_count,file = "SEED_genus_count.csv")
+
+## SEED_family
+SEED_family<-tax_glom(SEED_up,taxrank = rank_names(SEED_up)[5],NArm = TRUE)
+SEED_family
+sort(taxa_sums(SEED_family),decreasing = TRUE)[1:10]
+SEED_family_count<-data.frame(tax_table(SEED_family)[,1:5],otu_table(SEED_family))
+SEED_family_count[c(labels(sort(taxa_sums(SEED_family),decreasing = TRUE)[1:10])),1:5]
+#write.csv(SEED_ unt,file = "SEED_family_count.csv")
+
+## Top 10 family
+# Enterobacteriaceae, Pseudomonadaceaem Sphingomonadaceae, Beijerinckiaceae, Moraxellaceae, Rhizobiaceae, Xanthobacteraceae,Weeksellaceae, Rhizobiales_Incertae_Sedis
+
+```
+
+
+## SEED rarefied
+
+```{r}
+min(sample_sums(SEED))
+rf_SEED_up<-rarefy_even_depth(SEED_up,sample.size = min(sample_sums(SEED_up)),rngseed = 1013,replace = FALSE,trimOTUs = TRUE)
+r_rf_SEED_up<-transform_sample_counts(rf_SEED_up,function(x) x/sum(x))
+
+# PERMANOVA test of treatment impacts
+
+set.seed(1013)
+adonis2(t(otu_table(r_rf_SEED_up))~Treatment,data=data.frame(sample_data(r_rf_SEED_up)),permutations=999,by="margin") 
+
+#          Df SumOfSqs     R2      F Pr(>F)    
+#Treatment  2   1.6823 0.4434 4.7798  0.001 ***
+#Residual  12   2.1118 0.5566                  
+#Total     14   3.7941 1.0000
+
+## Read depth
+set.seed(1013)
+adonis2(t(otu_table(r_rf_SEED_up))~Read_depth,data=data.frame(sample_data(r_rf_SEED_up)),permutations=999,by="margin") 
+
+#          Df SumOfSqs     R2      F Pr(>F)    
+#Treatment  2   1.6823 0.4434 4.7798  0.001 ***
+#Residual  12   2.1118 0.5566                  
+#Total     14   3.7941 1.0000
+
+
+## Read_depth vs Treatment impact
+set.seed(1013)
+adonis2(t(otu_table(r_rf_SEED_up))~Read_depth+Treatment,data=data.frame(sample_data(r_rf_SEED_up)),permutations=999,by="margin") 
+
+# PCoA plot
+r_rf_SEED_up_bray<-vegdist(t(otu_table(r_rf_SEED_up)),method="bray",binary = FALSE)
+r_rf_SEED_up_PCoA<-ordinate(r_rf_SEED_up,method = "PCoA", r_rf_SEED_up_bray)
+tiff('/Users/fangliu/Documents/2018_fugicide_project/SEED_treatment/16S/SEED_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/PCoA r_rf_SEED_up_Treatment.tiff', units="in", width=7, height=5, res=300)
+
+plot_ordination(r_rf_SEED_up,r_rf_SEED_up_PCoA,type="samples",color="Treatment",label="Sample_ID")+labs(title="r_rf_SEED_up_weighted Bray-Curtis PCoA plot",x="PCoA1 [32.9%]",y="PCoA2 [17.4%]")+
+  geom_point(size=2)+scale_color_manual(values = c('#fce75d','#5d9ffc','#fc5df7')) +theme(panel.background = element_rect(fill = "transparent"), plot.background = element_rect(fill = "transparent", color = NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",vjust=3,hjust = .5)),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Arial"),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),legend.background = element_rect(fill="transparent"),legend.box.background = element_rect(color="transparent", fill = "transparent"),legend.key = element_rect(fill = "transparent", colour = NA),plot.margin=unit(c(1,1,1,1),"cm"))
+dev.off()
+
+## Stacked barplot of SEED samples
+
+r_rf_SEED_up # 432 taxa and 15 samples
+sample_sums(r_rf_SEED_up)
+
+rf_SEED_phylum<-tax_glom(r_rf_SEED_up,taxrank = rank_names(r_rf_SEED_up)[2],NArm = TRUE)
+rf_SEED_phylum #17 taxa and 15 samples
+r_rf_SEED_phylum<-transform_sample_counts(rf_SEED_phylum,function(x) x/sum(x))
+
+filter_r_rf_SEED_phylum<- filter_taxa(r_rf_SEED_phylum, function(x) sum(x>0.0001)>0.2*length(x),prune = TRUE)
+filter_r_rf_SEED_phylum # got 8 phyla across 159 sampels left
+sample_sums(filter_r_rf_SEED_phylum)
+tax_table(filter_r_rf_SEED_phylum)[,2]
+Others<-1-sample_sums(filter_r_rf_SEED_phylum)
+phylum_rf_SEED<-rbind(otu_table(filter_r_rf_SEED_phylum),Others)
+phylum_rf_SEED<-as.data.frame(phylum_rf_SEED)
+phylum_rf_SEED[,1:10]
+rownames(phylum_rf_SEED)<-c(tax_table(filter_r_rf_SEED_phylum)[,2],"Others")
+phylum_rf_SEED
+#phylum_rarefied_ST<-data.frame(Treat=as.factor(sample_data(r_phylum_rf_SEED_13021)$Treatment),t(phylum_rarefied_ST))
+head(phylum_rf_SEED)
+#phylum_rf_SEED<-phylum_rf_SEED%>% group_by(Sample_ID) %>%
+#  summarise_all(funs(mean))
+phylum_rf_SEED_t<-as.data.frame (t(phylum_rf_SEED))
+
+
+phylum_rf_SEED_t %>%
+  mutate(dominant=phylum_rf_SEED_t%>%
+           select(c(Proteobacteria,Acidobacteria,Bacteroidetes,Actinobacteria,Planctomycetes))%>%
+           rowSums()) %>% select(dominant)
+
+rowSums(phylum_rf_SEED_t[,1:10])
+phylum_rf_SEED_t$Sample_ID<-rownames(phylum_rf_SEED_t)
+identical(phylum_rf_SEED_t$Sample_ID,as.character(sample_data(rf_SEED_up)$Sample_ID))
+phylum_rf_SEED_t$Treatment<-sample_data(rf_SEED_up)$Treatment
+phylum_rf_SEED_t_melt<-melt(phylum_rf_SEED_t,id.vars = c("Sample_ID","Treatment"))
+dim(phylum_rf_SEED_t_melt)
+head(phylum_rf_SEED_t_melt)
+colnames(phylum_rf_SEED_t_melt)<-c('Sample_ID','Treatment','Phylum','Relative_abundance')
+phylum_rf_SEED_t_melt
+
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/r_output/Phylum level stacked barplot for only rf_SEED samples.tiff', units="in", width=15, height=5, res=300)
+
+phylum_rf_SEED_t_melt$Phylum<-factor(phylum_rf_SEED_t_melt$Phylum,levels=phylum_labels[match(c(as.character(unique(phylum_rf_SEED_t_melt$Phylum))),phylum_labels)])
+
+ggplot(phylum_rf_SEED_t_melt, aes(x =Sample_ID , y = Relative_abundance,fill=Phylum))+geom_bar(stat='identity',size=0.1)+labs(x="Treatment",y="Relative Abundance")+scale_fill_manual(values=phylum_colors[match(c(as.character(unique(phylum_rf_SEED_t_melt$Phylum))),phylum_labels)])+theme(panel.background = element_rect(fill='white',color="black"),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),plot.title=(element_text(size=15,family = "Arial",face="bold",hjust = 0.5,vjust = 3)),axis.text.x = element_text(size = 6,family="Arial"),text=element_text(family = "Arial",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=6,family="Arial",angle = 90),
+    axis.title=element_text(size = 15,face="bold",family = "Arial"),legend.title = element_text(size=13,face="bold",family = "Arial"),legend.text = (element_text(size=10,family = "Arial")),plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+# -- top phylum
+# Proteobacteria, Actinobacteria, Acidobacteria, Cyanobacteria and Firmicutes
+
+## rf_SEED_genus
+
+sample_sums(rf_SEED_up)
+rf_SEED_genus<-tax_glom(rf_SEED_up,taxrank = rank_names(rf_SEED_up)[6],NArm = TRUE)
+rf_SEED_genus
+sort(taxa_sums(rf_SEED_genus),decreasing = TRUE)[1:10]
+rf_SEED_genus_count<-data.frame(tax_table(rf_SEED_genus),otu_table(rf_SEED_genus))
+#write.csv(rf_SEED_genus_count,file = "rf_SEED_genus_count.csv")
+
+rf_SEED_genus_tax_top10<-data.frame(tax_table(rf_SEED_genus))[match(c(labels(sort(taxa_sums(rf_SEED_genus),decreasing = TRUE))[1:10]),taxa_names(rf_SEED_genus)),]
+rf_SEED_genus_tax_top10
+#labels(sort(taxa_sums(rf_SEED_genus),decreasing = TRUE)[1:10])
+
+## rf_SEED_family
+rf_SEED_family<-tax_glom(rf_SEED_up,taxrank = rank_names(rf_SEED_up)[5],NArm = TRUE)
+rf_SEED_family
+sort(taxa_sums(rf_SEED_family),decreasing = TRUE)[1:10]
+rf_SEED_family_count<-data.frame(tax_table(rf_SEED_family)[,1:5],otu_table(rf_SEED_family))
+rf_SEED_family_count[c(labels(sort(taxa_sums(rf_SEED_family),decreasing = TRUE)[1:10])),1:5]
+#write.csv(rf_SEED_family_count,file = "rf_SEED_family_count.csv")
+
+rf_SEED_family_tax_top10<-data.frame(tax_table(rf_SEED_family)[,1:5])[match(c(labels(sort(taxa_sums(rf_SEED_family),decreasing = TRUE))[1:10]),taxa_names(rf_SEED_family)),]
+rf_SEED_family_tax_top10
+sort(taxa_sums(rf_SEED_family),decreasing = TRUE)[1:10]
+
+## Top 10 family
+# Enterobacteriaceae, Pseudomonadaceaem Sphingomonadaceae, Beijerinckiaceae, Moraxellaceae, Rhizobiaceae, Xanthobacteraceae,Weeksellaceae, Rhizobiales_Incertae_Sedis
+```
