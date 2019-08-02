@@ -24,7 +24,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
 
 ### r_Seed_13021_up
 
-1. Summary of the otu_table, tax_table and sample_data
+   1. Summary of the otu_table, tax_table and sample_data
            
            ```
            phyloseq-class experiment-level object
@@ -32,11 +32,11 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            sample_data() Sample Data:       [ 149 samples by 7 sample variables ]
            tax_table()   Taxonomy Table:    [ 21355 taxa by 6 taxonomic ranks ]
            ```
-2. Total read - 1913852
+   2. Total read - 1913852
 
-3. PERMANOVA results
+   3. PERMANOVA results
            
-            * Read-depth
+        * Read-depth
 
             ```
             adonis2(formula = t(otu_table(r_Seed_13021_up)) ~ Read_depth, data = data.frame(sample_data(r_Seed_13021_up)), permutations = 999, by = "margin")
@@ -46,13 +46,14 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
             Total      148   36.122 1.00000
             ```
 
-### r_Soil_up
+### r_Soil_up --check for field plot design
 
-           *Plot design impact check up*
+   *Plot design impact check up*
 
-           We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
+We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we want to test if there were any unintended clustering of plots that accidently overlap with the fungicide treatment. For this purpose, we analized the bacteria community difference between samples before we do any fungicide treatment.
 
-           * Treatment impact
+   * Treatment impact
+   
            ```
            adonis2(formula = t(otu_table(r_Soil_up)) ~ Treatment, data = data.frame(sample_data(r_Soil_up)), permutations = 999, by = "margin")
                      Df SumOfSqs      R2      F Pr(>F)
@@ -61,9 +62,9 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            Total     14  1.21909 1.00000
            ```
 
-### More exploration with r_SB_CT_up
+### r_SB_CT_up - more exploration of the data
 
-           * Time impact
+   * Time impact
            ```
                       adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Time, data = data.frame(sample_data(r_SB_CT_up)), permutations = perm, by = "margin")
                     Df SumOfSqs      R2      F Pr(>F)    
@@ -71,7 +72,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            Residual 16  1.34668 0.76151                  
            Total    19  1.76842 1.00000
            ```
-* Read_depth impact
+   * Read_depth impact
            
            ```
                       adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Read_depth, data = data.frame(sample_data(r_SB_CT_up)), permutations = 999, by = "margin")
@@ -80,9 +81,9 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            Residual   18  1.63297 0.92341                
            Total      19  1.76842 1.00000
            ```
-### Subset phyloseq to BRE - including bulk, rhizosphere and endosphere samples**
+### r_BRE_up - including bulk, rhizosphere and endosphere samples
 
-           * Summary of the otu_table, tax_table and metadata
+   * Summary of the otu_table, tax_table and metadata
 
            ```
            phyloseq-class experiment-level object
@@ -92,7 +93,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            ```
 * **PERMANOVA** 
 
-           * ---- Read_depth - insignificant
+   * ---- Read_depth - insignificant
 
            ```
            adonis2(formula = t(otu_table(r_BRE_up)) ~ Read_depth, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
@@ -103,7 +104,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            ```
 
 
-           * ---- Compartment impact
+   * ---- Compartment impact
 
            ```
            Permutation test for adonis under NA model
@@ -122,7 +123,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * ---- Time impact
+   * ---- Time impact
 
            ```
            Permutation test for adonis under NA model
@@ -141,7 +142,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * ---- Plot impact vs Treatment impact
+   * ---- Plot impact vs Treatment impact
 
            ```
            1.  Treatment
@@ -177,7 +178,7 @@ For this experiment, soybean bulk, rhizosphere and endosphere microbes were char
 
            ```
 
-           * ---- Read_Depth vs Compartment vs Time vs Plot
+   * ---- Read_Depth vs Compartment vs Time vs Plot
 
            ```
            Terms added sequentially (first to last)
