@@ -284,6 +284,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
 
 
    * --- Read_depth impact
+   
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Read_depth, data = data.frame(sample_data(r_Rhi_up)), permutations = 999, by = "margin")
                       Df SumOfSqs      R2      F Pr(>F)
@@ -293,6 +294,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            ```
 
    * --- Time
+   
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Time, data = data.frame(sample_data(r_Rhi_up)), permutations = perm, by = "margin")
                     Df SumOfSqs      R2      F Pr(>F)    
