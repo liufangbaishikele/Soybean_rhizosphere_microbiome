@@ -64,24 +64,43 @@ tax_table()   Taxonomy Table:    [ 144821 taxa by 6 taxonomic ranks ]
 **More exploration with r_SB_CT_up**
 
            * Time impact
+           ```
+                      adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Time, data = data.frame(sample_data(r_SB_CT_up)), permutations = perm, by = "margin")
+                    Df SumOfSqs      R2      F Pr(>F)    
+           Time      3  0.42175 0.23849 1.6703  0.001 
+           Residual 16  1.34668 0.76151                  
+           Total    19  1.76842 1.00000
+           ```
+* Read_depth impact
            
            ```
-           adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Time, data = data.frame(sample_data(r_SB_CT_up)), permutations = perm, by = "margin")
-         Df SumOfSqs      R2      F Pr(>F)    
-Time      3  0.42175 0.23849 1.6703  0.001 ***
-Residual 16  1.34668 0.76151                  
-Total    19  1.76842 1.00000
+                      adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Read_depth, data = data.frame(sample_data(r_SB_CT_up)), permutations = 999, by = "margin")
+                      Df SumOfSqs      R2      F Pr(>F)  
+           Read_depth  1  0.13545 0.07659 1.4931  0.042 *
+           Residual   18  1.63297 0.92341                
+           Total      19  1.76842 1.00000
            ```
+**Subset phyloseq to BRE - including bulk, rhizosphere and endosphere samples**
 
-           * Read_depth impact
-           
-           ```
-           adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Read_depth, data = data.frame(sample_data(r_SB_CT_up)), permutations = 999, by = "margin")
-           Df SumOfSqs      R2      F Pr(>F)  
-Read_depth  1  0.13545 0.07659 1.4931  0.042 *
-Residual   18  1.63297 0.92341                
-Total      19  1.76842 1.00000
-           ```
+* Summary of the otu_table, tax_table and metadata
+
+```
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 19681 taxa and 134 samples ]
+sample_data() Sample Data:       [ 134 samples by 7 sample variables ]
+tax_table()   Taxonomy Table:    [ 19681 taxa by 6 taxonomic ranks ]
+```
+* PERMANOVA 
+
+* Read_depth
+
+```
+adonis2(formula = t(otu_table(r_BRE_up)) ~ Read_depth, data = data.frame(sample_data(r_BRE_up)), permutations = 999, by = "margin")
+            Df SumOfSqs      R2      F Pr(>F)
+Read_depth   1    0.373 0.01121 1.4958  0.144
+Residual   132   32.886 0.98879              
+Total      133   33.258 1.00000
+```
 
 
 
