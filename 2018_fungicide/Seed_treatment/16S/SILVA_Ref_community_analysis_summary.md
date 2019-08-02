@@ -65,8 +65,9 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
 ### r_SB_CT_up - more exploration of the data
 
    * Time impact
+   
            ```
-                      adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Time, data = data.frame(sample_data(r_SB_CT_up)), permutations = perm, by = "margin")
+           adonis2(formula = t(otu_table(r_SB_CT_up)) ~ Time, data = data.frame(sample_data(r_SB_CT_up)), permutations = perm, by = "margin")
                     Df SumOfSqs      R2      F Pr(>F)    
            Time      3  0.42175 0.23849 1.6703  0.001 
            Residual 16  1.34668 0.76151                  
@@ -82,8 +83,6 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total      19  1.76842 1.00000
            ```
 ### r_BRE_up - including bulk, rhizosphere and endosphere samples
-
-   * Summary of the otu_table, tax_table and metadata
 
            ```
            phyloseq-class experiment-level object
@@ -210,7 +209,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
 
 **Bulk Compartment**
 
-           * --- Read_depth -- insignificant
+   * --- Read_depth -- insignificant
 
            ```
            adonis2(formula = t(otu_table(r_Bulk_up)) ~ Read_depth, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
@@ -219,7 +218,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Residual   43   4.1754 0.97323              
            Total      44   4.2903 1.00000
            ```
-           * --- Time impact
+   * --- Time impact
 
            ```
            adonis2(formula = t(otu_table(r_Bulk_up)) ~ Time, data = data.frame(sample_data(r_Bulk_up)), permutations = perm, by = "margin")
@@ -228,7 +227,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Residual 42   3.7759 0.8801                 
            Total    44   4.2903 1.0000
            ```
-           * --- Plot impact
+   * --- Plot impact
 
            ```
            adonis2(formula = t(otu_table(r_Bulk_up)) ~ Plot, data = data.frame(sample_data(r_Bulk_up)), permutations = perm, by = "margin")
@@ -238,7 +237,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total    44   4.2903 1.00000
            ```
 
-           * --- Treatment impact
+  * --- Treatment impact
 
            ```
            adonis2(formula = t(otu_table(r_Bulk_up)) ~ Treatment, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
@@ -248,7 +247,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total     44   4.2903 1.00000
            ```
 
-           * --- Read_depth vs Time vs Plot
+  * --- Read_depth vs Time vs Plot
 
            ```
            Permutation test for adonis under reduced model
@@ -266,7 +265,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            ---
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
-           * --- Read_depth vs Time vs Treatment
+   * --- Read_depth vs Time vs Treatment
 
            ```
            adonis2(formula = t(otu_table(r_Bulk_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(r_Bulk_up)), permutations = 999, by = "margin")
@@ -279,9 +278,12 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            ---
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
+           
+           
 **Rhizosphere Compartment**
 
-           * --- Read_depth impact
+
+   * --- Read_depth impact
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Read_depth, data = data.frame(sample_data(r_Rhi_up)), permutations = 999, by = "margin")
                       Df SumOfSqs      R2      F Pr(>F)
@@ -290,7 +292,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total      43   6.9936 1.00000
            ```
 
-           * --- Time
+   * --- Time
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Time, data = data.frame(sample_data(r_Rhi_up)), permutations = perm, by = "margin")
                     Df SumOfSqs      R2      F Pr(>F)    
@@ -301,7 +303,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * --- Plot
+   * --- Plot
 
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Plot, data = data.frame(sample_data(r_Rhi_up)), permutations = perm, by = "margin")
@@ -311,7 +313,8 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total    43   6.9936 1.00000 
            ```
 
-           * --- Treatment
+   * --- Treatment
+   
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Treatment, data = data.frame(sample_data(r_Rhi_up)), permutations = perm, by = "margin")
                      Df SumOfSqs      R2     F Pr(>F)   
@@ -322,7 +325,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * --- Read_depth vs Time vs Plot
+   * --- Read_depth vs Time vs Plot
 
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Read_depth + Plot + Time, data = data.frame(sample_data(r_Rhi_up)), permutations = 999, by = "margin")
@@ -336,7 +339,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * --- Read_depth vs Time vs Treatment
+   * --- Read_depth vs Time vs Treatment
 
            ```
            adonis2(formula = t(otu_table(r_Rhi_up)) ~ Read_depth + Treatment + Time, data = data.frame(sample_data(r_Rhi_up)), permutations = 999, by = "margin")
@@ -349,9 +352,12 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            ---
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
+           
+           
 **Endosphere Compartment**
 
-          * --- Read_depth
+
+  * --- Read_depth
 
           ```
           adonis2(formula = t(otu_table(r_Endo_up)) ~ Read_depth, data = data.frame(sample_data(r_Endo_up)), permutations = 999, by = "margin")
@@ -361,7 +367,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Total      44   6.5987 1.00000
           ```
 
-          * --- Time
+  * --- Time
 
           ```
           Permutation test for adonis under NA model
@@ -379,7 +385,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
 
-          * --- Plot
+  * --- Plot
 
           ```
           Permutation test for adonis under NA model
@@ -397,7 +403,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
 
-          * --- Treatment
+  * --- Treatment
 
           ```
           Permutation test for adonis under NA model
@@ -415,7 +421,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
 
-          * --- Read_depth vs Time vs Plot
+ * --- Read_depth vs Time vs Plot
 
           ```
           Permutation test for adonis under reduced model
@@ -434,7 +440,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
 
-          * --- Read_depth vs Time vs Treatment
+ * --- Read_depth vs Time vs Treatment
 
           ```
           Permutation test for adonis under reduced model
@@ -455,7 +461,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
 
 ### Comparison the compartment impact between different time points
 
-**>>>>Week1>>>>**
+   **>>>>Week1>>>>**
 
            ```
            phyloseq-class experiment-level object
@@ -464,7 +470,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            tax_table()   Taxonomy Table:    [ 11316 taxa by 6 taxonomic ranks ]
            ```
 
-           * Read_depth
+ * ---- Read_depth
 
            ```
            adonis2(formula = t(otu_table(r_wk1_up)) ~ Read_depth, data = data.frame(sample_data(r_wk1_up)), permutations = 999, by = "margin")
@@ -473,8 +479,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Residual   42   9.8447 0.98939              
            Total      43   9.9503 1.00000
            ```
-
-           * Compartment
+ * ---- Compartment
 
            ```
            Permutation test for adonis under NA model
@@ -491,7 +496,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            ---
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
-           * Plot
+ * ---- Plot
 
            ```
            Permutation test for adonis under NA model
@@ -509,7 +514,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * Treatment
+ * ---- Treatment
 
            ```
            Permutation test for adonis under NA model
@@ -525,7 +530,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total     43   9.9503 1.00000
            ```
 
-           * Read_depth vs Compartment vs Plot
+  * ---- Read_depth vs Compartment vs Plot
 
            ```
            adonis2(formula = t(otu_table(r_wk1_up)) ~ Compartment + Read_depth + Plot, data = data.frame(sample_data(r_wk1_up)), permutations = 999, by = "margin")
@@ -539,7 +544,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * Read_depth vs Compartment vs Treatment
+  * ---- Read_depth vs Compartment vs Treatment
 
            ```
            adonis2(formula = t(otu_table(r_wk1_up)) ~ Compartment + Read_depth + Treatment, data = data.frame(sample_data(r_wk1_up)), permutations = 999, by = "margin")
@@ -559,7 +564,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            sample_data() Sample Data:       [ 45 samples by 7 sample variables ]
            tax_table()   Taxonomy Table:    [ 11403 taxa by 6 taxonomic ranks ]
            ```
-           * ---- Read_depth -- this is cause by one specific sample with super high read depth - 105E_3wk sample
+  * ---- Read_depth -- this is cause by one specific sample with super high read depth - 105E_3wk sample
 
            ```
            adonis2(formula = t(otu_table(r_wk3_up)) ~ Read_depth, data = data.frame(sample_data(r_wk3_up)), permutations = 999, by = "margin")
@@ -569,7 +574,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total      44   9.8065 1.00000
            ```
 
-           * ---- Compartment
+ * ---- Compartment
 
            ```
            Permutation test for adonis under NA model
@@ -587,7 +592,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * ---- Plot
+   * ---- Plot
 
            ```
            Permutation test for adonis under NA model
@@ -603,7 +608,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Total    44   9.8065 1.00000
            ```
 
-           * ---- Treatment 
+  * ---- Treatment 
 
            ```
            Permutation test for adonis under NA model
@@ -621,7 +626,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * ---- Read_depth vs compartment vs Plot
+   * ---- Read_depth vs compartment vs Plot
 
            ```
            Permutation test for adonis under reduced model
@@ -640,7 +645,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
            ```
 
-           * ---- Read_depth vs compartment vs Treatment
+  * ---- Read_depth vs compartment vs Treatment
 
            ```
            Permutation test for adonis under reduced model
@@ -667,7 +672,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           tax_table()   Taxonomy Table:    [ 11513 taxa by 6 taxonomic ranks ]
           ```
 
-          * ---- Read_depth
+ * ---- Read_depth
           ```
           Permutation test for adonis under NA model
           Marginal effects of terms
@@ -681,7 +686,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Total      44  10.1476 1.00000
           ```
 
-          * ---- Compartment
+ * ---- Compartment
 
           ```
           Permutation test for adonis under NA model
@@ -700,7 +705,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           > 
           ```
 
-          * ---- Plot
+* ---- Plot
 
           ```
           Permutation test for adonis under NA model
@@ -716,7 +721,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Total    44  10.1476 1.00000
           ```
 
-          * ---- Treatment
+* ---- Treatment
 
           ```
           Permutation test for adonis under NA model
@@ -734,7 +739,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
 
-          * ---- Read_depth vs Compartment vs Plot
+* ---- Read_depth vs Compartment vs Plot
 
           ```
           Permutation test for adonis under reduced model
@@ -753,7 +758,7 @@ We have 15 plots that randomly applied CM, EE or CT fungicide treatment. So, we 
           Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
           ```
 
-          * ---- Read_depth vs Compartment vs Treatment
+* ---- Read_depth vs Compartment vs Treatment
 
           ```
           Permutation test for adonis under reduced model
