@@ -6,7 +6,7 @@
 
 Refer to this [Tax4Fun documentation](http://tax4fun.gobics.de/)
 
-* In terms of the [input file](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/strigolactone/2016_strigolactone_16S/Tax4Fun/Tax4Fun_input.csv) and [R code](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/strigolactone/2016_strigolactone_16S/Tax4Fun/2016_strigolactone_16S_Tax4Fun_silva.Rmd) 
+* Here are the [input file](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/strigolactone/2016_strigolactone_16S/Tax4Fun/Tax4Fun_input.csv) and [R code](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/strigolactone/2016_strigolactone_16S/Tax4Fun/2016_strigolactone_16S_Tax4Fun_silva.Rmd) 
 
 * I found Tax4Fun very strict with input format. The key is to format the input as the same as they used in their example.
 
