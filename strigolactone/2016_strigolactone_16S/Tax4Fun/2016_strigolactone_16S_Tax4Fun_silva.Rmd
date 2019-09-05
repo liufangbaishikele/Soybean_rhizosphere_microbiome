@@ -1,0 +1,410 @@
+---
+title: "2016_Strigolactone_16S_Tax4Fun"
+author: "Fang Liu"
+date: "1/5/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Illustration of Tax4Fun practice
+
+```{r}
+#--1--
+#Download installation package from this [link](http://tax4fun.gobics.de/Tax4Fun/Tax4Fun_0.3.1.tar.gz)
+#Move this package to package installation directory (/Library/Frameworks/R.framework/Versions/3.4/Resources/library)
+#install.packages("Tax4Fun_0.3.1.tar.gz",repos = NULL)
+#It reminds me that dependent package qiimer and biom is not available, so intalled qiimer using install.packages("qimmer") and biom is installed following joey's git hub - https://github.com/joey711/biom
+# Once qiimer and biom are installed on R, Tax4Fun are correctly installed. Now, biom is a deprecated CRAN package, it has moved to bioconductor and renamed as biomformat package. But for this Tax4Fun, biom package is needed. So, I install it from download the tar.gz package from https://cran.r-project.org/src/contrib/Archive/biom/ and installed it using install.packages("/Library/Frameworks/R.framework/Versions/3.5/Resources/library/biom_0.3.12.tar.gz", repos = NULL, type = "source"). Again,RJSONIO package is needed, so I installed it install.packages("RJSONIO") before install biom
+
+#--2--
+#Download SILVAngs output file by this [link](http://tax4fun.gobics.de/SILVAngs/resultarchive-CrossSoilBiome.zip) and unzip the folder and mv the the file of  ../ssu/tax_breakdown/fingerprint/crosssoilbiome---ssu---fingerprint----Total---sim_93---tax_silva---td_20.csv to current pathway -/Users/fangliu/Documents/2016_cultivar_project/Tax4Fun
+
+#--3--
+#Download SILVA reference by this [link](http://tax4fun.gobics.de/Tax4Fun/ReferenceData/SILVA115.zip) and move this file to /Users/fangliu/Documents/2016_cultivar_project/Tax4Fun AND decompress the file. In this reference folder, there are pre-computer KEGG function list. In your analysis, put it into the same folder with your Tax4Fun input file.
+
+#--4--
+# Now ready for Tax4Fun analysis
+
+# ---Actually, you need to format your out_tax file correctly.
+
+## Tricky but works
+#1. First, generate ST_genus_otu_count_table.csv from R and write out to local computer.
+#2. Edit taxonomy file to include only the taxonomy column and remove all (confidence) or “ use vim
+#3. Paste out_count_table with edited taxonomy -d “,” 
+#4. Vim and subset all comma to “\t” and save as Tax4Fun_input.txt
+#5. Using awk to print all columns except the first column and save as a new file with extension as csv.  I.e., save txt file to csv file. So, when export to local computer and open with excel, the format will be right.
+```
+
+
+## Upload all packages
+
+```{r}
+library(Tax4Fun)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(tidyr)
+library(pheatmap)
+library(RColorBrewer)
+
+```
+
+## Tax4Fun practice following its documentation using given files from their packages by 
+
+```{r}
+setwd("/Users/fangliu/Documents/2016_cultivar_project/Tax4Fun/SILVAng_input")
+otu_tax<-importSilvaNgsData(inputFiles = "crosssoilbiome---ssu---fingerprint----Total---sim_93---tax_silva---td_20.csv")
+str(otu_tax)
+otu_tax$sampleNames
+dim(otu_tax$otuTable)# 33 otus across 5 samples
+otu_tax$otuTable[1:5,1:5]
+
+setwd("/Users/fangliu/Documents/2016_cultivar_project/Tax4Fun")
+profile<-Tax4Fun(otu_tax,"Tax4Fun_SILVA123",fctProfiling = TRUE,refProfile = "UProC")
+str(profile)
+profile$FTU
+dim(profile$Tax4FunProfile) # 5 rows and 5604 columns, KEGG orthologs
+profile$Tax4FunProfile[1:5,1:5]
+t(profile$Tax4FunProfile)[1:5,1:5]# in this output, it is KEGG ortholog count in each sample
+
+path<-Tax4Fun(otu_tax,"Tax4Fun_SILVA123",fctProfiling = FALSE,refProfile = "UProC")
+str(path)
+dim(path$Tax4FunProfile) # 5 rows and 268 columns - pathways
+path$FTU
+path$Tax4FunProfile[1:5,1:5]
+t(path$Tax4FunProfile)[1:5,1:5]# in this output, it is KEGG ortholog count in each sample
+```
+
+
+## Analysis using my samples
+
+```{r}
+setwd("/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/Tax4Fun")
+ST_genus_phyloseq<-import_mothur(mothur_shared_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.shared",mothur_constaxonomy_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.1.cons.taxonomy") # This shared file were exported from '/staton/projects/soybean_rhizosphere/2016_strigolactone/16S_2016_strigolactone/Mothur_analysis/02_mothur/rarefied_files'
+colnames(tax_table(ST_genus_phyloseq))<-c("Kingdom","Phylum","Class","Order","Family","Genus")
+
+# The original list file was subseted in mothur using sub.sample command to do rarefaction-based normalization. And then the list file were filtered to remove all singletons.
+
+ST_genus_otu_table<-otu_table(ST_genus_phyloseq)
+dim(ST_genus_otu_table)
+ST_genus_otu_table[1:5,1:5]
+colnames(ST_genus_otu_table)
+
+#write.csv(ST_genus_otu_table,file="subsampled_and_rare_removed_ST_genus_shared.csv")
+
+# After combine tax and otu together, when read in the file it gives error-"Error in data[[rlabp]] : subscript out of bounds". 
+
+#Because the table could not be imported into Tax4Fun becuase out of the bound - Error in data[[rlabp]] : subscript out of bounds- Althought I am not sure if it is really because my otus are too many and out of bounds or not. As a way of troubleshooting, I reformated the otu table and removed those rare OTU that has tax_sum smaller than 10. It turned out this is not the problem
+
+#so, I formated it in a way as the example data gives
+# Edit the file in ACF, change csv to txt file. Then it worked.
+
+
+```
+
+
+## Yay, ready for the KEGG and pathway analysis only rarefied not normalized
+
+```{r}
+
+# Import otu_taxonomy input
+
+genus<-importSilvaNgsData(inputFiles = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/Tax4Fun/Tax4Fun_input.csv")
+str(genus)
+dim(genus$otuTable) #1048 Genus across 36 samples
+genus$otuTable[1:5,1:3]
+colnames(genus$otuTable)<-colnames(ST_genus_otu_table)
+
+# Generate KEGG ortholog list
+
+genus_profile<-Tax4Fun(genus,"Tax4Fun_SILVA123",fctProfiling = TRUE,refProfile = "UProC",normCopyNo = FALSE)
+str(genus_profile)
+genus_profile$FTU
+dim(genus_profile$Tax4FunProfile) # 36 rows and 6401 columns, KEGG orthologs
+genus_profile$Tax4FunProfile[1:5,1:5]
+t(genus_profile$Tax4FunProfile)[1:5,1:5]# in this output, it is KEGG ortholog count in each sample
+genus_KEGG_ortholog<-t(genus_profile$Tax4FunProfile)
+dim(genus_KEGG_ortholog) # 6308 orthologs across 136 samples
+#write.csv(genus_KEGG_ortholog,file="genus_KEGG_ortholog_rarefied.csv")
+
+genus_path<-Tax4Fun(genus,"Tax4Fun_SILVA123",fctProfiling = FALSE,refProfile = "UProC",normCopyNo = FALSE)
+str(genus_path)
+genus_path$FTU
+dim(genus_path$Tax4FunProfile) # 36 rows and 279 columns - pathways
+genus_path$Tax4FunProfile[1:5,1:5]
+t(genus_path$Tax4FunProfile)[1:5,1:5]
+sum(genus_path$Tax4FunProfile[1,])
+genus_KEGG_path<-t(genus_path$Tax4FunProfile)
+#write.csv(genus_KEGG_path,file = "genus_KEGG_path_rarefied.csv")
+```
+
+
+## HAve a quick look at PCoA plot of KEGG ortholog profile and pathway file
+
+```{r}
+genus_KEGG_ortholog<-read.csv(file = "genus_KEGG_ortholog_rarefied.csv",row.names = 1)
+str(genus_KEGG_ortholog)
+dim(genus_KEGG_ortholog)
+genus_KEGG_ortholog_phy<-otu_table(as.matrix(genus_KEGG_ortholog),taxa_are_rows = TRUE)
+ST_meta<-read.csv(file = "strigolactone_meta.csv",row.names = 1)
+genus_KEGG_ortholog_phy
+identical (rownames(ST_meta),sample_names(genus_KEGG_ortholog_phy))
+ST_meta_phy<-sample_data(ST_meta)
+genus_KEGG_ortholog_phy<-phyloseq(genus_KEGG_ortholog_phy,ST_meta_phy)
+genus_KEGG_ortholog_phy
+
+#PCoA plot
+genus_KEGG_ortholog_phy_bray<-vegdist(t(otu_table(genus_KEGG_ortholog_phy)),method="jaccard",binary = FALSE)
+genus_KEGG_ortholog_phy_PCoA<-ordinate(genus_KEGG_ortholog_phy,method = "PCoA", genus_KEGG_ortholog_phy_bray)
+
+plot_ordination(genus_KEGG_ortholog_phy,genus_KEGG_ortholog_phy_PCoA,type="samples",color="Treatment")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c('#838B8B','#48af9c','#0e36a3','#cc411f','#b8b100'))+ ggtitle("KEGG ortholog using rarefied genus count - PCoA") +theme(plot.title=(element_text(size=15,family = "Times",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Times",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Times"),
+    axis.title=element_text(size = 15,face="bold",family = "Times"),legend.title = element_text(size=13,face="bold",family = "Times"),legend.text = (element_text(size=10,family = "Times")))
+
+genus_KEGG_path<-read.csv(file = "genus_KEGG_path_rarefied.csv",row.names = 1)
+dim(genus_KEGG_path)
+str(genus_KEGG_path)
+genus_KEGG_path_phy<-otu_table(as.matrix(genus_KEGG_path),taxa_are_rows = TRUE)
+ST_meta<-read.csv(file = "strigolactone_meta.csv",row.names = 1)
+genus_KEGG_path_phy
+identical (rownames(ST_meta),sample_names(genus_KEGG_path_phy))
+ST_meta_phy<-sample_data(ST_meta)
+genus_KEGG_path_phy<-phyloseq(genus_KEGG_path_phy,ST_meta_phy)
+genus_KEGG_path_phy
+
+genus_KEGG_path_phy_bray<-vegdist(t(otu_table(genus_KEGG_path_phy)),method="jaccard",binary = FALSE)
+genus_KEGG_path_phy_PCoA<-ordinate(genus_KEGG_path_phy,method = "PCoA",genus_KEGG_path_phy_bray)
+
+plot_ordination(genus_KEGG_path_phy,genus_KEGG_path_phy_PCoA,type="samples",color="Treatment")+geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c('#838B8B','#48af9c','#0e36a3','#cc411f','#b8b100'))+ ggtitle("KEGG path using rarefied genus count - PCoA") +theme(plot.title=(element_text(size=15,family = "Times",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Times",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Times"),axis.title=element_text(size = 15,face="bold",family = "Times"),legend.title = element_text(size=13,face="bold",family = "Times"),legend.text = (element_text(size=10,family = "Times")))
+
+```
+
+
+##  Gene profile and KEGG pathway analysis - rarefied and normalized
+
+```{r}
+
+# Import otu_taxonomy input
+
+genus<-importSilvaNgsData(inputFiles = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/Tax4Fun_input.csv")
+str(genus)
+dim(genus$otuTable)
+genus$otuTable[1:5,1:5]
+colnames(genus$otuTable)<-colnames(ST_genus_otu_table)
+
+# Generate KEGG ortholog list
+
+genus_profile<-Tax4Fun(genus,"Tax4Fun_SILVA123",fctProfiling = TRUE,refProfile = "UProC",normCopyNo = TRUE)
+str(genus_profile)
+genus_profile$FTU
+dim(genus_profile$Tax4FunProfile) # 36 rows and 6401 columns, KEGG orthologs
+genus_profile$Tax4FunProfile[1:5,1:5]
+t(genus_profile$Tax4FunProfile)[1:5,1:5]# in this output, it is KEGG ortholog count in each sample
+genus_KEGG_ortholog<-t(genus_profile$Tax4FunProfile)
+dim(genus_KEGG_ortholog) # 6401 orthologs across 36 samples
+#write.csv(genus_KEGG_ortholog,file="genus_KEGG_ortholog_rarefied_and_norm.csv")
+
+
+genus_path<-Tax4Fun(genus,"Tax4Fun_SILVA123",fctProfiling = FALSE,refProfile = "UProC",normCopyNo = TRUE)
+str(genus_path)
+genus_path$FTU
+dim(genus_path$Tax4FunProfile) # 5 rows and 279 columns - pathways
+genus_path$Tax4FunProfile[1:5,1:5]
+t(genus_path$Tax4FunProfile)[1:5,1:5]
+sum(genus_path$Tax4FunProfile[1,])
+genus_KEGG_path<-t(genus_path$Tax4FunProfile)
+#write.csv(genus_KEGG_path,file = "genus_KEGG_path_rarefied_and_norm.csv")
+```
+
+## HAve a quick look at PCoA plot of KEGG ortholog profile and pathway file
+
+```{r}
+genus_KEGG_ortholog<-read.csv(file = "genus_KEGG_ortholog_rarefied_and_norm.csv",row.names = 1)
+str(genus_KEGG_ortholog)
+dim(genus_KEGG_ortholog)
+genus_KEGG_ortholog_phy<-otu_table(as.matrix(genus_KEGG_ortholog),taxa_are_rows = TRUE)
+ST_meta<-read.csv(file = "strigolactone_meta.csv",row.names = 1)
+genus_KEGG_ortholog_phy
+identical (rownames(ST_meta),sample_names(genus_KEGG_ortholog_phy))
+ST_meta_phy<-sample_data(ST_meta)
+genus_KEGG_ortholog_phy<-phyloseq(genus_KEGG_ortholog_phy,ST_meta_phy)
+genus_KEGG_ortholog_phy
+
+#PCoA plot
+genus_KEGG_ortholog_phy_bray<-vegdist(t(otu_table(genus_KEGG_ortholog_phy)),method="jaccard",binary = FALSE)
+genus_KEGG_ortholog_phy_PCoA<-ordinate(genus_KEGG_ortholog_phy,method = "PCoA", genus_KEGG_ortholog_phy_bray)
+
+plot_ordination(genus_KEGG_ortholog_phy,genus_KEGG_ortholog_phy_PCoA,type="samples",color="Treatment")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c('#838B8B','#48af9c','#0e36a3','#cc411f','#b8b100'))+ ggtitle("Normalized KEGG ortholog using rarefied genus count - PCoA") +theme(plot.title=(element_text(size=15,family = "Times",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Times",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Times"),
+    axis.title=element_text(size = 15,face="bold",family = "Times"),legend.title = element_text(size=13,face="bold",family = "Times"),legend.text = (element_text(size=10,family = "Times")))
+
+## KEGG pathway
+genus_KEGG_path<-read.csv(file = "genus_KEGG_path_rarefied_and_norm.csv",row.names = 1)
+dim(genus_KEGG_path)
+genus_KEGG_path[1:5,1:5]
+str(genus_KEGG_path)
+genus_KEGG_path_phy<-otu_table(as.matrix(genus_KEGG_path),taxa_are_rows = TRUE)
+ST_meta<-read.csv(file = "strigolactone_meta.csv",row.names = 1)
+genus_KEGG_path_phy
+identical (rownames(ST_meta),sample_names(genus_KEGG_path_phy))
+ST_meta_phy<-sample_data(ST_meta)
+genus_KEGG_path_phy<-phyloseq(genus_KEGG_path_phy,ST_meta_phy)
+genus_KEGG_path_phy
+
+genus_KEGG_path_phy_bray<-vegdist(t(otu_table(genus_KEGG_path_phy)),method="jaccard",binary = FALSE)
+genus_KEGG_path_phy_PCoA<-ordinate(genus_KEGG_path_phy,method = "PCoA", genus_KEGG_path_phy_bray)
+
+plot_ordination(genus_KEGG_path_phy,genus_KEGG_path_phy_PCoA,type="samples",color="Treatment")+
+  geom_point(size=4)+scale_shape_manual(values = c(17,16))+scale_color_manual(values = c('#838B8B','#48af9c','#0e36a3','#cc411f','#b8b100'))+ ggtitle("Normalized KEGG path using rarefied genus count - PCoA") +theme(plot.title=(element_text(size=15,family = "Times",face="bold",hjust = 0.5,vjust = 3)),text=element_text(family = "Times",face="bold"),panel.border = element_rect(colour = "black", fill=NA, size=0.5),axis.text=element_text(size=13,family="Times"),
+    axis.title=element_text(size = 15,face="bold",family = "Times"),legend.title = element_text(size=13,face="bold",family = "Times"),legend.text = (element_text(size=10,family = "Times")))
+
+```
+
+## DEseq analysis using log2fold change and wald test as well as adj p_value
+
+```{r}
+genus_KEGG_path<-read.csv(file = "genus_KEGG_path_rarefied.csv",row.names = 1)
+dim(genus_KEGG_path)
+genus_KEGG_path[1:5,1:5]
+rownames(genus_KEGG_path)<-separate(data.frame(KOlist=rownames(genus_KEGG_path)),col=KOlist,into=c("KO","Path"),sep = ";")[,2]
+genus_KEGG_path[1:5,1:5]
+ST_meta[1:5,1:5]
+
+## Based on the comparison, subset path count and cultivar_meta to corresponding samples using subset function
+
+# ------------Bulk vs Control samples------------
+
+ST_path<-round(as.matrix(genus_KEGG_path*21602),digits = 0)
+dim(ST_path)
+all(colnames(ST_path)==rownames(ST_meta))
+library(DESeq2)
+path_ds<-DESeqDataSetFromMatrix(countData = ST_path,
+                                colData = ST_meta,
+                                design = ~ Treatment)
+path_ds<-DESeq(path_ds,fitType = "local")
+Bulk_vs_Control_path_res<-results(path_ds,contrast = c("Treatment","Control", "Bulk"))
+Bulk_vs_Control_path_res
+resultsNames(Bulk_vs_Control_path_res)
+sort_Bulk_vs_Control_path_res<-Bulk_vs_Control_path_res[order(Bulk_vs_Control_path_res$padj,na.last = NA),]
+sig_Bulk_vs_Control_path_res<-sort_Bulk_vs_Control_path_res[sort_Bulk_vs_Control_path_res$padj<=0.01,]
+dim(sig_Bulk_vs_Control_path_res)
+sig_Bulk_vs_Control_path_res$log2FoldChange
+sig_Bulk_vs_Control_path_res@rownames
+
+## DEseq2 is very strict with input data, the count need to to integer
+
+
+# ------------Control vs Max1_Over samples------------
+
+ST_path<-round(as.matrix(genus_KEGG_path*26187),digits = 0)
+dim(ST_path)
+all(colnames(ST_path)==rownames(ST_meta))
+library(DESeq2)
+path_ds<-DESeqDataSetFromMatrix(countData = ST_path,
+                                colData = ST_meta,
+                                design = ~ Treatment)
+path_ds<-DESeq(path_ds,fitType = "local")
+Control_vs_Max1_path_res<-results(path_ds,contrast = c("Treatment","MAX1", "Control"))
+Control_vs_Max1_path_res
+resultsNames(Control_vs_Max1_path_res)
+sort_Control_vs_Max1_path_res<-Control_vs_Max1_path_res[order(Control_vs_Max1_path_res$padj,na.last = NA),]
+sig_Control_vs_Max1_path_res<-sort_Control_vs_Max1_path_res[sort_Control_vs_Max1_path_res$padj<=0.01,]
+dim(sig_Control_vs_Max1_path_res)
+sig_Control_vs_Max1_path_res$log2FoldChange
+sig_Control_vs_Max1_path_res@rownames
+
+# ------------Control vs Max2_Over samples------------
+
+ST_path<-round(as.matrix(genus_KEGG_path*26187),digits = 0)
+dim(ST_path)
+all(colnames(ST_path)==rownames(ST_meta))
+library(DESeq2)
+path_ds<-DESeqDataSetFromMatrix(countData = ST_path,
+                                colData = ST_meta,
+                                design = ~ Treatment)
+path_ds<-DESeq(path_ds,fitType = "local")
+Control_vs_Max2_path_res<-results(path_ds,contrast = c("Treatment","MAX2","Control"))
+Control_vs_Max2_path_res
+resultsNames(Control_vs_Max2_path_res)
+sort_Control_vs_Max2_path_res<-Control_vs_Max2_path_res[order(Control_vs_Max2_path_res$padj,na.last = NA),]
+sig_Control_vs_Max2_path_res<-sort_Control_vs_Max2_path_res[sort_Control_vs_Max2_path_res$padj<=0.01,]
+dim(sig_Control_vs_Max2_path_res)
+sig_Control_vs_Max2_path_res$log2FoldChange
+sig_Control_vs_Max2_path_res@rownames
+
+# ------------Control vs D14_Over samples------------
+
+ST_path<-round(as.matrix(genus_KEGG_path*26187),digits = 0)
+dim(ST_path)
+all(colnames(ST_path)==rownames(ST_meta))
+library(DESeq2)
+path_ds<-DESeqDataSetFromMatrix(countData = ST_path,
+                                colData = ST_meta,
+                                design = ~ Treatment)
+path_ds<-DESeq(path_ds,fitType = "local")
+Control_vs_D14_path_res<-results(path_ds,contrast = c("Treatment","D14","Control"))
+Control_vs_D14_path_res
+resultsNames(Control_vs_D14_path_res)
+sort_Control_vs_D14_path_res<-Control_vs_D14_path_res[order(Control_vs_D14_path_res$padj,na.last = NA),]
+sig_Control_vs_D14_path_res<-sort_Control_vs_D14_path_res[sort_Control_vs_D14_path_res$padj<=0.01,]
+dim(sig_Control_vs_D14_path_res)
+sig_Control_vs_D14_path_res$log2FoldChange
+sig_Control_vs_D14_path_res@rownames
+```
+
+## Heatmap using only significant KEGG path  --- 
+
+```{r}
+all_sig_path_list<-data.frame(num=1:29,path=unique(c(sig_Bulk_vs_Control_path_res@rownames,sig_Control_vs_D14_path_res@rownames,sig_Control_vs_Max1_path_res@rownames,sig_Control_vs_Max2_path_res@rownames)))
+all_sig_path_list
+rownames(all_sig_path_list)<-all_sig_path_list$path
+all_sig_path_list 
+match(rownames(all_sig_path_list),rownames(ST_path))
+# extract pathways significantly different between treatments
+all_sig_path<-ST_path[match(rownames(all_sig_path_list),rownames(ST_path)),]
+
+#write.csv(all_sig_path,file = "KEGG pathways for heatmap.csv")
+
+tiff('ST_path_heatmap.tiff', units="in", width=18, height=14, res=300)
+
+ST_path_heatmap<-pheatmap(all_sig_path,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),cluster_rows = TRUE,show_rownames = TRUE,cluster_cols =TRUE,annotation_col=ST_meta[,c(4,5)], scale="row",clustering_distance_rows = 'euclidean',clustering_distance_cols = 'euclidean',border_color = NA)
+dev.off()
+```
+
+## Heatmap using significant pathways and also make senses
+
+```{r}
+# first write out the significant pathways to be edited to just include those that make sense
+  #write.csv(sig_Ag_path,file='sig_Ag_path.csv')
+setwd('/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/')
+update_sig_path<-read.csv(file='/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/KEGG_pathways_for_heatmap_edit.csv',header = T,row.names = 1)
+identical(colnames(update_sig_path),rownames(ST_meta))
+head(ST_meta)
+ST_meta_up<-ST_meta[,c(4,5)]
+colnames(ST_meta_up)<-c("Compartment","Expression")
+head(update_sig_path)
+ST_meta_up$Compartment<-factor(ST_meta$Compartment,levels=c("Bulk", "Rhizosphere"))
+ST_meta_up$Expression<-factor(ST_meta$Expression,levels=c("Bulk","Control","Over"))
+
+ST_annot_colors<-list(
+  Compartment=c(Bulk="#8e6130",Rhizosphere="#4e7551"),
+  Expression=c(Bulk="#838B8B",Control="#0A0A0A",Over="#007700")
+)
+
+#Expression=c(Bulk="#838B8B",Control="#0A0A0A",Over="#007700",NNW="#bc1616",W82="#020de2",DRT="#ab0ef9",CNR="#0ec8d6",SOJ="#f77300"
+
+tiff('ST_path_update_heatmap.tiff', units="in", width=18, height=14, res=300)
+#par(family='Times')
+
+ST_path_update_heatmap<-pheatmap(update_sig_path,main="Metabolic Pathways between treatments",color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),cluster_rows = TRUE,show_rownames = TRUE,cluster_cols =TRUE,annotation_col=ST_meta_up,annotation_colors = ST_annot_colors, scale="row",clustering_distance_rows = 'euclidean',clustering_distance_cols = 'euclidean',border_color = NA,fontsize=10,fontsize_row = 17,fontsize_col = 12)+theme(plot.margin = unit(c(1,1,1,1), "cm"))
+dev.off()
+```
+
