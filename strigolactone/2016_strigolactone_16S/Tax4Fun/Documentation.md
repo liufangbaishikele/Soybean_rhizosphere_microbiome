@@ -10,7 +10,7 @@ Refer to this [Tax4Fun documentation](http://tax4fun.gobics.de/)
 
 * **This is how I formatted my input file**
 
-  1. Generate Otu count table in R
+ 1. Generate Otu count table in R
   
   setwd("/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/Tax4Fun")
   ST_genus_phyloseq<-import_mothur(mothur_shared_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.shared",mothur_constaxonomy_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.1.cons.taxonomy") 
