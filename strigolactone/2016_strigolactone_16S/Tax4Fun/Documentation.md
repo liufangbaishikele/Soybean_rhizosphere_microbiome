@@ -10,21 +10,22 @@ Refer to this [Tax4Fun documentation](http://tax4fun.gobics.de/)
 
 * **This is how I formatted my input file**
 
- 1. Generate Otu count table in R
+1. Generate Otu count table in R
   
   setwd("/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/Tax4Fun/Tax4Fun")
-  ST_genus_phyloseq<-import_mothur(mothur_shared_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.shared",mothur_constaxonomy_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.1.cons.taxonomy") 
+
+ST_genus_phyloseq<-import_mothur(mothur_shared_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.shared",mothur_constaxonomy_file = "/Users/fangliu/Documents/2016_strigolactone_project/16S_after_remove_Agrobacterium/silva_classification/strigolactone.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.pick.subsample.tx.1.pick.1.cons.taxonomy") 
   `# This shared file were exported from '/staton/projects/soybean_rhizosphere/2016_strigolactone/16S_2016_strigolactone/Mothur_analysis/02_mothur/rarefied_files'`
-  colnames(tax_table(ST_genus_phyloseq))<-c("Kingdom","Phylum","Class","Order","Family","Genus")
+
+colnames(tax_table(ST_genus_phyloseq))<-c("Kingdom","Phylum","Class","Order","Family","Genus")
 
   `The original list file was subseted in mothur using sub.sample command to do rarefaction-based normalization. And then the list file were filtered to remove all singletons.`
 
-  ST_genus_otu_table<-otu_table(ST_genus_phyloseq)
-  dim(ST_genus_otu_table)
-  ST_genus_otu_table[1:5,1:5]
-  colnames(ST_genus_otu_table)
-
-  #write.csv(ST_genus_otu_table,file="subsampled_and_rare_removed_ST_genus_shared.csv")
+ST_genus_otu_table<-otu_table(ST_genus_phyloseq)
+dim(ST_genus_otu_table)
+ST_genus_otu_table[1:5,1:5]
+colnames(ST_genus_otu_table)
+write.csv(ST_genus_otu_table,file="subsampled_and_rare_removed_ST_genus_shared.csv")
   
 2. Combine otu count table with taxonomy table- this part is done using shell command
 
