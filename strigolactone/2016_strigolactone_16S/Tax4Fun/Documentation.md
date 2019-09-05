@@ -1,3 +1,6 @@
+|Author | Date |
+|Fang Liu | 09-05-2019|
+
 ## Tax4Fun used to predict KEGG pathway based on 16S rRNA amplicon sequencing data
 
 Refer to this [Tax4Fun documentation](http://tax4fun.gobics.de/)
@@ -9,6 +12,8 @@ Refer to this [Tax4Fun documentation](http://tax4fun.gobics.de/)
 * For me, I used the shared file and con.taxonomy mothur output file based on phylotype cluster. Which I think is more efficient as OTU input will not provide any information in terms of linking taxonomy information to precalculated KEGG profile.
 
 * **This is how I formatted my input file**
+
+------
 
 1. Generate Otu count table in R
   
