@@ -82,4 +82,66 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 
 **Conclusion**: Rarefaction / normalization trategy did not change PERMANOVA results. 
 
+## BRE subset based comparison about relative abundance, rarefaction (rarefied based on compartment and merged together) and normalization (DESeq2) based.
+
+-- 1 -- r_rms_BRE - relative abundance based normalization
+
+```
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rms_BRE_up)) ~ Read_depth + Compartment + Time + Plot, data = data.frame(sample_data(r_rms_BRE_up)), permutations = 999, by = "margin")
+             Df SumOfSqs      R2       F Pr(>F)    
+Read_depth    1    0.274 0.00846  2.1010  0.033 *  
+Compartment   2    7.789 0.24060 29.8663  0.001 ***
+Time          2    1.887 0.05830  7.2367  0.001 ***
+Plot         14    5.179 0.15997  2.8368  0.001 ***
+Residual    114   14.865 0.45919                   
+Total       133   32.372 1.00000                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+```
+
+-- r_rf_BRE --  rarefaction based normalization
+
+```
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_rf_BRE)) ~ Read_depth + Compartment + Time + Plot, data = data.frame(sample_data(r_rf_BRE)), permutations = 999, by = "margin")
+             Df SumOfSqs      R2       F Pr(>F)    
+Read_depth    1    0.268 0.00824  2.0412  0.020 *  
+Compartment   2    7.832 0.24048 29.7850  0.001 ***
+Time          2    1.894 0.05815  7.2025  0.001 ***
+Plot         14    5.198 0.15960  2.8240  0.001 ***
+Residual    114   14.988 0.46020                   
+Total       133   32.567 1.00000                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+```
+
+---- DESeq2 based normalization ----
+
+```
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = t(otu_table(r_norm_BRE)) ~ Read_depth + Compartment + Time + Plot, data = data.frame(sample_data(r_norm_BRE)), permutations = 999, by = "margin")
+             Df SumOfSqs      R2       F Pr(>F)    
+Read_depth    1    0.272 0.00841  2.0854  0.035 *  
+Compartment   2    7.796 0.24062 29.8505  0.001 ***
+Time          2    1.889 0.05830  7.2324  0.001 ***
+Plot         14    5.181 0.15992  2.8341  0.001 ***
+Residual    114   14.886 0.45947                   
+Total       133   32.399 1.00000                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+```
+
 
