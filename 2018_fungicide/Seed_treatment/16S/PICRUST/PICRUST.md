@@ -83,7 +83,7 @@ get.oturep(column=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
     sed 's/ /\t/g' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc_up.shared > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc_up_tsv.shared
     ```
     
-**NOTES** Please found the input [fasta sequence file]() and [shared count files]() attached as reference for guiding you to format the input in a correct way.
+**NOTES** Please found the input [fasta sequence file and shared count files within this Archive](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/2018_fungicide/Seed_treatment/16S/PICRUST/Archive.zip) attached as reference for guiding you to format the input in a correct way.
 
 
 3. Once the above input rep.fasta and shared count files were ready, run PICRUST2 commands
