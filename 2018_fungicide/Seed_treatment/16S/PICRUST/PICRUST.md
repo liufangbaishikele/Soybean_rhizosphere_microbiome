@@ -29,10 +29,68 @@ get.oturep(column=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
 
 2. After generate the represent sequence for each OTU, I did some modification of the output to make it accomodate with PICRUST2 example sequence data. Below are the codes needed for file formating.
 
-```
+    1. Use mothur command to generated the OTU_rep.fasta file
+    2. Edit the rep.fasta file to only keep SeqID and OTUID for the header.
+    ```
+    awk -F "|" '{print $1}' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.fasta_copy | sed '2~2 s/-//g' > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.fasta  
+    ```
+
+    3.  Create the OTUID list
+
+    ```
+    head -1 Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick.shared | sed 's/\t/\n/g' | grep '^Otu' > Subsampled_OTUID
+
+    ```
+
+    4. Substract rep.edit.fasta to only include those contained in the subsample.pick shared file
+
+    ```{r}
+    for otu in $(cat Subsampled_OTUID); do echo $otu; grep -A 1 $otu Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.fasta >> Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.subsample.pick.fasta; done  
+    ```
+
+    5. update the header to only include OTUID and remove the seqID
+
+    ```
+    sed 's/^>M.*\(.Otu.*\)/\1/g'  Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.subsample.pick.fasta | sed 's/\tOtu/>Otu/g' > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.subsample.pick_up.fasta
+    ```
+
+    6. Transpose shared file and replace space with tab
+
+    ```
+    awk '                                                                                                {                                                                                                                                 for (i=1; i<=NF; i++)  {
+            a[NR,i] = $i
+        }
+    }
+    NF>p { p = NF }
+    END {    
+        for(j=1; j<=p; j++) {
+            str=a[1,j]
+            for(i=2; i<=NR; i++){
+                str=str" "a[i,j];
+            }
+            print str
+        }
+    }' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick.shared > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick_up.shared
+    ```
+
+    ```
+    sed 's/ /\t/g' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick_up.shared > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick_up_tsv.shared
+    ```
+
+    7. Edit the above tsv file to the right format, only include OTUID and count in each sample using vim
+
+    ```
+    sed 's/ /\t/g' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc_up.shared > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc_up_tsv.shared
+    ```
+    
+**NOTES** Please found the input [fasta sequence file]() and [shared count files]() attached as reference for guiding you to format the input in a correct way.
+
+
+3. Once the above input rep.fasta and shared count files were ready, run PICRUST2 commands
 
 ```
-
-
+picrust2_pipeline.py -s Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.subsample.pick_up.fasta  -i Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick.shared  -o picrust2_out_pipeline -p 30
+```
+4. For the following differential pathway abundance analysis, the output file from the pathways_out folder were copied to local computer for further analysis using R. Please find [detailed R command]() 
 
 
