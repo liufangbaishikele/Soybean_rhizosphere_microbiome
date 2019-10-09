@@ -1,6 +1,6 @@
 Author|Date
 ---| ----
-Fang | Liu
+Fang Liu| 10/08/19
 
 ### Prediction of potential function of bacteria community based on 16S rRNA amplicon sequencing
 
