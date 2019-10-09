@@ -1,0 +1,954 @@
+---
+title: "PICRUST_KO_enrichment_analysis"
+author: "Fang Liu"
+date: "8/28/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Set work directory
+
+```{r}
+setwd('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST')
+library(dplyr)
+library(reshape2)
+library(plyr)
+```
+
+## Upload input file
+
+```{r}
+library(DESeq2)
+path_abun_unstrat<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/path_abun_unstrat.csv",header = TRUE,row.names = 1)
+colnames(path_abun_unstrat)<-sub("X","",colnames(path_abun_unstrat))
+dim(path_abun_unstrat)
+path_abun_unstrat_up<-path_abun_unstrat[,1:149]
+path_abun_unstrat_up[1:5,1:5]
+
+seed_meta<-read.csv("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Seed_meta.csv",header = TRUE,row.names = 1)
+head(seed_meta)
+
+seed_meta_up<-seed_meta[which(seed_meta$Sample_ID==colnames(path_abun_unstrat_up)),]
+identical(as.character(seed_meta_up$Sample_ID),colnames(path_abun_unstrat_up))
+
+#t_path_abun_unstrat_up<-as.data.frame(t(path_abun_unstrat_up))
+#dim(t_path_abun_unstrat_up)
+#t_path_abun_unstrat_up[1:5,1:5]
+#t_path_abun_unstrat_up$Sample_ID<-rownames(t_path_abun_unstrat_up)
+library(reshape2)
+library(dplyr)
+library(plyr)
+
+#join_path_abun_unstrat<-left_join(t_path_abun_unstrat,seed_meta,by = "Sample_ID")
+#dim(join_path_abun_unstrat)
+#which(colnames(join_path_abun_unstrat)=="Sample_ID")
+#rownames(join_path_abun_unstrat)<-join_path_abun_unstrat$Sample_ID
+#dim(join_path_abun_unstrat)
+#join_path_abun_unstrat[1:5,425:432]
+```
+
+## Differential abundance analysis
+
+```{r}
+all(colnames(path_abun_unstrat_up)==seed_meta_up$Sample_ID)
+path_ds<-DESeqDataSetFromMatrix(countData = round(path_abun_unstrat_up,0),
+                                colData = seed_meta_up,
+                                design = ~ Treat)
+path_ds<-DESeq(path_ds,fitType = "local")
+resultsNames(path_ds)
+
+## Soil vs Bulk_1wk
+Soil_vs_Bulk1wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Bulk_1wk"),lfcThreshold = 1)
+Soil_vs_Bulk1wk_path_res
+sort_Soil_vs_Bulk1wk_path_res<-Soil_vs_Bulk1wk_path_res[order(Soil_vs_Bulk1wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Bulk1wk_path_res<-sort_Soil_vs_Bulk1wk_path_res[sort_Soil_vs_Bulk1wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Bulk1wk_path_res)
+sig_Soil_vs_Bulk1wk_path_res$log2FoldChange
+sig_Soil_vs_Bulk1wk_path_name <-sig_Soil_vs_Bulk1wk_path_res@rownames
+
+## Soil vs Rhi_1wk
+Soil_vs_Rhi1wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Rhi_1wk"),lfcThreshold = 1)
+Soil_vs_Rhi1wk_path_res
+sort_Soil_vs_Rhi1wk_path_res<-Soil_vs_Rhi1wk_path_res[order(Soil_vs_Rhi1wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Rhi1wk_path_res<-sort_Soil_vs_Rhi1wk_path_res[sort_Soil_vs_Rhi1wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Rhi1wk_path_res)
+sig_Soil_vs_Rhi1wk_path_res$log2FoldChange
+sig_Soil_vs_Rhi1wk_path_name <-sig_Soil_vs_Rhi1wk_path_res@rownames
+
+## Soil vs Endo_1wk
+Soil_vs_Endo1wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Endo_1wk"),lfcThreshold = 1)
+Soil_vs_Endo1wk_path_res
+sort_Soil_vs_Endo1wk_path_res<-Soil_vs_Endo1wk_path_res[order(Soil_vs_Endo1wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Endo1wk_path_res<-sort_Soil_vs_Endo1wk_path_res[sort_Soil_vs_Endo1wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Endo1wk_path_res)
+sig_Soil_vs_Endo1wk_path_res$log2FoldChange
+sig_Soil_vs_Endo1wk_path_name <-sig_Soil_vs_Endo1wk_path_res@rownames
+
+## Soil vs Rhi_3wk
+
+Soil_vs_Rhi3wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Rhi_3wk"),lfcThreshold = 1)
+Soil_vs_Rhi3wk_path_res
+sort_Soil_vs_Rhi3wk_path_res<-Soil_vs_Rhi3wk_path_res[order(Soil_vs_Rhi3wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Rhi3wk_path_res<-sort_Soil_vs_Rhi3wk_path_res[sort_Soil_vs_Rhi3wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Rhi3wk_path_res)
+sig_Soil_vs_Rhi3wk_path_res$log2FoldChange
+sig_Soil_vs_Rhi3wk_path_name <-sig_Soil_vs_Rhi3wk_path_res@rownames
+
+## Soil vs Rhi_4wk
+Soil_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Rhi_4wk"),lfcThreshold = 1)
+Soil_vs_Rhi4wk_path_res
+sort_Soil_vs_Rhi4wk_path_res<-Soil_vs_Rhi4wk_path_res[order(Soil_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Rhi4wk_path_res<-sort_Soil_vs_Rhi4wk_path_res[sort_Soil_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Rhi4wk_path_res)
+sig_Soil_vs_Rhi4wk_path_res$log2FoldChange
+sig_Soil_vs_Rhi4wk_path_name <-sig_Soil_vs_Rhi4wk_path_res@rownames
+
+## Bulk_1wk vs Rhi_1wk
+Bulk1wk_vs_Rhi1wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Rhi_1wk"),lfcThreshold = 1)
+Bulk1wk_vs_Rhi1wk_path_res
+sort_Bulk1wk_vs_Rhi1wk_path_res<-Bulk1wk_vs_Rhi1wk_path_res[order(Bulk1wk_vs_Rhi1wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Rhi1wk_path_res<-sort_Bulk1wk_vs_Rhi1wk_path_res[sort_Bulk1wk_vs_Rhi1wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Rhi1wk_path_res)
+sig_Bulk1wk_vs_Rhi1wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Rhi1wk_path_name <-sig_Bulk1wk_vs_Rhi1wk_path_res@rownames
+
+## Bulk_1wk vs Endo_1wk
+Bulk1wk_vs_Endo1wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Endo_1wk"),lfcThreshold = 1)
+Bulk1wk_vs_Endo1wk_path_res
+sort_Bulk1wk_vs_Endo1wk_path_res<-Bulk1wk_vs_Endo1wk_path_res[order(Bulk1wk_vs_Endo1wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Endo1wk_path_res<-sort_Bulk1wk_vs_Endo1wk_path_res[sort_Bulk1wk_vs_Endo1wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Endo1wk_path_res)
+sig_Bulk1wk_vs_Endo1wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Endo1wk_path_name <-sig_Bulk1wk_vs_Endo1wk_path_res@rownames
+
+## Rhi_1wk vs Endo_1wk
+Rhi1wk_vs_Endo1wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Endo_1wk"),lfcThreshold = 1)
+Rhi1wk_vs_Endo1wk_path_res
+sort_Rhi1wk_vs_Endo1wk_path_res<-Rhi1wk_vs_Endo1wk_path_res[order(Rhi1wk_vs_Endo1wk_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_Endo1wk_path_res<-sort_Rhi1wk_vs_Endo1wk_path_res[sort_Rhi1wk_vs_Endo1wk_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_Endo1wk_path_res)
+sig_Rhi1wk_vs_Endo1wk_path_res$log2FoldChange
+sig_Rhi1wk_vs_Endo1wk_path_name <-sig_Rhi1wk_vs_Endo1wk_path_res@rownames
+
+## Bulk_3wk vs Rhi_3wk
+Bulk3wk_vs_Rhi3wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Rhi_3wk"),lfcThreshold = 1)
+Bulk3wk_vs_Rhi3wk_path_res
+sort_Bulk3wk_vs_Rhi3wk_path_res<-Bulk3wk_vs_Rhi3wk_path_res[order(Bulk3wk_vs_Rhi3wk_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_Rhi3wk_path_res<-sort_Bulk3wk_vs_Rhi3wk_path_res[sort_Bulk3wk_vs_Rhi3wk_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_Rhi3wk_path_res)
+sig_Bulk3wk_vs_Rhi3wk_path_res$log2FoldChange
+sig_Bulk3wk_vs_Rhi3wk_path_name <-sig_Bulk3wk_vs_Rhi3wk_path_res@rownames
+
+## Bulk_3wk vs Endo_3wk
+Bulk3wk_vs_Endo3wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Endo_3wk"),lfcThreshold = 1)
+Bulk3wk_vs_Endo3wk_path_res
+sort_Bulk3wk_vs_Endo3wk_path_res<-Bulk3wk_vs_Endo3wk_path_res[order(Bulk3wk_vs_Endo3wk_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_Endo3wk_path_res<-sort_Bulk3wk_vs_Endo3wk_path_res[sort_Bulk3wk_vs_Endo3wk_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_Endo3wk_path_res)
+sig_Bulk3wk_vs_Endo3wk_path_res$log2FoldChange
+sig_Bulk3wk_vs_Endo3wk_path_name <-sig_Bulk3wk_vs_Endo3wk_path_res@rownames
+
+
+## Rhi_3wk vs Endo_3wk
+Rhi3wk_vs_Endo3wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_3wk", "Endo_3wk"),lfcThreshold = 1)
+Rhi3wk_vs_Endo3wk_path_res
+sort_Rhi3wk_vs_Endo3wk_path_res<-Rhi3wk_vs_Endo3wk_path_res[order(Rhi3wk_vs_Endo3wk_path_res$padj,na.last = NA),]
+sig_Rhi3wk_vs_Endo3wk_path_res<-sort_Rhi3wk_vs_Endo3wk_path_res[sort_Rhi3wk_vs_Endo3wk_path_res$padj<=0.01,]
+dim(sig_Rhi3wk_vs_Endo3wk_path_res)
+sig_Rhi3wk_vs_Endo3wk_path_res$log2FoldChange
+sig_Rhi3wk_vs_Endo3wk_path_name <-sig_Rhi3wk_vs_Endo3wk_path_res@rownames
+
+## Bulk_4wk vs Rhi_4wk
+Bulk4wk_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_4wk", "Rhi_4wk"),lfcThreshold = 1)
+Bulk4wk_vs_Rhi4wk_path_res
+sort_Bulk4wk_vs_Rhi4wk_path_res<-Bulk4wk_vs_Rhi4wk_path_res[order(Bulk4wk_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Bulk4wk_vs_Rhi4wk_path_res<-sort_Bulk4wk_vs_Rhi4wk_path_res[sort_Bulk4wk_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Bulk4wk_vs_Rhi4wk_path_res)
+sig_Bulk4wk_vs_Rhi4wk_path_res$log2FoldChange
+sig_Bulk4wk_vs_Rhi4wk_path_name <-sig_Bulk4wk_vs_Rhi4wk_path_res@rownames
+
+## Bulk_4wk vs Endo_4wk
+Bulk4wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_4wk", "Endo_4wk"),lfcThreshold = 1)
+Bulk4wk_vs_Endo4wk_path_res
+sort_Bulk4wk_vs_Endo4wk_path_res<-Bulk4wk_vs_Endo4wk_path_res[order(Bulk4wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Bulk4wk_vs_Endo4wk_path_res<-sort_Bulk4wk_vs_Endo4wk_path_res[sort_Bulk4wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Bulk4wk_vs_Endo4wk_path_res)
+sig_Bulk4wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Bulk4wk_vs_Endo4wk_path_name <-sig_Bulk4wk_vs_Endo4wk_path_res@rownames
+
+## Rhi_4wk vs Endo_4wk
+Rhi4wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_4wk", "Endo_4wk"),lfcThreshold = 1)
+Rhi4wk_vs_Endo4wk_path_res
+sort_Rhi4wk_vs_Endo4wk_path_res<-Rhi4wk_vs_Endo4wk_path_res[order(Rhi4wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Rhi4wk_vs_Endo4wk_path_res<-sort_Rhi4wk_vs_Endo4wk_path_res[sort_Rhi4wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Rhi4wk_vs_Endo4wk_path_res)
+sig_Rhi4wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Rhi4wk_vs_Endo4wk_path_name <-sig_Rhi4wk_vs_Endo4wk_path_res@rownames
+
+## Bulk_1wk vs Bulk_3wk
+Bulk1wk_vs_Bulk3wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Bulk_3wk"),lfcThreshold = 1)
+Bulk1wk_vs_Bulk3wk_path_res
+sort_Bulk1wk_vs_Bulk3wk_path_res<-Bulk1wk_vs_Bulk3wk_path_res[order(Bulk1wk_vs_Bulk3wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Bulk3wk_path_res<-sort_Bulk1wk_vs_Bulk3wk_path_res[sort_Bulk1wk_vs_Bulk3wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Bulk3wk_path_res)
+sig_Bulk1wk_vs_Bulk3wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Bulk3wk_path_name <-sig_Bulk1wk_vs_Bulk3wk_path_res@rownames
+
+## Bulk_1wk vs Bulk_4wk
+
+Bulk1wk_vs_Bulk4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Bulk_4wk"),lfcThreshold = 1)
+Bulk1wk_vs_Bulk4wk_path_res
+sort_Bulk1wk_vs_Bulk4wk_path_res<-Bulk1wk_vs_Bulk4wk_path_res[order(Bulk1wk_vs_Bulk4wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Bulk4wk_path_res<-sort_Bulk1wk_vs_Bulk4wk_path_res[sort_Bulk1wk_vs_Bulk4wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Bulk4wk_path_res)
+sig_Bulk1wk_vs_Bulk4wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Bulk4wk_path_name <-sig_Bulk1wk_vs_Bulk4wk_path_res@rownames
+
+# Bulk_3wk vs Bulk_4wk
+
+Bulk3wk_vs_Bulk4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Bulk_4wk"),lfcThreshold = 1)
+Bulk3wk_vs_Bulk4wk_path_res
+sort_Bulk3wk_vs_Bulk4wk_path_res<-Bulk3wk_vs_Bulk4wk_path_res[order(Bulk3wk_vs_Bulk4wk_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_Bulk4wk_path_res<-sort_Bulk3wk_vs_Bulk4wk_path_res[sort_Bulk3wk_vs_Bulk4wk_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_Bulk4wk_path_res)
+sig_Bulk3wk_vs_Bulk4wk_path_res$log2FoldChange
+sig_Bulk3wk_vs_Bulk4wk_path_name <-sig_Bulk3wk_vs_Bulk4wk_path_res@rownames
+
+## Rhi_1wk vs Rhi_3wk
+Rhi1wk_vs_Rhi3wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Rhi_3wk"),lfcThreshold = 1)
+Rhi1wk_vs_Rhi3wk_path_res
+sort_Rhi1wk_vs_Rhi3wk_path_res<-Rhi1wk_vs_Rhi3wk_path_res[order(Rhi1wk_vs_Rhi3wk_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_Rhi3wk_path_res<-sort_Rhi1wk_vs_Rhi3wk_path_res[sort_Rhi1wk_vs_Rhi3wk_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_Rhi3wk_path_res)
+sig_Rhi1wk_vs_Rhi3wk_path_res$log2FoldChange
+sig_Rhi1wk_vs_Rhi3wk_path_name <-sig_Rhi1wk_vs_Rhi3wk_path_res@rownames
+
+## Rhi_1wk vs Rhi_4wk
+
+Rhi1wk_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Rhi_4wk"),lfcThreshold = 1)
+Rhi1wk_vs_Rhi4wk_path_res
+sort_Rhi1wk_vs_Rhi4wk_path_res<-Rhi1wk_vs_Rhi4wk_path_res[order(Rhi1wk_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_Rhi4wk_path_res<-sort_Rhi1wk_vs_Rhi4wk_path_res[sort_Rhi1wk_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_Rhi4wk_path_res)
+sig_Rhi1wk_vs_Rhi4wk_path_res$log2FoldChange
+sig_Rhi1wk_vs_Rhi4wk_path_name <-sig_Rhi1wk_vs_Rhi4wk_path_res@rownames
+
+## Rhi_3wk vs Rhi_4wk
+Rhi3wk_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_3wk", "Rhi_4wk"),lfcThreshold = 1)
+Rhi3wk_vs_Rhi4wk_path_res
+sort_Rhi3wk_vs_Rhi4wk_path_res<-Rhi3wk_vs_Rhi4wk_path_res[order(Rhi3wk_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Rhi3wk_vs_Rhi4wk_path_res<-sort_Rhi3wk_vs_Rhi4wk_path_res[sort_Rhi3wk_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Rhi3wk_vs_Rhi4wk_path_res)
+sig_Rhi3wk_vs_Rhi4wk_path_res$log2FoldChange
+sig_Rhi3wk_vs_Rhi4wk_path_name <-sig_Rhi3wk_vs_Rhi4wk_path_res@rownames
+
+## Endo_1wk vs Endo_3wk
+Endo1wk_vs_Endo3wk_path_res<-results(path_ds,contrast = c("Treat","Endo_1wk", "Endo_3wk"),lfcThreshold = 1)
+Endo1wk_vs_Endo3wk_path_res
+sort_Endo1wk_vs_Endo3wk_path_res<-Endo1wk_vs_Endo3wk_path_res[order(Endo1wk_vs_Endo3wk_path_res$padj,na.last = NA),]
+sig_Endo1wk_vs_Endo3wk_path_res<-sort_Endo1wk_vs_Endo3wk_path_res[sort_Endo1wk_vs_Endo3wk_path_res$padj<=0.01,]
+dim(sig_Endo1wk_vs_Endo3wk_path_res)
+sig_Endo1wk_vs_Endo3wk_path_res$log2FoldChange
+sig_Endo1wk_vs_Endo3wk_path_name <-sig_Endo1wk_vs_Endo3wk_path_res@rownames
+
+## Endo1wk vs Endo4wk
+Endo1wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Endo_1wk", "Endo_4wk"),lfcThreshold = 1)
+Endo1wk_vs_Endo4wk_path_res
+sort_Endo1wk_vs_Endo4wk_path_res<-Endo1wk_vs_Endo4wk_path_res[order(Endo1wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Endo1wk_vs_Endo4wk_path_res<-sort_Endo1wk_vs_Endo4wk_path_res[sort_Endo1wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Endo1wk_vs_Endo4wk_path_res)
+sig_Endo1wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Endo1wk_vs_Endo4wk_path_name <-sig_Endo1wk_vs_Endo4wk_path_res@rownames
+
+## Endo3wk vs Endo4wk
+
+Endo3wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Endo_3wk", "Endo_4wk"),lfcThreshold = 1)
+Endo3wk_vs_Endo4wk_path_res
+sort_Endo3wk_vs_Endo4wk_path_res<-Endo3wk_vs_Endo4wk_path_res[order(Endo3wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Endo3wk_vs_Endo4wk_path_res<-sort_Endo3wk_vs_Endo4wk_path_res[sort_Endo3wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Endo3wk_vs_Endo4wk_path_res)
+sig_Endo3wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Endo3wk_vs_Endo4wk_path_name <-sig_Endo3wk_vs_Endo4wk_path_res@rownames
+
+## Visualization using heatmap
+
+## heatmap visualization
+
+global_path_heatmap<-pheatmap(path_abun_unstrat_up,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+## Collect all names that were identified as significantly different between treatments
+
+Bulk_vs_Rhi<-Reduce(intersect,list(sig_Bulk1wk_vs_Rhi1wk_path_name,sig_Bulk3wk_vs_Rhi3wk_path_name,sig_Bulk4wk_vs_Rhi4wk_path_name))
+Bulk_vs_Rhi
+
+Bulk_vs_Endo<-Reduce(intersect,list(sig_Bulk1wk_vs_Endo1wk_path_name,sig_Bulk3wk_vs_Endo3wk_path_name,sig_Bulk4wk_vs_Endo4wk_path_name))
+Bulk_vs_Endo
+
+Rhi_vs_Endo<-Reduce(intersect,list(sig_Rhi1wk_vs_Endo1wk_path_name,sig_Rhi3wk_vs_Endo3wk_path_name,sig_Rhi4wk_vs_Endo4wk_path_name))
+Rhi_vs_Endo
+
+## Between compartments 
+Bulk_vs_Rhi_vs_Endo<-unique(c(Bulk_vs_Rhi,Bulk_vs_Endo,Rhi_vs_Endo))
+Bulk_vs_Rhi_vs_Endo
+length(Bulk_vs_Rhi_vs_Endo)
+
+## intersect between compartments
+
+path_abun_unstrat_up[1:5,1:5]
+intersect_BRE_path<- path_abun_unstrat_up[match(Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_up)),]
+dim(intersect_BRE_path)
+
+identical(colnames(intersect_BRE_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRE_path_heatmap.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBrewer)
+intersect_BRE_path_heatmap<-pheatmap(intersect_BRE_path,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+#write.csv(intersect_BRE_path,file = '/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRE_path.csv')
+
+## week1 and between compartments
+
+## Collect all names that were identified as significantly different between treatments
+
+wk1_Bulk_vs_Rhi_vs_Endo<-unique(c(sig_Bulk1wk_vs_Rhi1wk_path_name,sig_Bulk1wk_vs_Endo1wk_path_name,sig_Rhi1wk_vs_Endo1wk_path_name))
+length(wk1_Bulk_vs_Rhi_vs_Endo)
+length(Bulk_vs_Rhi_vs_Endo)
+
+## heatmap of pathways
+path_abun_unstrat_up[1:5,1:5]
+wk1_BRE_path<- path_abun_unstrat_up[match(wk1_Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_up)),]
+dim(wk1_BRE_path)
+identical(colnames(wk1_BRE_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/wk1_BRE_path.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBrewer)
+wk1_BRE_path<-pheatmap(wk1_BRE_path,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+## wk3_BRE_path
+
+wk3_Bulk_vs_Rhi_vs_Endo<-unique(c(sig_Bulk3wk_vs_Rhi3wk_path_name,sig_Bulk3wk_vs_Endo3wk_path_name,sig_Rhi3wk_vs_Endo3wk_path_name))
+length(wk3_Bulk_vs_Rhi_vs_Endo)
+length(Bulk_vs_Rhi_vs_Endo)
+
+## heatmap of pathways
+path_abun_unstrat_up[1:5,1:5]
+wk3_BRE_path<- path_abun_unstrat_up[match(wk3_Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_up)),]
+dim(wk3_BRE_path)
+identical(colnames(wk3_BRE_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/wk3_BRE_path.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBrewer)
+wk3_BRE_path<-pheatmap(wk3_BRE_path,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+## wk4_BRE_path
+
+wk4_Bulk_vs_Rhi_vs_Endo<-unique(c(sig_Bulk4wk_vs_Rhi4wk_path_name,sig_Bulk4wk_vs_Endo4wk_path_name,sig_Rhi4wk_vs_Endo4wk_path_name))
+length(wk4_Bulk_vs_Rhi_vs_Endo)
+length(Bulk_vs_Rhi_vs_Endo)
+
+## heatmap of pathways
+path_abun_unstrat_up[1:5,1:5]
+wk4_BRE_path<- path_abun_unstrat_up[match(wk4_Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_up)),]
+dim(wk4_BRE_path)
+identical(colnames(wk4_BRE_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/wk4_BRE_path.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBrewer)
+wk4_BRE_path<-pheatmap(wk4_BRE_path,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+
+## intersect_BRE_path_edit
+
+intersect_BRE_path_edit<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRE_path_edit.csv",header = TRUE,row.names = 1)
+colnames(intersect_BRE_path_edit)
+colnames<-sub("X","",colnames(intersect_BRE_path_edit))
+colnames(intersect_BRE_path_edit)<-colnames
+intersect_BRE_path_edit[1:5,1:5]
+dim(intersect_BRE_path_edit)
+intersect_BRE_path_edit_up1<-intersect_BRE_path_edit[,3:152]
+rownames(intersect_BRE_path_edit_up1)<-paste(intersect_BRE_path_edit_up1$Pathway,as.character(seq(01,50)),sep = "_")
+intersect_BRE_path_edit_up1[1:5,1:5]
+intersect_BRE_path_edit_up<-intersect_BRE_path_edit_up1[,2:150]
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRE_path_edit_up.tiff', units="in", width=30, height=14, res=300)
+library(pheatmap)
+library(RColorBrewer)
+mycolors<-c('#CD9BCD','#C84248','#orange','#00CDCD')
+intersect_BRE_path_edit_up<-pheatmap(intersect_BRE_path_edit_up,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean',fontsize = 25, fontsize_col =13,fontsize_row = 19,col_annotation_colors = mycolors)
+dev.off()
+
+## intersect_BRE_superpathway
+
+intersect_BRE_superpath_edit<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRE_path_edit_up.csv",header = TRUE,row.names = 1)
+colnames(intersect_BRE_superpath_edit)
+colnames<-sub("X","",colnames(intersect_BRE_superpath_edit))
+colnames(intersect_BRE_superpath_edit)<-colnames
+intersect_BRE_superpath_edit[1:5,1:5]
+dim(intersect_BRE_superpath_edit)
+intersect_BRE_superpath_edit_up1<-intersect_BRE_superpath_edit[,c(3,5:153)]
+rownames(intersect_BRE_superpath_edit_up1)<-intersect_BRE_superpath_edit_up1$Superpathway_PWY
+intersect_BRE_superpath_edit_up1[1:5,1:5]
+intersect_BRE_superpath_edit_up<-intersect_BRE_superpath_edit_up1[,2:150]
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRE_superpath_edit_up.tiff', units="in", width=25, height=10, res=300)
+library(pheatmap)
+library(RColorBrewer)
+intersect_BRE_superpath_edit_up<-pheatmap(intersect_BRE_superpath_edit_up,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean',fontsize=10,fontsize_row = 17)
+dev.off()
+```
+
+
+## Add seed pathway to above BRE pathway
+
+```{r}
+library(DESeq2)
+path_abun_unstrat_with_SEED<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/path_abun_unstrat_with_SEED.csv",header = TRUE,row.names = 1)
+colnames(path_abun_unstrat_with_SEED)<-sub("X","",colnames(path_abun_unstrat_with_SEED))
+dim(path_abun_unstrat_with_SEED)
+path_abun_unstrat_with_SEED[1:5,1:5]
+
+seed_meta<-read.csv("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Seed_meta.csv",header = TRUE,row.names = 1)
+head(seed_meta)
+
+seed_meta_up_with_SEED<-seed_meta[which(seed_meta$Sample_ID==colnames(path_abun_unstrat_with_SEED)),]
+identical(as.character(seed_meta_up_with_SEED$Sample_ID),colnames(path_abun_unstrat_with_SEED))
+
+SEED_path<-path_abun_unstrat_with_SEED[,150:164]
+
+intersect_BRES_path_edit<-cbind(intersect_BRE_path_edit,SEED_path_edit)
+dim(intersect_BRES_path_edit)
+
+rownames(intersect_BRES_path_edit)<-intersect_BRES_path_edit$PWY
+intersect_BRES_path_edit_up<-intersect_BRES_path_edit[,c(4:167)]
+
+intersect_BRES_path_edit_up[is.na(intersect_BRES_path_edit_up)] <- 0
+
+## pathway heatmap
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_path_edit_up.tiff', units="in", width=38, height=14, res=300)
+library(pheatmap)
+library(RColorBrewer)
+intersect_BRES_path<-pheatmap(intersect_BRES_path_edit_up,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up_with_SEED[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean',fontsize = 25, fontsize_col =13,fontsize_row = 19)
+dev.off()
+
+```
+
+
+
+## With seed samples using OTUs without rarefaction and no singletons were removed
+
+```{r}
+setwd('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST')
+library(dplyr)
+library(reshape2)
+library(plyr)
+```
+
+## Upload input file
+
+```{r}
+library(DESeq2)
+path_abun_unstrat_with_SEED<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/path_abun_unstrat_with_SEED.csv",header = TRUE,row.names = 1)
+colnames(path_abun_unstrat_with_SEED)<-sub("X","",colnames(path_abun_unstrat_with_SEED))
+dim(path_abun_unstrat_with_SEED)
+path_abun_unstrat_with_SEED[1:5,1:5]
+
+seed_meta<-read.csv("/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Seed_meta.csv",header = TRUE,row.names = 1)
+head(seed_meta)
+
+seed_meta_up<-seed_meta[which(seed_meta$Sample_ID==colnames(path_abun_unstrat_with_SEED)),]
+identical(as.character(seed_meta_up$Sample_ID),colnames(path_abun_unstrat_with_SEED))
+
+#t_path_abun_unstrat_with_SEED_up<-as.data.frame(t(path_abun_unstrat_with_SEED_up))
+#dim(t_path_abun_unstrat_with_SEED_up)
+#t_path_abun_unstrat_with_SEED_up[1:5,1:5]
+#t_path_abun_unstrat_with_SEED_up$Sample_ID<-rownames(t_path_abun_unstrat_with_SEED_up)
+library(reshape2)
+library(dplyr)
+library(plyr)
+
+#join_path_abun_unstrat_with_SEED<-left_join(t_path_abun_unstrat_with_SEED,seed_meta,by = "Sample_ID")
+#dim(join_path_abun_unstrat_with_SEED)
+#which(colnames(join_path_abun_unstrat_with_SEED)=="Sample_ID")
+#rownames(join_path_abun_unstrat_with_SEED)<-join_path_abun_unstrat_with_SEED$Sample_ID
+#dim(join_path_abun_unstrat_with_SEED)
+#join_path_abun_unstrat_with_SEED[1:5,425:432]
+```
+
+## Differential abundance analysis
+
+```{r}
+all(colnames(path_abun_unstrat_with_SEED)==seed_meta_up$Sample_ID)
+path_ds<-DESeqDataSetFromMatrix(countData = round(path_abun_unstrat_with_SEED,0),
+                                colData = seed_meta_up,
+                                design = ~ Treat)
+path_ds<-DESeq(path_ds,fitType = "local")
+resultsNames(path_ds)
+
+## Soil vs Bulk_1wk
+Soil_vs_Bulk1wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Bulk_1wk"),lfcThreshold = 1)
+Soil_vs_Bulk1wk_path_res
+sort_Soil_vs_Bulk1wk_path_res<-Soil_vs_Bulk1wk_path_res[order(Soil_vs_Bulk1wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Bulk1wk_path_res<-sort_Soil_vs_Bulk1wk_path_res[sort_Soil_vs_Bulk1wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Bulk1wk_path_res)
+sig_Soil_vs_Bulk1wk_path_res$log2FoldChange
+sig_Soil_vs_Bulk1wk_path_name <-sig_Soil_vs_Bulk1wk_path_res@rownames
+
+
+## Soil vs Bulk_3wk
+Soil_vs_Bulk3wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Bulk_3wk"),lfcThreshold = 1)
+Soil_vs_Bulk3wk_path_res
+sort_Soil_vs_Bulk3wk_path_res<-Soil_vs_Bulk3wk_path_res[order(Soil_vs_Bulk3wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Bulk3wk_path_res<-sort_Soil_vs_Bulk3wk_path_res[sort_Soil_vs_Bulk3wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Bulk3wk_path_res)
+sig_Soil_vs_Bulk3wk_path_res$log2FoldChange
+sig_Soil_vs_Bulk3wk_path_name <-sig_Soil_vs_Bulk3wk_path_res@rownames
+
+## Soil vs Bulk_4wk
+Soil_vs_Bulk4wk_path_res<-results(path_ds,contrast = c("Treat","Soil", "Bulk_4wk"),lfcThreshold = 1)
+Soil_vs_Bulk4wk_path_res
+sort_Soil_vs_Bulk4wk_path_res<-Soil_vs_Bulk4wk_path_res[order(Soil_vs_Bulk4wk_path_res$padj,na.last = NA),]
+sig_Soil_vs_Bulk4wk_path_res<-sort_Soil_vs_Bulk4wk_path_res[sort_Soil_vs_Bulk4wk_path_res$padj<=0.01,]
+dim(sig_Soil_vs_Bulk4wk_path_res)
+sig_Soil_vs_Bulk4wk_path_res$log2FoldChange
+sig_Soil_vs_Bulk4wk_path_name <-sig_Soil_vs_Bulk4wk_path_res@rownames
+
+
+## Bulk_1wk vs Rhi_1wk
+Bulk1wk_vs_Rhi1wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Rhi_1wk"),lfcThreshold = 1)
+Bulk1wk_vs_Rhi1wk_path_res
+sort_Bulk1wk_vs_Rhi1wk_path_res<-Bulk1wk_vs_Rhi1wk_path_res[order(Bulk1wk_vs_Rhi1wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Rhi1wk_path_res<-sort_Bulk1wk_vs_Rhi1wk_path_res[sort_Bulk1wk_vs_Rhi1wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Rhi1wk_path_res)
+sig_Bulk1wk_vs_Rhi1wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Rhi1wk_path_name <-sig_Bulk1wk_vs_Rhi1wk_path_res@rownames
+
+## Bulk_1wk vs Endo_1wk
+Bulk1wk_vs_Endo1wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Endo_1wk"),lfcThreshold = 1)
+Bulk1wk_vs_Endo1wk_path_res
+sort_Bulk1wk_vs_Endo1wk_path_res<-Bulk1wk_vs_Endo1wk_path_res[order(Bulk1wk_vs_Endo1wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Endo1wk_path_res<-sort_Bulk1wk_vs_Endo1wk_path_res[sort_Bulk1wk_vs_Endo1wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Endo1wk_path_res)
+sig_Bulk1wk_vs_Endo1wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Endo1wk_path_name <-sig_Bulk1wk_vs_Endo1wk_path_res@rownames
+
+## Rhi_1wk vs Endo_1wk
+Rhi1wk_vs_Endo1wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Endo_1wk"),lfcThreshold = 1)
+Rhi1wk_vs_Endo1wk_path_res
+sort_Rhi1wk_vs_Endo1wk_path_res<-Rhi1wk_vs_Endo1wk_path_res[order(Rhi1wk_vs_Endo1wk_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_Endo1wk_path_res<-sort_Rhi1wk_vs_Endo1wk_path_res[sort_Rhi1wk_vs_Endo1wk_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_Endo1wk_path_res)
+sig_Rhi1wk_vs_Endo1wk_path_res$log2FoldChange
+sig_Rhi1wk_vs_Endo1wk_path_name <-sig_Rhi1wk_vs_Endo1wk_path_res@rownames
+
+## Bulk_3wk vs Rhi_3wk
+Bulk3wk_vs_Rhi3wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Rhi_3wk"),lfcThreshold = 1)
+Bulk3wk_vs_Rhi3wk_path_res
+sort_Bulk3wk_vs_Rhi3wk_path_res<-Bulk3wk_vs_Rhi3wk_path_res[order(Bulk3wk_vs_Rhi3wk_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_Rhi3wk_path_res<-sort_Bulk3wk_vs_Rhi3wk_path_res[sort_Bulk3wk_vs_Rhi3wk_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_Rhi3wk_path_res)
+sig_Bulk3wk_vs_Rhi3wk_path_res$log2FoldChange
+sig_Bulk3wk_vs_Rhi3wk_path_name <-sig_Bulk3wk_vs_Rhi3wk_path_res@rownames
+
+## Bulk_3wk vs Endo_3wk
+Bulk3wk_vs_Endo3wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Endo_3wk"),lfcThreshold = 1)
+Bulk3wk_vs_Endo3wk_path_res
+sort_Bulk3wk_vs_Endo3wk_path_res<-Bulk3wk_vs_Endo3wk_path_res[order(Bulk3wk_vs_Endo3wk_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_Endo3wk_path_res<-sort_Bulk3wk_vs_Endo3wk_path_res[sort_Bulk3wk_vs_Endo3wk_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_Endo3wk_path_res)
+sig_Bulk3wk_vs_Endo3wk_path_res$log2FoldChange
+sig_Bulk3wk_vs_Endo3wk_path_name <-sig_Bulk3wk_vs_Endo3wk_path_res@rownames
+
+
+## Rhi_3wk vs Endo_3wk
+Rhi3wk_vs_Endo3wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_3wk", "Endo_3wk"),lfcThreshold = 1)
+Rhi3wk_vs_Endo3wk_path_res
+sort_Rhi3wk_vs_Endo3wk_path_res<-Rhi3wk_vs_Endo3wk_path_res[order(Rhi3wk_vs_Endo3wk_path_res$padj,na.last = NA),]
+sig_Rhi3wk_vs_Endo3wk_path_res<-sort_Rhi3wk_vs_Endo3wk_path_res[sort_Rhi3wk_vs_Endo3wk_path_res$padj<=0.01,]
+dim(sig_Rhi3wk_vs_Endo3wk_path_res)
+sig_Rhi3wk_vs_Endo3wk_path_res$log2FoldChange
+sig_Rhi3wk_vs_Endo3wk_path_name <-sig_Rhi3wk_vs_Endo3wk_path_res@rownames
+
+## Bulk_4wk vs Rhi_4wk
+Bulk4wk_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_4wk", "Rhi_4wk"),lfcThreshold = 1)
+Bulk4wk_vs_Rhi4wk_path_res
+sort_Bulk4wk_vs_Rhi4wk_path_res<-Bulk4wk_vs_Rhi4wk_path_res[order(Bulk4wk_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Bulk4wk_vs_Rhi4wk_path_res<-sort_Bulk4wk_vs_Rhi4wk_path_res[sort_Bulk4wk_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Bulk4wk_vs_Rhi4wk_path_res)
+sig_Bulk4wk_vs_Rhi4wk_path_res$log2FoldChange
+sig_Bulk4wk_vs_Rhi4wk_path_name <-sig_Bulk4wk_vs_Rhi4wk_path_res@rownames
+
+## Bulk_4wk vs Endo_4wk
+Bulk4wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_4wk", "Endo_4wk"),lfcThreshold = 1)
+Bulk4wk_vs_Endo4wk_path_res
+sort_Bulk4wk_vs_Endo4wk_path_res<-Bulk4wk_vs_Endo4wk_path_res[order(Bulk4wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Bulk4wk_vs_Endo4wk_path_res<-sort_Bulk4wk_vs_Endo4wk_path_res[sort_Bulk4wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Bulk4wk_vs_Endo4wk_path_res)
+sig_Bulk4wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Bulk4wk_vs_Endo4wk_path_name <-sig_Bulk4wk_vs_Endo4wk_path_res@rownames
+
+## Rhi_4wk vs Endo_4wk
+Rhi4wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_4wk", "Endo_4wk"),lfcThreshold = 1)
+Rhi4wk_vs_Endo4wk_path_res
+sort_Rhi4wk_vs_Endo4wk_path_res<-Rhi4wk_vs_Endo4wk_path_res[order(Rhi4wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Rhi4wk_vs_Endo4wk_path_res<-sort_Rhi4wk_vs_Endo4wk_path_res[sort_Rhi4wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Rhi4wk_vs_Endo4wk_path_res)
+sig_Rhi4wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Rhi4wk_vs_Endo4wk_path_name <-sig_Rhi4wk_vs_Endo4wk_path_res@rownames
+
+## Bulk_1wk vs Bulk_3wk
+Bulk1wk_vs_Bulk3wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Bulk_3wk"),lfcThreshold = 1)
+Bulk1wk_vs_Bulk3wk_path_res
+sort_Bulk1wk_vs_Bulk3wk_path_res<-Bulk1wk_vs_Bulk3wk_path_res[order(Bulk1wk_vs_Bulk3wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Bulk3wk_path_res<-sort_Bulk1wk_vs_Bulk3wk_path_res[sort_Bulk1wk_vs_Bulk3wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Bulk3wk_path_res)
+sig_Bulk1wk_vs_Bulk3wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Bulk3wk_path_name <-sig_Bulk1wk_vs_Bulk3wk_path_res@rownames
+
+## Bulk_1wk vs Bulk_4wk
+
+Bulk1wk_vs_Bulk4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Bulk_4wk"),lfcThreshold = 1)
+Bulk1wk_vs_Bulk4wk_path_res
+sort_Bulk1wk_vs_Bulk4wk_path_res<-Bulk1wk_vs_Bulk4wk_path_res[order(Bulk1wk_vs_Bulk4wk_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_Bulk4wk_path_res<-sort_Bulk1wk_vs_Bulk4wk_path_res[sort_Bulk1wk_vs_Bulk4wk_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_Bulk4wk_path_res)
+sig_Bulk1wk_vs_Bulk4wk_path_res$log2FoldChange
+sig_Bulk1wk_vs_Bulk4wk_path_name <-sig_Bulk1wk_vs_Bulk4wk_path_res@rownames
+
+# Bulk_3wk vs Bulk_4wk
+
+Bulk3wk_vs_Bulk4wk_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Bulk_4wk"),lfcThreshold = 1)
+Bulk3wk_vs_Bulk4wk_path_res
+sort_Bulk3wk_vs_Bulk4wk_path_res<-Bulk3wk_vs_Bulk4wk_path_res[order(Bulk3wk_vs_Bulk4wk_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_Bulk4wk_path_res<-sort_Bulk3wk_vs_Bulk4wk_path_res[sort_Bulk3wk_vs_Bulk4wk_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_Bulk4wk_path_res)
+sig_Bulk3wk_vs_Bulk4wk_path_res$log2FoldChange
+sig_Bulk3wk_vs_Bulk4wk_path_name <-sig_Bulk3wk_vs_Bulk4wk_path_res@rownames
+
+## Rhi_1wk vs Rhi_3wk
+Rhi1wk_vs_Rhi3wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Rhi_3wk"),lfcThreshold = 1)
+Rhi1wk_vs_Rhi3wk_path_res
+sort_Rhi1wk_vs_Rhi3wk_path_res<-Rhi1wk_vs_Rhi3wk_path_res[order(Rhi1wk_vs_Rhi3wk_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_Rhi3wk_path_res<-sort_Rhi1wk_vs_Rhi3wk_path_res[sort_Rhi1wk_vs_Rhi3wk_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_Rhi3wk_path_res)
+sig_Rhi1wk_vs_Rhi3wk_path_res$log2FoldChange
+sig_Rhi1wk_vs_Rhi3wk_path_name <-sig_Rhi1wk_vs_Rhi3wk_path_res@rownames
+
+## Rhi_1wk vs Rhi_4wk
+
+Rhi1wk_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Rhi_4wk"),lfcThreshold = 1)
+Rhi1wk_vs_Rhi4wk_path_res
+sort_Rhi1wk_vs_Rhi4wk_path_res<-Rhi1wk_vs_Rhi4wk_path_res[order(Rhi1wk_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_Rhi4wk_path_res<-sort_Rhi1wk_vs_Rhi4wk_path_res[sort_Rhi1wk_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_Rhi4wk_path_res)
+sig_Rhi1wk_vs_Rhi4wk_path_res$log2FoldChange
+sig_Rhi1wk_vs_Rhi4wk_path_name <-sig_Rhi1wk_vs_Rhi4wk_path_res@rownames
+
+## Rhi_3wk vs Rhi_4wk
+Rhi3wk_vs_Rhi4wk_path_res<-results(path_ds,contrast = c("Treat","Rhi_3wk", "Rhi_4wk"),lfcThreshold = 1)
+Rhi3wk_vs_Rhi4wk_path_res
+sort_Rhi3wk_vs_Rhi4wk_path_res<-Rhi3wk_vs_Rhi4wk_path_res[order(Rhi3wk_vs_Rhi4wk_path_res$padj,na.last = NA),]
+sig_Rhi3wk_vs_Rhi4wk_path_res<-sort_Rhi3wk_vs_Rhi4wk_path_res[sort_Rhi3wk_vs_Rhi4wk_path_res$padj<=0.01,]
+dim(sig_Rhi3wk_vs_Rhi4wk_path_res)
+sig_Rhi3wk_vs_Rhi4wk_path_res$log2FoldChange
+sig_Rhi3wk_vs_Rhi4wk_path_name <-sig_Rhi3wk_vs_Rhi4wk_path_res@rownames
+
+## Endo_1wk vs Endo_3wk
+Endo1wk_vs_Endo3wk_path_res<-results(path_ds,contrast = c("Treat","Endo_1wk", "Endo_3wk"),lfcThreshold = 1)
+Endo1wk_vs_Endo3wk_path_res
+sort_Endo1wk_vs_Endo3wk_path_res<-Endo1wk_vs_Endo3wk_path_res[order(Endo1wk_vs_Endo3wk_path_res$padj,na.last = NA),]
+sig_Endo1wk_vs_Endo3wk_path_res<-sort_Endo1wk_vs_Endo3wk_path_res[sort_Endo1wk_vs_Endo3wk_path_res$padj<=0.01,]
+dim(sig_Endo1wk_vs_Endo3wk_path_res)
+sig_Endo1wk_vs_Endo3wk_path_res$log2FoldChange
+sig_Endo1wk_vs_Endo3wk_path_name <-sig_Endo1wk_vs_Endo3wk_path_res@rownames
+
+## Endo1wk vs Endo4wk
+Endo1wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Endo_1wk", "Endo_4wk"),lfcThreshold = 1)
+Endo1wk_vs_Endo4wk_path_res
+sort_Endo1wk_vs_Endo4wk_path_res<-Endo1wk_vs_Endo4wk_path_res[order(Endo1wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Endo1wk_vs_Endo4wk_path_res<-sort_Endo1wk_vs_Endo4wk_path_res[sort_Endo1wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Endo1wk_vs_Endo4wk_path_res)
+sig_Endo1wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Endo1wk_vs_Endo4wk_path_name <-sig_Endo1wk_vs_Endo4wk_path_res@rownames
+
+## Endo3wk vs Endo4wk
+
+Endo3wk_vs_Endo4wk_path_res<-results(path_ds,contrast = c("Treat","Endo_3wk", "Endo_4wk"),lfcThreshold = 1)
+Endo3wk_vs_Endo4wk_path_res
+sort_Endo3wk_vs_Endo4wk_path_res<-Endo3wk_vs_Endo4wk_path_res[order(Endo3wk_vs_Endo4wk_path_res$padj,na.last = NA),]
+sig_Endo3wk_vs_Endo4wk_path_res<-sort_Endo3wk_vs_Endo4wk_path_res[sort_Endo3wk_vs_Endo4wk_path_res$padj<=0.01,]
+dim(sig_Endo3wk_vs_Endo4wk_path_res)
+sig_Endo3wk_vs_Endo4wk_path_res$log2FoldChange
+sig_Endo3wk_vs_Endo4wk_path_name <-sig_Endo3wk_vs_Endo4wk_path_res@rownames
+
+# Soil vs SEED
+
+Soil_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Soil", "Seed"),lfcThreshold = 1)
+Soil_vs_SEED_path_res
+sort_Soil_vs_SEED_path_res<-Soil_vs_SEED_path_res[order(Soil_vs_SEED_path_res$padj,na.last = NA),]
+sig_Soil_vs_SEED_path_res<-sort_Soil_vs_SEED_path_res[sort_Soil_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Soil_vs_SEED_path_res)
+sig_Soil_vs_SEED_path_res$log2FoldChange
+sig_Soil_vs_SEED_path_name <-sig_Soil_vs_SEED_path_res@rownames
+
+# Bulk_1wk vs SEED
+
+Bulk1wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Bulk_1wk", "Seed"),lfcThreshold = 1)
+Bulk1wk_vs_SEED_path_res
+sort_Bulk1wk_vs_SEED_path_res<-Bulk1wk_vs_SEED_path_res[order(Bulk1wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Bulk1wk_vs_SEED_path_res<-sort_Bulk1wk_vs_SEED_path_res[sort_Bulk1wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Bulk1wk_vs_SEED_path_res)
+sig_Bulk1wk_vs_SEED_path_res$log2FoldChange
+sig_Bulk1wk_vs_SEED_path_name <-sig_Bulk1wk_vs_SEED_path_res@rownames
+
+# Bulk_3wk vs SEED
+
+Bulk3wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Bulk_3wk", "Seed"),lfcThreshold = 1)
+Bulk3wk_vs_SEED_path_res
+sort_Bulk3wk_vs_SEED_path_res<-Bulk3wk_vs_SEED_path_res[order(Bulk3wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Bulk3wk_vs_SEED_path_res<-sort_Bulk3wk_vs_SEED_path_res[sort_Bulk3wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Bulk3wk_vs_SEED_path_res)
+sig_Bulk3wk_vs_SEED_path_res$log2FoldChange
+sig_Bulk3wk_vs_SEED_path_name <-sig_Bulk3wk_vs_SEED_path_res@rownames
+
+# Bulk_4wk vs SEED
+
+Bulk4wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Bulk_4wk", "Seed"),lfcThreshold = 1)
+Bulk4wk_vs_SEED_path_res
+sort_Bulk4wk_vs_SEED_path_res<-Bulk4wk_vs_SEED_path_res[order(Bulk4wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Bulk4wk_vs_SEED_path_res<-sort_Bulk4wk_vs_SEED_path_res[sort_Bulk4wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Bulk4wk_vs_SEED_path_res)
+sig_Bulk4wk_vs_SEED_path_res$log2FoldChange
+sig_Bulk4wk_vs_SEED_path_name <-sig_Bulk4wk_vs_SEED_path_res@rownames
+
+# Rhi_1wk vs SEED
+Rhi1wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Rhi_1wk", "Seed"),lfcThreshold = 1)
+Rhi1wk_vs_SEED_path_res
+sort_Rhi1wk_vs_SEED_path_res<-Rhi1wk_vs_SEED_path_res[order(Rhi1wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Rhi1wk_vs_SEED_path_res<-sort_Rhi1wk_vs_SEED_path_res[sort_Rhi1wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Rhi1wk_vs_SEED_path_res)
+sig_Rhi1wk_vs_SEED_path_res$log2FoldChange
+sig_Rhi1wk_vs_SEED_path_name <-sig_Rhi1wk_vs_SEED_path_res@rownames
+
+
+# Rhi_3wk vs SEED
+Rhi3wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Rhi_3wk", "Seed"),lfcThreshold = 1)
+Rhi3wk_vs_SEED_path_res
+sort_Rhi3wk_vs_SEED_path_res<-Rhi3wk_vs_SEED_path_res[order(Rhi3wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Rhi3wk_vs_SEED_path_res<-sort_Rhi3wk_vs_SEED_path_res[sort_Rhi3wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Rhi3wk_vs_SEED_path_res)
+sig_Rhi3wk_vs_SEED_path_res$log2FoldChange
+sig_Rhi3wk_vs_SEED_path_name <-sig_Rhi3wk_vs_SEED_path_res@rownames
+
+# Rhi_4wk vs SEED
+Rhi4wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Rhi_4wk", "Seed"),lfcThreshold = 1)
+Rhi4wk_vs_SEED_path_res
+sort_Rhi4wk_vs_SEED_path_res<-Rhi4wk_vs_SEED_path_res[order(Rhi4wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Rhi4wk_vs_SEED_path_res<-sort_Rhi4wk_vs_SEED_path_res[sort_Rhi4wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Rhi4wk_vs_SEED_path_res)
+sig_Rhi4wk_vs_SEED_path_res$log2FoldChange
+sig_Rhi4wk_vs_SEED_path_name <-sig_Rhi4wk_vs_SEED_path_res@rownames
+
+
+# Endo_1wk vs SEED
+Endo1wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Endo_1wk", "Seed"),lfcThreshold = 1)
+Endo1wk_vs_SEED_path_res
+sort_Endo1wk_vs_SEED_path_res<-Endo1wk_vs_SEED_path_res[order(Endo1wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Endo1wk_vs_SEED_path_res<-sort_Endo1wk_vs_SEED_path_res[sort_Endo1wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Endo1wk_vs_SEED_path_res)
+sig_Endo1wk_vs_SEED_path_res$log2FoldChange
+sig_Endo1wk_vs_SEED_path_name <-sig_Endo1wk_vs_SEED_path_res@rownames
+
+
+# Endo_3wk vs SEED
+Endo3wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Endo_3wk", "Seed"),lfcThreshold = 1)
+Endo3wk_vs_SEED_path_res
+sort_Endo3wk_vs_SEED_path_res<-Endo3wk_vs_SEED_path_res[order(Endo3wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Endo3wk_vs_SEED_path_res<-sort_Endo3wk_vs_SEED_path_res[sort_Endo3wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Endo3wk_vs_SEED_path_res)
+sig_Endo3wk_vs_SEED_path_res$log2FoldChange
+sig_Endo3wk_vs_SEED_path_name <-sig_Endo3wk_vs_SEED_path_res@rownames
+
+# Endo_4wk vs SEED
+Endo4wk_vs_SEED_path_res<-results(path_ds,contrast = c("Treat","Endo_4wk", "Seed"),lfcThreshold = 1)
+Endo4wk_vs_SEED_path_res
+sort_Endo4wk_vs_SEED_path_res<-Endo4wk_vs_SEED_path_res[order(Endo4wk_vs_SEED_path_res$padj,na.last = NA),]
+sig_Endo4wk_vs_SEED_path_res<-sort_Endo4wk_vs_SEED_path_res[sort_Endo4wk_vs_SEED_path_res$padj<=0.01,]
+dim(sig_Endo4wk_vs_SEED_path_res)
+sig_Endo4wk_vs_SEED_path_res$log2FoldChange
+sig_Endo4wk_vs_SEED_path_name <-sig_Endo4wk_vs_SEED_path_res@rownames
+
+
+
+## Visualization using heatmap
+
+## heatmap visualization
+
+global_path_heatmap<-pheatmap(path_abun_unstrat_with_SEED,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+## Collect all names that were identified as significantly different between treatments
+
+Bulk_vs_Rhi<-Reduce(intersect,list(sig_Bulk1wk_vs_Rhi1wk_path_name,sig_Bulk3wk_vs_Rhi3wk_path_name,sig_Bulk4wk_vs_Rhi4wk_path_name))
+Bulk_vs_Rhi
+
+Bulk_vs_Endo<-Reduce(intersect,list(sig_Bulk1wk_vs_Endo1wk_path_name,sig_Bulk3wk_vs_Endo3wk_path_name,sig_Bulk4wk_vs_Endo4wk_path_name))
+Bulk_vs_Endo
+
+Rhi_vs_Endo<-Reduce(intersect,list(sig_Rhi1wk_vs_Endo1wk_path_name,sig_Rhi3wk_vs_Endo3wk_path_name,sig_Rhi4wk_vs_Endo4wk_path_name))
+Rhi_vs_Endo
+
+Bulk_vs_SEED<-Reduce(intersect,list(sig_Bulk1wk_vs_SEED_path_name,sig_Bulk3wk_vs_SEED_path_name,sig_Bulk4wk_vs_SEED_path_name))
+
+Rhi_vs_SEED<-Reduce(intersect, list(sig_Rhi1wk_vs_SEED_path_name,sig_Rhi3wk_vs_SEED_path_name,sig_Rhi4wk_vs_SEED_path_name))
+
+Endo_vs_SEED<-Reduce(intersect,list(sig_Endo1wk_vs_SEED_path_name,sig_Endo3wk_vs_SEED_path_name,sig_Endo4wk_vs_SEED_path_name))
+
+
+
+## Between compartments 
+Bulk_vs_Rhi_vs_Endo_vs_SEED<-unique(c(Bulk_vs_Rhi,Bulk_vs_Endo,Rhi_vs_Endo,Bulk_vs_SEED,Rhi_vs_SEED,Endo_vs_SEED))
+Bulk_vs_Rhi_vs_Endo_vs_SEED
+length(Bulk_vs_Rhi_vs_Endo_vs_SEED)
+
+## intersect between compartments
+
+path_abun_unstrat_with_SEED[1:5,1:5]
+intersect_BRES_path<- path_abun_unstrat_with_SEED[match(Bulk_vs_Rhi_vs_Endo_vs_SEED,rownames(path_abun_unstrat_with_SEED)),]
+dim(intersect_BRES_path)
+
+identical(colnames(intersect_BRES_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_path_heatmap.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBrewer)
+intersect_BRES_path_heatmap<-pheatmap(intersect_BRES_path,color = colorRampPalette(rev(brewer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+#write.csv(intersect_BRES_path,file = '/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_path.csv')
+
+## week1 and between compartments
+
+## Collect all names that were identified as significantly different between treatments
+
+wk1_Bulk_vs_Rhi_vs_Endo<-unique(c(sig_Bulk1wk_vs_Rhi1wk_path_name,sig_Bulk1wk_vs_Endo1wk_path_name,sig_Rhi1wk_vs_Endo1wk_path_name))
+length(wk1_Bulk_vs_Rhi_vs_Endo)
+length(Bulk_vs_Rhi_vs_Endo)
+
+## heatmap of pathways
+path_abun_unstrat_with_SEED[1:5,1:5]
+wk1_BRES_path<- path_abun_unstrat_with_SEED[match(wk1_Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_with_SEED)),]
+dim(wk1_BRES_path)
+identical(colnames(wk1_BRES_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/wk1_BRES_path.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBRESwer)
+wk1_BRES_path<-pheatmap(wk1_BRES_path,color = colorRampPalette(rev(BRESwer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+## wk3_BRES_path
+
+wk3_Bulk_vs_Rhi_vs_Endo<-unique(c(sig_Bulk3wk_vs_Rhi3wk_path_name,sig_Bulk3wk_vs_Endo3wk_path_name,sig_Rhi3wk_vs_Endo3wk_path_name))
+length(wk3_Bulk_vs_Rhi_vs_Endo)
+length(Bulk_vs_Rhi_vs_Endo)
+
+## heatmap of pathways
+path_abun_unstrat_with_SEED[1:5,1:5]
+wk3_BRES_path<- path_abun_unstrat_with_SEED[match(wk3_Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_with_SEED)),]
+dim(wk3_BRES_path)
+identical(colnames(wk3_BRES_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/wk3_BRES_path.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBRESwer)
+wk3_BRES_path<-pheatmap(wk3_BRES_path,color = colorRampPalette(rev(BRESwer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+## wk4_BRES_path
+
+wk4_Bulk_vs_Rhi_vs_Endo<-unique(c(sig_Bulk4wk_vs_Rhi4wk_path_name,sig_Bulk4wk_vs_Endo4wk_path_name,sig_Rhi4wk_vs_Endo4wk_path_name))
+length(wk4_Bulk_vs_Rhi_vs_Endo)
+length(Bulk_vs_Rhi_vs_Endo)
+
+## heatmap of pathways
+path_abun_unstrat_with_SEED[1:5,1:5]
+wk4_BRES_path<- path_abun_unstrat_with_SEED[match(wk4_Bulk_vs_Rhi_vs_Endo,rownames(path_abun_unstrat_with_SEED)),]
+dim(wk4_BRES_path)
+identical(colnames(wk4_BRES_path),as.character(seed_meta_up$Sample_ID))
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/wk4_BRES_path.tiff', units="in", width=10, height=5, res=300)
+library(pheatmap)
+library(RColorBRESwer)
+wk4_BRES_path<-pheatmap(wk4_BRES_path,color = colorRampPalette(rev(BRESwer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean')
+dev.off()
+
+
+## intersect_BRES_path_edit
+
+intersect_BRES_path_edit<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_path_edit.csv",header = TRUE,row.names = 1)
+colnames(intersect_BRES_path_edit)
+colnames<-sub("X","",colnames(intersect_BRES_path_edit))
+colnames(intersect_BRES_path_edit)<-colnames
+intersect_BRES_path_edit[1:5,1:5]
+dim(intersect_BRES_path_edit)
+intersect_BRES_path_edit_up1<-intersect_BRES_path_edit[,3:152]
+rownames(intersect_BRES_path_edit_up1)<-paste(intersect_BRES_path_edit_up1$Pathway,as.character(seq(01,50)),sep = "_")
+intersect_BRES_path_edit_up1[1:5,1:5]
+intersect_BRES_path_edit_up<-intersect_BRES_path_edit_up1[,2:150]
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_path_edit_up.tiff', units="in", width=30, height=14, res=300)
+library(pheatmap)
+library(RColorBRESwer)
+mycolors<-c('#CD9BCD','#C84248','#orange','#00CDCD')
+intersect_BRES_path_edit_up<-pheatmap(intersect_BRES_path_edit_up,color = colorRampPalette(rev(BRESwer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean',fontsize = 25, fontsize_col =13,fontsize_row = 19,col_annotation_colors = mycolors)
+dev.off()
+
+## intersect_BRES_superpathway
+
+intersect_BRES_superpath_edit<-read.csv(file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_path_edit_up.csv",header = TRUE,row.names = 1)
+colnames(intersect_BRES_superpath_edit)
+colnames<-sub("X","",colnames(intersect_BRES_superpath_edit))
+colnames(intersect_BRES_superpath_edit)<-colnames
+intersect_BRES_superpath_edit[1:5,1:5]
+dim(intersect_BRES_superpath_edit)
+intersect_BRES_superpath_edit_up1<-intersect_BRES_superpath_edit[,c(3,5:153)]
+rownames(intersect_BRES_superpath_edit_up1)<-intersect_BRES_superpath_edit_up1$Superpathway_PWY
+intersect_BRES_superpath_edit_up1[1:5,1:5]
+intersect_BRES_superpath_edit_up<-intersect_BRES_superpath_edit_up1[,2:150]
+
+tiff('/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/PICRUST/intersect_BRES_superpath_edit_up.tiff', units="in", width=25, height=10, res=300)
+library(pheatmap)
+library(RColorBRESwer)
+intersect_BRES_superpath_edit_up<-pheatmap(intersect_BRES_superpath_edit_up,color = colorRampPalette(rev(BRESwer.pal(n = 11, name =
+  "RdYlBu")))(100),show_rownames = TRUE,annotation_col=seed_meta_up[,c(2,3)], clustering_method = "average",scale="row",border_color = NA,cluster_rows = TRUE,clustering_distance_rows = 'euclidean',cluster_cols =TRUE,clustering_distance_cols = 'euclidean',fontsize=10,fontsize_row = 17)
+dev.off()
+```
