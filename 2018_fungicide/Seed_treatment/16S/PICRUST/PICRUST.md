@@ -91,6 +91,6 @@ get.oturep(column=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
 ```
 picrust2_pipeline.py -s Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.rep.edit.subsample.pick_up.fasta  -i Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick.shared  -o picrust2_out_pipeline -p 30
 ```
-4. For the following differential pathway abundance analysis, the output file from the pathways_out folder were copied to local computer for further analysis using R. Please find [detailed R command]() 
+4. For the following differential pathway abundance analysis, the output file from the pathways_out folder were copied to local computer for further analysis using R. Please find [detailed R command](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/2018_fungicide/Seed_treatment/16S/PICRUST/PICRUST_KO_enrichment.Rmd) 
 
 
