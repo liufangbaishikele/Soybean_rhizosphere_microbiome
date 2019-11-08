@@ -33,7 +33,7 @@ Mellisa populus paper using ITS2 blocker - CGAGGGCACGTCTGCCTGG
 * Has higher anealing temperature
 * A meltering temperature above that used for extension cycle20.
 * Melting temperature, problematic hairpins, GC content and other design considerations were calculated using the Life Technologies PNA designer (http://www6.appliedbiosystems.com/support/pnadesigner.cfm).
-* PNA will be ordered from PNA Bio company.
+* PNA will be ordered from [PNA Bio](https://pnabio.com/).
 
 ## Practical prosedure
 * Generated Kmers with length of 9,10,11,12,and 13bp based on M04398_3_000000000-C4DLV_1_1106_23817_21172 using Jellyfish software.
