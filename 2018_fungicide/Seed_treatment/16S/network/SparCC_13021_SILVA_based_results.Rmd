@@ -60,9 +60,9 @@ head(meta)
 
 Soil<-subset_samples(Seed_13021_up,Treat=="Soil")
 Soil
-#Extract top 1000 OTUs across 8 samples
+#Extract top 500 OTUs across 8 samples
 Soil_up<-prune_taxa(labels(sort(taxa_sums(Soil),decreasing = TRUE)[1:500]),Soil)
-Soil_up #1000 taxa and 15 samples
+Soil_up #500 taxa and 15 samples
 min(taxa_sums(Soil_up)) # 67
 Soil_up_OTU_count<-data.frame(otu_table(Soil_up))
 #write.csv(Soil_up_OTU_count,file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/SparCC/Soil_up_OTU_count.csv")
@@ -72,9 +72,9 @@ table(Soil_up_OTU_count==0)[2]/sum(table(Soil_up_OTU_count==0)) #0.05493333
 
 Bulk_1wk<-subset_samples(Seed_13021_up,Treat=="Bulk_1wk")
 Bulk_1wk
-#Extract top 1000 OTUs across 8 samples
+#Extract top 500 OTUs across 8 samples
 Bulk_1wk_up<-prune_taxa(labels(sort(taxa_sums(Bulk_1wk),decreasing = TRUE)[1:500]),Bulk_1wk)
-Bulk_1wk_up #1000 taxa and 15 samples
+Bulk_1wk_up #500 taxa and 15 samples
 min(taxa_sums(Bulk_1wk_up)) # 70
 Bulk_1wk_up_OTU_count<-data.frame(otu_table(Bulk_1wk_up))
 #write.csv(Bulk_1wk_up_OTU_count,file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/SparCC/Bulk_1wk_up_OTU_count.csv")
@@ -86,7 +86,7 @@ Bulk_3wk<-subset_samples(Seed_13021_up,Treat=="Bulk_3wk")
 Bulk_3wk
 #Extract top 1000 OTUs across 8 samples
 Bulk_3wk_up<-prune_taxa(labels(sort(taxa_sums(Bulk_3wk),decreasing = TRUE)[1:500]),Bulk_3wk)
-Bulk_3wk_up #1000 taxa and 15 samples
+Bulk_3wk_up #500 taxa and 15 samples
 min(taxa_sums(Bulk_3wk_up)) # 70
 Bulk_3wk_up_OTU_count<-data.frame(otu_table(Bulk_3wk_up))
 #write.csv(Bulk_3wk_up_OTU_count,file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/SparCC/Bulk_3wk_up_OTU_count.csv")
@@ -98,7 +98,7 @@ Bulk_4wk<-subset_samples(Seed_13021_up,Treat=="Bulk_4wk")
 Bulk_4wk
 #Extract top 1000 OTUs across 8 samples
 Bulk_4wk_up<-prune_taxa(labels(sort(taxa_sums(Bulk_4wk),decreasing = TRUE)[1:500]),Bulk_4wk)
-Bulk_4wk_up #1000 taxa and 15 samples
+Bulk_4wk_up #500 taxa and 15 samples
 min(taxa_sums(Bulk_4wk_up)) # 49
 Bulk_4wk_up_OTU_count<-data.frame(otu_table(Bulk_4wk_up))
 #write.csv(Bulk_4wk_up_OTU_count,file="/Users/fangliu/Documents/2018_fugicide_project/Seed_treatment/16S/Seed_16S_Community_analysis/Silva_tax_based_results/rarefaction_13021/SparCC/Bulk_4wk_up_OTU_count.csv")
