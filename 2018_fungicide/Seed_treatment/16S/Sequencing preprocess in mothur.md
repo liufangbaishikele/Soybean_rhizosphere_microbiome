@@ -67,7 +67,9 @@ classify.otu(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
 **Rarefaction and singleton remove** 
 
 -- randomized subsample of reads to the same depth is one strategy used to mitigate the sequencing depth bias between samples.
+
 -- In addition, singletons are tend to be sequencing error instead of real unique OTU,so, before downward community analysis, these singletons were removed from the OTU count table.
+
 -- Here are the commands used to process it:
 
 ```
@@ -87,6 +89,7 @@ classify.otu(list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
 ```
 -- After the rarefaction and remove singletons, we got all seed samples removed except ``Seed_CM_4`` sample. And, we can see a dramatically high bacteria diversity within this sample. We are not sure, if this is cause by some contamination on the seed. Or is was just biased by the sequencing depth. If it was not contanination, why this sample yield high sequencing depth while the other samples did not. Does this have something to do with the DNA extraction efficiency? 
 
+
 **Generate the rarefaction plot to visualized the sufficience of sequencing depth**
 
 ```
@@ -103,11 +106,3 @@ rarefaction.single(shared=Seed.trim.contigs.good.unique.good.filter.unique.precl
 ```
 make.lefse(shared=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.subsample.tx.1.pick.shared,constaxonomy=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.subsample.tx.1.pick.1.cons.taxonomy,design=Week1_compartment.design,groups=104B_1w_ML-104E_1w_ML-104R_1w_ML-105B_1w_ML-105E_1w_ML-105R_1w_ML-108B_1w_ML-108E_1w_ML-108R_1w_ML-109B_1w_ML-109E_1w_ML-109R_1w_ML-201B_1w_ML-201E_1w_ML-201R_1w_ML-202B_1w_ML-202E_1w_ML-202R_1w_ML-206B_1w_ML-206E_1w_ML-206R_1w_ML-207B_1w_ML-207E_1w_ML-207R_1w_ML-209B_1w_ML-209E_1w_ML-209R_1w_ML-301B_1w_ML-301E_1w_ML-301R_1w_ML-302B_1w_ML-302E_1w_ML-302R_1w_ML-306B_1w_ML-306E_1w_ML-309B_1w_ML-309E_1w_ML-309R_1w_ML-310B_1w_ML-310E_1w_ML-310R_1w_ML-411B_1w_ML-411E_1w_ML-411R_1w_ML,scale=totalgroup)
 ```
-
-
-
-
-
-
-
-
