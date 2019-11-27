@@ -24,7 +24,7 @@ All the below codes followed [PICRUST2 workflow](https://github.com/picrust/picr
 1. Generate the representative OTU sequence using mothur command ``get.oturep``
 
 ```
-get.oturep(column=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.dist,list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.list,shared=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.shared,count=Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,label=0.03)
+get.oturep(column=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.dist,list=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.list,count=Seed.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table,fasta=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta,label=0.03)
 ```
 
 2. After generate the represent sequence for each OTU, I did some modification of the output to make it accomodate with PICRUST2 example sequence data. Below are the codes needed for file formating.
