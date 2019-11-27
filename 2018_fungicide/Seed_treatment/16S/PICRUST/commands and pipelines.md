@@ -80,7 +80,7 @@ get.oturep(column=Seed.trim.contigs.good.unique.good.filter.unique.precluster.pi
     7. Edit the above tsv file to the right format, only include OTUID and count in each sample using vim
 
     ```
-    sed 's/ /\t/g' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc_up.shared > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc_up_tsv.shared
+    sed 's/ /\t/g' Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick_up.shared > Seed.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.0.03.subsample.0.03.pick_up_tsv.shared
     ```
     
 **NOTES** Please found the input [fasta sequence file and shared count files within this Archive](https://github.com/liufangbaishikele/Soybean_rhizosphere_microbiome/blob/master/2018_fungicide/Seed_treatment/16S/PICRUST/Archive.zip) attached as reference for guiding you to format the input in a correct way.
