@@ -1,5 +1,5 @@
 ```
-make.contigs(inputdir=/nics/d/home/fliu21/16S_cultivar_proj/raw_fastq,outputdir=/nics/d/home/fliu21/16S_cultivar_proj/analysis/002_mothur_analysis/,file=cultivar.file,oligos=cultivar.oligo,processors=16)
+make.contigs(inputdir=/nics/d/home/fliu21/16S_cultivar_proj/raw_fastq,outputdir=/nics/d/home/fliu21/16S_cultivar_proj/analysis/002_mothur_analysis/,file=cultivar.files,oligos=cultivar.oligo,processors=16)
 
 summary.seqs(inputdir=/nics/d/home/fliu21/16S_cultivar_proj/analysis/002_mothur_analysis/,fasta=cultivar.trim.contigs.fasta,processors=16)
 
